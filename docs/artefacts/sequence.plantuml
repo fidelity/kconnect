@@ -1,0 +1,46 @@
+@startuml component
+autonumber
+actor User
+
+box "kconnect cli" #LightBlue
+participant "Discover Command" as DiscoverCmd
+participant "Generate Command" as GenerateCmd
+participant "Authentication Plugin" as AuthPlugin
+participant "Host Plugin" as HostPlug
+end box
+
+participant "Idp Server" as Idp
+participant "Discovery API" as DiscoApi
+collections Clusters
+
+== Discover Clusters ==
+
+User -> DiscoverCmd: Discover clusters i have access to
+DiscoverCmd -> AuthPlugin: Authenticate me
+AuthPlugin -> Idp: Authenticate
+Idp -> AuthPlugin: Credentials
+AuthPlugin -> DiscoverCmd: Credentials
+loop for each host plugin
+	DiscoverCmd->HostPlug: Get clusters
+	activate HostPlug 
+	HostPlug -> AuthPlugin: Get credentials
+	HostPlug -> DiscoApi: Get cluster list (with credentials)
+	DiscoApi -> HostPlug: Cluster list
+	HostPlug -> DiscoverCmd: Cluster list
+	deactivate HostPlug
+end
+DiscoverCmd -> DiscoverCmd: Aggregate clusters
+DiscoverCmd -> User: Display clusters
+
+== Connect Clusters ==
+
+User -> GenerateCmd: Generate kubeconfig for cluster X
+GenerateCmd -> HostPlug: Additional content
+HostPlug -> HostPlug: Generate kubeconfig
+alt additional files
+HostPlug -> HostPlug: Generate additional files
+end
+HostPlug -> User: Write files
+User -> Clusters: Connect to cluster
+
+@enduml
