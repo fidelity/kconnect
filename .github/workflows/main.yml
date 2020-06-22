@@ -1,0 +1,32 @@
+name: CI
+
+# Run on PR
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened  
+
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Checks the title of the PR
+    - name: semantic-pull-request
+      uses: amannn/action-semantic-pull-request@v1.2.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Block if WIP
+    - name: check WIP
+      uses: wip/action@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
