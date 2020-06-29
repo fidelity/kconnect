@@ -1,3 +1,5 @@
+// +build tools
+
 /*
 Copyright 2020 The kconnect Authors.
 
@@ -14,24 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package version
+// This package is used to import all the tools required
+package tools
 
 import (
-	"fmt"
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
 )
-
-var (
-	// Version specifies the application version
-	Version string
-
-	// BuildDate is the date the CLI was built
-	BuildDate string
-
-	// CommitHash is the Git commit hash
-	CommitHash string
-)
-
-// ToString will convert the version information to a string
-func ToString() string {
-	return fmt.Sprintf("Version: %s, Build Date: %s, Git Hash: %s", Version, BuildDate, CommitHash)
-}

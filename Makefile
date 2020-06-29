@@ -3,9 +3,15 @@ git_commit := $(shell git rev-parse --short HEAD)
 
 version_pkg := github.com/fidelity/kconnect/internal/version
 
+# Directories
 gopath := $(shell go env GOPATH)
-
 GOBIN ?= $(gopath)/bin
+TOOLS_DIR := hack/tools
+TOOLS_BIN_DIR := $(TOOLS_DIR)/bin
+BIN_DIR := bin
+
+# Binaries
+GOLANGCI_LINT := $(abspath $(TOOLS_BIN_DIR)/golangci-lint)
 
 .DEFAULT_GOAL := help
 
@@ -14,6 +20,11 @@ GOBIN ?= $(gopath)/bin
 .PHONY: build
 build: # Build the CLI binary
 	CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).CommitHash=$(git_commit) -X $(version_pkg).BuildDate=$(build_date)" .
+
+$(GOLANGCI_LINT): $(TOOLS_DIR)/go.mod # Build golangci-lint from tools folder
+	cd $(TOOLS_DIR); go build -tags=tools -o $(BIN_DIR)/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
+
+##@ Release
 
 .PHONY: release
 release: # Builds a release
@@ -30,8 +41,8 @@ test:
 	go test ./...
 
 .PHONY: lint
-lint: # Run the linter across the codebase
-	$(GOBIN)/golangci-lint run
+lint: $(GOLANGCI_LINT) # Run the linter across the codebase
+	$(GOLANGCI_LINT) run -v
 
 .PHONY: ci
 ci: build test lint # Target for CI
