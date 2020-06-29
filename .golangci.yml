@@ -1,0 +1,21 @@
+run:
+    timeout: 10m
+
+issues:
+  max-same-issues: 0
+  max-issues-per-linter: 0
+  exclude-rules:
+    - linters: [golint]
+      text: "should not use dot imports|don't use an underscore in package name"
+
+linters:
+    fast: true
+    enable-all: true
+    disable:
+    - gochecknoglobals
+    - gochecknoinits
+    - lll
+    - wsl
+    - whitespace
+    - godot
+    - nestif
