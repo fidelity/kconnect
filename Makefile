@@ -19,7 +19,7 @@ GOLANGCI_LINT := $(abspath $(TOOLS_BIN_DIR)/golangci-lint)
 
 .PHONY: build
 build: # Build the CLI binary
-	CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).CommitHash=$(git_commit) -X $(version_pkg).BuildDate=$(build_date)" .
+	CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).commitHash=$(git_commit) -X $(version_pkg).buildDate=$(build_date)" .
 
 $(GOLANGCI_LINT): $(TOOLS_DIR)/go.mod # Build golangci-lint from tools folder
 	cd $(TOOLS_DIR); go build -tags=tools -o $(BIN_DIR)/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
