@@ -7,7 +7,7 @@ on:
       - opened
       - edited
       - synchronize
-      - reopened  
+      - reopened
 
 jobs:
   build:
@@ -30,3 +30,15 @@ jobs:
       uses: wip/action@v1.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Run tests
+    - name: Tests
+      run: make test
+
+    # Run linter
+    - name: Lint
+      run: make lint
+
+    # Buid
+    - name: Build
+      run: make build

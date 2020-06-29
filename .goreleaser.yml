@@ -1,0 +1,50 @@
+before:
+    hooks:
+     - go mod download
+
+builds:
+    -
+      id: default
+      main: .
+      binary: kconnect
+      env:
+        - CGO_ENABLED=0
+      ldflags:
+        - -s -w -X github.com/fidelity/kconnect/internal/version.BuildDate={{.Date}} -X github.com/fidelity/kconnect/internal/version.CommitHash={{.Commit}} -X github.com/fidelity/kconnect/internal/version.Version={{.Version}}
+      goos:
+        - windows
+        - darwin
+        - linux
+      goarch:
+        - amd64
+
+archives:
+    -
+      id: default
+      builds:
+        - default
+      name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+      replacements:
+        darwin: Darwin
+        linux: Linux
+        windows: Windows
+        amd64: x86_64
+      format: tar.gz
+      format_overrides:
+          - goos: windows
+            format: zip
+
+checksum:
+    name_template: "{{ .ProjectName }}_checksums.txt"
+
+snapshot:
+    name_template: "{{ .Tag }}-next"
+
+changelog:
+    sort: asc
+    filters:
+        exclude:
+            - '^test:'
+            - '^chore:'
+            - '^style:'
+

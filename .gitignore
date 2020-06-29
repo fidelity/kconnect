@@ -1,0 +1,21 @@
+# locally built binaries
+kconnect
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+coverage.out
+
+# GoReleaser dist folder
+dist/
+
+# Tools bin folder
+bin/
+
+# direnv files:
+.envrc
+
+# vim swp files
+*.swp
+
