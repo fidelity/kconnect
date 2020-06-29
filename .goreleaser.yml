@@ -10,7 +10,7 @@ builds:
       env:
         - CGO_ENABLED=0
       ldflags:
-        - -s -w -X github.com/fidelity/kconnect/internal/version.BuildDate={{.Date}} -X github.com/fidelity/kconnect/internal/version.CommitHash={{.Commit}} -X github.com/fidelity/kconnect/internal/version.Version={{.Version}}
+        - -s -w -X github.com/fidelity/kconnect/internal/version.buildDate={{.Date}} -X github.com/fidelity/kconnect/internal/version.commitHash={{.Commit}} -X github.com/fidelity/kconnect/internal/version.version={{.Version}}
       goos:
         - windows
         - darwin

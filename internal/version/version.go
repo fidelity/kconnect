@@ -18,20 +18,38 @@ package version
 
 import (
 	"fmt"
+	"runtime"
 )
 
 var (
-	// Version specifies the application version
-	Version string
-
-	// BuildDate is the date the CLI was built
-	BuildDate string
-
-	// CommitHash is the Git commit hash
-	CommitHash string
+	version    string // Specifies the app version
+	buildDate  string // Specifies the build date
+	commitHash string // Specifies the git commit hash
 )
 
-// ToString will convert the version information to a string
-func ToString() string {
-	return fmt.Sprintf("Version: %s, Build Date: %s, Git Hash: %s", Version, BuildDate, CommitHash)
+// Info represents the version information for the app
+type Info struct {
+	Version    string `json:"version,omitempty"`
+	BuildDate  string `json:"buildDate,omitempty"`
+	CommitHash string `json:"commitHash,omitempty"`
+	GoVersion  string `json:"goVersion,omitempty"`
+	Platform   string `json:"platform,omitempty"`
+	Compiler   string `json:"compiler,omitempty"`
+}
+
+// String will convert the version information to a string
+func (i Info) String() string {
+	return fmt.Sprintf("Version: %s, Build Date: %s, Git Hash: %s", i.Version, i.BuildDate, i.CommitHash)
+}
+
+// Get returns the version information
+func Get() Info {
+	return Info{
+		Version:    version,
+		BuildDate:  buildDate,
+		CommitHash: commitHash,
+		GoVersion:  runtime.Version(),
+		Platform:   fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+		Compiler:   runtime.Compiler,
+	}
 }

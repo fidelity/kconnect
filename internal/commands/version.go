@@ -14,40 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package version
+package commands
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-// Command creates the version command
-func Command() *cobra.Command {
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Display version & build information",
+	Long:  "",
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		return doVersion(cmd)
+	},
+}
 
-	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Display version & build information",
-		Long:  "",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			return doVersion(cmd)
-		},
-	}
-
-	return versionCmd
+func init() {
+	// TODO: add any additional flags
+	RootCmd.AddCommand(versionCmd)
 }
 
 func doVersion(_ *cobra.Command) error {
-
-	fmt.Printf("Version: %s\n", version.Version)
-	fmt.Printf("Commit: %s\n", version.CommitHash)
-	fmt.Printf("Date: %s\n", version.BuildDate)
-	fmt.Printf("Go Version: %s\n", runtime.Version())
-	fmt.Printf("GOOS: %s\n", runtime.GOOS)
-	fmt.Printf("GOARCH: %s\n", runtime.GOARCH)
+	v := version.Get()
+	outYaml, err := yaml.Marshal(v)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(outYaml))
 
 	return nil
 }
