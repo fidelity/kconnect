@@ -1,5 +1,5 @@
 ---
-title: proposal Template
+title: kconnect - The Kubernetes Connection Manager CLI
 authors:
   - "@richardcase"
 reviewers:
@@ -9,6 +9,8 @@ creation-date: 2020-06-07
 last-updated: 2020-06-19
 status: provisional
 see-also:
+replaces:
+superseded-by:
 ---
 
 # kconnect - The Kubernetes Connection Manager CLI
@@ -183,12 +185,12 @@ INFO[000]  Saved defaults                           file=/users/joe/.kconnect/co
 			"subscription_id": "1234567",
 			"region": "northeurope"
 		}
-	}	
+	}
 ]
 
 
 ~$ kconnect generate -u domain\joe -p pass12345 -c cluster12345 -p AWS -f ~/staging.kubeconfig
-INFO[000] Checking access to cluster	cluster=cluster12345,provider=AWS 
+INFO[000] Checking access to cluster	cluster=cluster12345,provider=AWS
 INFO[000] Kubeconfig written to file	file=~/staging.kubeconfig,cluster=cluster12345,provider=AWS
 
 
