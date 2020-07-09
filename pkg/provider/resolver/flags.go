@@ -16,7 +16,10 @@ limitations under the License.
 
 package resolver
 
-import "github.com/spf13/pflag"
+import (
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/urfave/cli/v2"
+)
 
 // FlagsResolver is used to resolve the values for flags interactively.
 // There will be a flags resolver for Azure, AWS and Rancher initially.
@@ -25,9 +28,5 @@ type FlagsResolver interface {
 	// Resolve will resolve the values for the supplied flags. It would interactively
 	// resolve the values by asking the user for selections. It will basically set the
 	// Value on each pflag.Flag
-	Resolve(identity Identity, flags []*pflag.Flag) error
+	Resolve(identity identity.Identity, flags []cli.Flag) error
 }
-
-type AzureFlagsResolver struct{}
-type AWSFlagsResolver struct{}
-type RancherFlagsResolver struct{}

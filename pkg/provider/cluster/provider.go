@@ -15,7 +15,10 @@ limitations under the License.
 */
 package cluster
 
-import "github.com/spf13/pflag"
+import (
+	"github.com/fidelity/kconnect/pkg/provider/resolver"
+	"github.com/urfave/cli/v2"
+)
 
 // ClusterProvider is the interface that is used to implement providers
 // of Kubernetes clusters. There will be implementations for AWS
@@ -24,22 +27,16 @@ import "github.com/spf13/pflag"
 // a kubeconfig (and any other files) that are required to access
 // a selected cluster.
 type ClusterProvider interface {
+	// Name is the name of the provider
+	Name() string
+
 	// Flags returns the list of CLI flags that are specific to the
 	// the provider
-	Flags() *pflag.FlagSet
+	Flags() []cli.Flag
 
-	// SupportedAuthorizers returns a list of authorizers thats this
-	// provider supports.
-	// NOTE: this doesn't need to be part of the interface and could
-	// handled by the cli itself
-	SupportedIdentityProviders() []string
+	FlagsResolver() resolver.FlagsResolver
 
-	// Discover will return a list of clusters for the user using the supplied identuty
-	Discover(identity interface{}, flags map[string]string) ([]*Cluster, error)
-
-	// Generate will generate the kubeconfig and any other associated files for
-	// connection to a cluster with a specific identifier
-	Generate(clusterId string) error
+	//Discover(identity identity.Identity, options map[string]string) (map[credentials][]clusters, error)
 }
 
 // Cluster represents the information about a discovered k8s cluster
@@ -52,8 +49,3 @@ type Cluster interface {
 
 	Region() string
 }
-
-// Sample cluster providers
-type AKSClusterProvider struct{}
-type EKSClusterProvider struct{}
-type RancherClusterprovider struct{}
