@@ -16,7 +16,7 @@ limitations under the License.
 package identity
 
 import (
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/pflag"
 )
 
 // IdentityProvider represents the interface used to implement an identity provider
@@ -27,8 +27,7 @@ type IdentityProvider interface {
 	Name() string
 
 	// Flags will return the flags as part of a flagset for the plugin
-	Flags() []cli.Flag
-
+	Flags() *pflag.FlagSet
 	// Authenticate will authenticate a user and return details of
 	// their identity.
 	Authenticate() (*Identity, error)
@@ -40,4 +39,5 @@ func NewIdentityProvider(name string) *IdentityProvider {
 	return nil
 }
 
-type Identity struct{}
+type Identity struct {
+}

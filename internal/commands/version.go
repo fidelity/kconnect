@@ -19,26 +19,25 @@ package commands
 import (
 	"fmt"
 
-	"github.com/urfave/cli/v2"
-	"gopkg.in/yaml.v2"
-
 	"github.com/fidelity/kconnect/internal/version"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
-var versionCmd = &cli.Command{
-	Name:  "version",
-	Usage: "Display version & build information",
-	Action: func(c *cli.Context) error {
-		return doVersion(c)
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Display version & build information",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return doVersion(cmd)
 	},
 }
 
 func init() {
 	// TODO: add any additional flags
-	App.Commands = append(App.Commands, versionCmd)
+	RootCmd.AddCommand(versionCmd)
 }
 
-func doVersion(c *cli.Context) error {
+func doVersion(c *cobra.Command) error {
 	v := version.Get()
 	outYaml, err := yaml.Marshal(v)
 	if err != nil {

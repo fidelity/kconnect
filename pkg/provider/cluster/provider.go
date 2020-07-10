@@ -17,7 +17,7 @@ package cluster
 
 import (
 	"github.com/fidelity/kconnect/pkg/provider/resolver"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/pflag"
 )
 
 // ClusterProvider is the interface that is used to implement providers
@@ -32,7 +32,7 @@ type ClusterProvider interface {
 
 	// Flags returns the list of CLI flags that are specific to the
 	// the provider
-	Flags() []cli.Flag
+	Flags() *pflag.FlagSet
 
 	FlagsResolver() resolver.FlagsResolver
 

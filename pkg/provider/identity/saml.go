@@ -1,6 +1,9 @@
 package identity
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/spf13/pflag"
+	"github.com/urfave/cli/v2"
+)
 
 type SAMLIdentityProvider struct {
 }
@@ -9,15 +12,11 @@ func (p *SAMLIdentityProvider) Name() string {
 	return "saml"
 }
 
-func (p *SAMLIdentityProvider) Flags() []cli.Flag {
+func (p *SAMLIdentityProvider) Flags() *pflag.FlagSet {
+	flagSet := &pflag.FlagSet{}
+	flagSet.String("idp-endpoint", "", "The SAML endpoint")
 
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:     "idp-endpoint",
-			Usage:    "specify the SAML endpoint",
-			Required: true,
-		},
-	}
+	return flagSet
 }
 
 func (p *SAMLIdentityProvider) Authenticate(flags *[]cli.Flag) (*Identity, error) {

@@ -18,7 +18,7 @@ package resolver
 
 import (
 	"github.com/fidelity/kconnect/pkg/provider/identity"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/pflag"
 )
 
 // FlagsResolver is used to resolve the values for flags interactively.
@@ -28,5 +28,17 @@ type FlagsResolver interface {
 	// Resolve will resolve the values for the supplied flags. It would interactively
 	// resolve the values by asking the user for selections. It will basically set the
 	// Value on each pflag.Flag
-	Resolve(identity identity.Identity, flags []cli.Flag) error
+	Resolve(identity identity.Identity, flags *pflag.FlagSet) error
 }
+
+type stringValue string
+
+func (s *stringValue) Set(val string) error {
+	*s = stringValue(val)
+	return nil
+}
+func (s *stringValue) Type() string {
+	return "string"
+}
+
+func (s *stringValue) String() string { return string(*s) }

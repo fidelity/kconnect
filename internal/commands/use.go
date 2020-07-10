@@ -17,80 +17,84 @@ limitations under the License.
 package commands
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"github.com/fidelity/kconnect/pkg/provider/cluster"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
-var useCmd = &cli.Command{
-	Name:  "use",
-	Usage: "connect to a target environment and use clusters",
-	OnUsageError: func(c *cli.Context, err error, isSubCommand bool) error {
-		fmt.Fprintf(c.App.Writer, "use command Error: %v", err)
+var (
+	//TODO: this is only temp. There needs to be a reistry
+	providers map[string]cluster.ClusterProvider
+)
+
+var useCmd = &cobra.Command{
+	Use:   "use",
+	Short: "connect to a target environment and use clusters",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("required provider name argument")
+		}
+		selectedProvider := providers[args[0]]
+		if selectedProvider == nil {
+			return fmt.Errorf("invalid provider: %s", args[0])
+		}
+
+		fmt.Printf("using provider %s\n", selectedProvider.Name())
+		cmd.Flags().AddFlagSet(selectedProvider.Flags())
 		return nil
 	},
-	Action: func(c *cli.Context) error {
-		fmt.Println("in the action of use NOT subcommand")
-		return nil
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		fakeIdentity := identity.Identity{}
+
+		selectedProvider := providers[args[0]]
+		return selectedProvider.FlagsResolver().Resolve(fakeIdentity, cmd.Flags())
 	},
-	Before: func(c *cli.Context) error {
-		return nil
+	RunE: func(cmd *cobra.Command, args []string) error {
+		selectedProvider := providers[args[0]]
+		return doUse(cmd, selectedProvider)
 	},
-	After: func(c *cli.Context) error {
-		return nil
-	},
-	SkipFlagParsing: true,
 }
 
 func init() {
 	// Add flags that are common across all
-	useCmd.Flags = commonUseFlags()
+	useCmd.Flags().AddFlagSet(commonUseFlags())
+	useCmd.MarkFlagRequired("username")
+
+	//useCmd.SetUsageFunc(usage)
 
 	//TODO: get from provider factory
-	providers := []cluster.ClusterProvider{&cluster.AKSClusterProvider{}}
+	providers = make(map[string]cluster.ClusterProvider)
+	providers["aks"] = &cluster.AKSClusterProvider{}
 
-	for _, provider := range providers {
-		providerCmd := &cli.Command{
-			Name:  provider.Name(),
-			Flags: provider.Flags(),
-			Usage: fmt.Sprintf("use the %s cluster provider", provider.Name()),
-			Action: func(c *cli.Context) error {
-				return doUse(c, provider)
-			},
-			OnUsageError: func(c *cli.Context, err error, isSubCommand bool) error {
-				fmt.Fprintf(c.App.Writer, "Provider Error: %v", err)
-				return nil
-			},
-			Before: func(c *cli.Context) error {
-				return nil
-			},
-			After: func(c *cli.Context) error {
-				return nil
-			},
-			SkipFlagParsing: true,
-		}
-
-		useCmd.Subcommands = append(useCmd.Subcommands, providerCmd)
-	}
-
-	// TODO: add any additional flags
-	App.Commands = append(App.Commands, useCmd)
+	RootCmd.AddCommand(useCmd)
 }
 
-func commonUseFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name: "username",
-			//Required: true,
-		},
-	}
+func usage(cmd *cobra.Command) error {
+	usage := cmd.UseLine()
+	fmt.Println(usage)
+
+	return nil
 }
 
-func doUse(c *cli.Context, provider cluster.ClusterProvider) error {
-	fmt.Println("In do Use")
+func commonUseFlags() *pflag.FlagSet {
+	flagSet := &pflag.FlagSet{}
+	flagSet.String("username", "", "the username used for authentication")
+
+	return flagSet
+}
+
+func doUse(c *cobra.Command, provider cluster.ClusterProvider) error {
+	fmt.Println("In do Use\n")
 	fmt.Printf("With provider: %s\n", provider.Name())
+
+	c.Flags().VisitAll(func(flag *pflag.Flag) {
+		fmt.Printf("flag %s = %s\n", flag.Name, flag.Value.String())
+	})
 
 	return nil
 }
