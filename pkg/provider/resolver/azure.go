@@ -33,10 +33,16 @@ func (r *AzureFlagsResolver) resolveResourceGroup(flag *pflag.Flag, flags *pflag
 	//TODO: azure client will be accessible
 	//TODO: query the azure API
 
-	//TODOOO: generate long list
+	// NOTE: testing creating a very long list
+	resourceGroups := []string{}
+	for i := 0; i < 100; i++ {
+		resourceGroupName := fmt.Sprintf("reg-test-%d", i)
+		resourceGroups = append(resourceGroups, resourceGroupName)
+	}
+
 	prompt := promptui.Select{
 		Label: "Resource group",
-		Items: []string{"rg-staging", "rg-dev"},
+		Items: resourceGroups,
 	}
 
 	_, result, err := prompt.Run()
