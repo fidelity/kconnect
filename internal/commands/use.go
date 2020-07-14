@@ -23,13 +23,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/fidelity/kconnect/pkg/provider/cluster"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/providers"
+	"github.com/fidelity/kconnect/pkg/providers/discovery/aws"
+	"github.com/fidelity/kconnect/pkg/providers/identity"
 )
 
 var (
 	//TODO: this is only temp. There needs to be a reistry
-	providers map[string]cluster.ClusterProvider
+	registeredProviders map[string]providers.ClusterProvider
 )
 
 var useCmd = &cobra.Command{
@@ -39,7 +40,7 @@ var useCmd = &cobra.Command{
 		if len(args) < 1 {
 			return errors.New("required provider name argument")
 		}
-		selectedProvider := providers[args[0]]
+		selectedProvider := registeredProviders[args[0]]
 		if selectedProvider == nil {
 			return fmt.Errorf("invalid provider: %s", args[0])
 		}
@@ -49,13 +50,13 @@ var useCmd = &cobra.Command{
 		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		fakeIdentity := identity.Identity{}
+		fakeIdentity := identity.EmptyIdentityProvider{}
 
-		selectedProvider := providers[args[0]]
+		selectedProvider := registeredProviders[args[0]]
 		return selectedProvider.FlagsResolver().Resolve(fakeIdentity, cmd.Flags())
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		selectedProvider := providers[args[0]]
+		selectedProvider := registeredProviders[args[0]]
 		return doUse(cmd, selectedProvider)
 	},
 }
@@ -68,8 +69,8 @@ func init() {
 	//useCmd.SetUsageFunc(usage)
 
 	//TODO: get from provider factory
-	providers = make(map[string]cluster.ClusterProvider)
-	providers["aks"] = &cluster.AKSClusterProvider{}
+	registeredProviders = make(map[string]providers.ClusterProvider)
+	registeredProviders["eks"] = &aws.EKSClusterProvider{}
 
 	RootCmd.AddCommand(useCmd)
 }
@@ -88,7 +89,7 @@ func commonUseFlags() *pflag.FlagSet {
 	return flagSet
 }
 
-func doUse(c *cobra.Command, provider cluster.ClusterProvider) error {
+func doUse(c *cobra.Command, provider providers.ClusterProvider) error {
 	fmt.Println("In do Use\n")
 	fmt.Printf("With provider: %s\n", provider.Name())
 

@@ -13,10 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cluster
+package providers
 
 import (
-	"github.com/fidelity/kconnect/pkg/provider/resolver"
 	"github.com/spf13/pflag"
 )
 
@@ -34,9 +33,33 @@ type ClusterProvider interface {
 	// the provider
 	Flags() *pflag.FlagSet
 
-	FlagsResolver() resolver.FlagsResolver
+	FlagsResolver() FlagsResolver
 
 	//Discover(identity identity.Identity, options map[string]string) (map[credentials][]clusters, error)
+}
+
+// FlagsResolver is used to resolve the values for flags interactively.
+// There will be a flags resolver for Azure, AWS and Rancher initially.
+type FlagsResolver interface {
+
+	// Resolve will resolve the values for the supplied flags. It would interactively
+	// resolve the values by asking the user for selections. It will basically set the
+	// Value on each pflag.Flag
+	Resolve(identity Identity, flags *pflag.FlagSet) error
+}
+
+// IdentityProvider represents the interface used to implement an identity provider
+// plugin. It provides authentication and authorization functionality.
+type IdentityProvider interface {
+	// Name returns the name of the plugin
+	Name() string
+
+	// Flags will return the flags as part of a flagset for the plugin
+	Flags() *pflag.FlagSet
+
+	// Authenticate will authenticate a user and return details of
+	// their identity.
+	Authenticate() (Identity, error)
 }
 
 // Cluster represents the information about a discovered k8s cluster
@@ -48,4 +71,9 @@ type Cluster interface {
 	ID() string
 
 	Region() string
+}
+
+// Identity represents a users identity for use with discovery.
+// NOTE: details of this need finalising
+type Identity interface {
 }
