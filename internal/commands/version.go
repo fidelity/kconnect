@@ -37,11 +37,11 @@ func init() {
 	RootCmd.AddCommand(versionCmd)
 }
 
-func doVersion(c *cobra.Command) error {
+func doVersion(_ *cobra.Command) error {
 	v := version.Get()
 	outYaml, err := yaml.Marshal(v)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshalling version information: %w", err)
 	}
 	fmt.Println(string(outYaml))
 

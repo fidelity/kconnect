@@ -39,3 +39,8 @@ func (p *EKSClusterProvider) Flags() *pflag.FlagSet {
 func (p *EKSClusterProvider) FlagsResolver() providers.FlagsResolver {
 	return &FlagsResolver{}
 }
+
+// Usage returns a description for use in the help/usage
+func (p *EKSClusterProvider) Usage() string {
+	return "discover and connect to AWS EKS clusters"
+}

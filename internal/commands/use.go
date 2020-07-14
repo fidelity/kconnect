@@ -19,6 +19,9 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+	"unicode"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -31,6 +34,9 @@ import (
 var (
 	//TODO: this is only temp. There needs to be a reistry
 	registeredProviders map[string]providers.ClusterProvider
+
+	errMissingProvider = errors.New("required provider name argument")
+	errInvalidProvider = errors.New("invalid provider")
 )
 
 var useCmd = &cobra.Command{
@@ -38,11 +44,11 @@ var useCmd = &cobra.Command{
 	Short: "connect to a target environment and use clusters",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("required provider name argument")
+			return errMissingProvider
 		}
 		selectedProvider := registeredProviders[args[0]]
 		if selectedProvider == nil {
-			return fmt.Errorf("invalid provider: %s", args[0])
+			return fmt.Errorf("invalid provider %s: %w", args[0], errInvalidProvider)
 		}
 
 		fmt.Printf("using provider %s\n", selectedProvider.Name())
@@ -64,9 +70,13 @@ var useCmd = &cobra.Command{
 func init() {
 	// Add flags that are common across all
 	useCmd.Flags().AddFlagSet(commonUseFlags())
-	useCmd.MarkFlagRequired("username")
+	err := useCmd.MarkFlagRequired("username")
+	if err != nil {
+		fmt.Printf("error marking username required: %s\n", err.Error())
+		os.Exit(1)
+	}
 
-	//useCmd.SetUsageFunc(usage)
+	useCmd.SetUsageFunc(usage)
 
 	//TODO: get from provider factory
 	registeredProviders = make(map[string]providers.ClusterProvider)
@@ -76,8 +86,31 @@ func init() {
 }
 
 func usage(cmd *cobra.Command) error {
-	usage := cmd.UseLine()
-	fmt.Println(usage)
+	//usage := cmd.UseLine()
+	usage := []string{fmt.Sprintf("Usage: %s %s [provider] [flags]", cmd.Parent().CommandPath(), cmd.Use)}
+
+	usage = append(usage, "\nProviders:")
+	for _, provider := range registeredProviders {
+		line := fmt.Sprintf("      %s - %s", provider.Name(), provider.Usage())
+		usage = append(usage, strings.TrimRightFunc(line, unicode.IsSpace))
+	}
+
+	for _, provider := range registeredProviders {
+		if provider.Flags() != nil {
+			usage = append(usage, fmt.Sprintf("\n%s provider flags:", provider.Name()))
+			usage = append(usage, strings.TrimRightFunc(provider.Flags().FlagUsages(), unicode.IsSpace))
+		}
+	}
+
+	usage = append(usage, "\nCommon Flags:")
+	if len(cmd.PersistentFlags().FlagUsages()) != 0 {
+		usage = append(usage, strings.TrimRightFunc(cmd.PersistentFlags().FlagUsages(), unicode.IsSpace))
+	}
+	if len(cmd.InheritedFlags().FlagUsages()) != 0 {
+		usage = append(usage, strings.TrimRightFunc(cmd.InheritedFlags().FlagUsages(), unicode.IsSpace))
+	}
+
+	fmt.Println(strings.Join(usage, "\n"))
 
 	return nil
 }
@@ -90,7 +123,7 @@ func commonUseFlags() *pflag.FlagSet {
 }
 
 func doUse(c *cobra.Command, provider providers.ClusterProvider) error {
-	fmt.Println("In do Use\n")
+	fmt.Println("In do Use")
 	fmt.Printf("With provider: %s\n", provider.Name())
 
 	c.Flags().VisitAll(func(flag *pflag.Flag) {

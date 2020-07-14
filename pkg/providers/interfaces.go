@@ -26,12 +26,7 @@ import (
 // a kubeconfig (and any other files) that are required to access
 // a selected cluster.
 type ClusterProvider interface {
-	// Name is the name of the provider
-	Name() string
-
-	// Flags returns the list of CLI flags that are specific to the
-	// the provider
-	Flags() *pflag.FlagSet
+	Plugin
 
 	FlagsResolver() FlagsResolver
 
@@ -51,11 +46,7 @@ type FlagsResolver interface {
 // IdentityProvider represents the interface used to implement an identity provider
 // plugin. It provides authentication and authorization functionality.
 type IdentityProvider interface {
-	// Name returns the name of the plugin
-	Name() string
-
-	// Flags will return the flags as part of a flagset for the plugin
-	Flags() *pflag.FlagSet
+	Plugin
 
 	// Authenticate will authenticate a user and return details of
 	// their identity.
@@ -76,4 +67,16 @@ type Cluster interface {
 // Identity represents a users identity for use with discovery.
 // NOTE: details of this need finalising
 type Identity interface {
+}
+
+// Plugin is an interface that can be implemented for returned usage information
+type Plugin interface {
+	// Name returns the name of the plugin
+	Name() string
+
+	// Flags will return the flags as part of a flagset for the plugin
+	Flags() *pflag.FlagSet
+
+	// Usage returns a string to display for help
+	Usage() string
 }
