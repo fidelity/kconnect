@@ -13,37 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-package commands
+package aws
 
 import (
-	"fmt"
-
-	"github.com/fidelity/kconnect/internal/version"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"github.com/fidelity/kconnect/pkg/providers"
+	"github.com/spf13/pflag"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display version & build information",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return doVersion(cmd)
-	},
+// AWSFlagsResolver is used to resolve the values for AWS related flags interactively.
+type FlagsResolver struct {
 }
 
-func init() {
-	// TODO: add any additional flags
-	RootCmd.AddCommand(versionCmd)
-}
-
-func doVersion(_ *cobra.Command) error {
-	v := version.Get()
-	outYaml, err := yaml.Marshal(v)
-	if err != nil {
-		return fmt.Errorf("marshalling version information: %w", err)
-	}
-	fmt.Println(string(outYaml))
-
+// Resolve will resolve the values for the AWS specific flags that have no value. It will
+// query AWS and interactively ask the user for selections.
+func (r *FlagsResolver) Resolve(identity providers.Identity, flags *pflag.FlagSet) error {
 	return nil
 }
