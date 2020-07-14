@@ -20,12 +20,13 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// AWSFlagsResolver is used to resolve the values for AWS related flags interactively.
+// FlagsResolver is used to resolve the values for AWS related flags interactively.
 type FlagsResolver struct {
 }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
 func (r *FlagsResolver) Resolve(identity providers.Identity, flags *pflag.FlagSet) error {
+
 	return nil
 }

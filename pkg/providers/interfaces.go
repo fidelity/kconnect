@@ -30,7 +30,9 @@ type ClusterProvider interface {
 
 	FlagsResolver() FlagsResolver
 
-	//Discover(identity identity.Identity, options map[string]string) (map[credentials][]clusters, error)
+	// NOTE: this needs to return something like map[credentials][]clusters
+	// and also have identity and options passed in
+	Discover() error
 }
 
 // FlagsResolver is used to resolve the values for flags interactively.

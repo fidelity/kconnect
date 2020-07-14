@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package commands
+package use
 
 import (
 	"errors"
@@ -24,8 +24,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/fidelity/kconnect/internal/flags"
 	"github.com/fidelity/kconnect/pkg/providers"
@@ -48,7 +46,7 @@ type useCmdParams struct {
 	Provider   providers.ClusterProvider
 }
 
-// Command creates the cobra command for use
+// Command creates the use command
 func Command() *cobra.Command {
 	params := &useCmdParams{}
 
@@ -122,18 +120,6 @@ func usage(cmd *cobra.Command) error {
 	fmt.Println(strings.Join(usage, "\n"))
 
 	return nil
-}
-
-func commonUseFlags() *pflag.FlagSet {
-	clientcmd.DefaultClientConfig.ConfigAccess().GetDefaultFilename()
-	flagSet := &pflag.FlagSet{}
-	flagSet.String("username", "", "the username used for authentication")
-	flagSet.String("password", "", "the password to use for authentication")
-
-	pathOptions := clientcmd.NewDefaultPathOptions()
-	flagSet.StringP("kubeconfig", "k", pathOptions.GetDefaultFilename(), "location of the kubeconfig to use")
-
-	return flagSet
 }
 
 func doUse(c *cobra.Command, params *useCmdParams) error {

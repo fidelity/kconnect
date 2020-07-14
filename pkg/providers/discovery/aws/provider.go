@@ -22,7 +22,11 @@ import (
 
 // EKSClusterProvider will discover EKS clusters in AWS
 type EKSClusterProvider struct {
-	//Discover(identity identity.Identity, options map[string]string) (map[credentials][]clusters, error)
+	region     *string
+	profile    *string
+	roleArn    *string
+	roleFilter *string
+	cluster    *string
 }
 
 // Name returns the name of the provider
@@ -32,7 +36,14 @@ func (p *EKSClusterProvider) Name() string {
 
 // Flags returns the flags for this provider
 func (p *EKSClusterProvider) Flags() *pflag.FlagSet {
-	return nil
+	flags := &pflag.FlagSet{}
+	p.region = flags.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2")
+	p.profile = flags.String("profile", "", "AWS profile to use")
+	p.roleArn = flags.String("role-arn", "", "ARN of the AWS role to be assumed")
+	p.roleFilter = flags.String("role-filter", "*EKS*", "A filter to apply to the roles list")
+	p.cluster = flags.StringP("cluster", "c", "", "Name of a EKS cluster to use.")
+
+	return flags
 }
 
 // FlagsResolver returns the resolver to use for flags with this provider
@@ -43,4 +54,8 @@ func (p *EKSClusterProvider) FlagsResolver() providers.FlagsResolver {
 // Usage returns a description for use in the help/usage
 func (p *EKSClusterProvider) Usage() string {
 	return "discover and connect to AWS EKS clusters"
+}
+
+func (p *EKSClusterProvider) Discover() error {
+	return nil
 }

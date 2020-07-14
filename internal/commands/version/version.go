@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package commands
+package version
 
 import (
 	"fmt"
@@ -24,17 +24,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display version & build information",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return doVersion(cmd)
-	},
-}
+//Command creates the version cobra command
+func Command() *cobra.Command {
+	versionCmd := &cobra.Command{
+		Use:   "version",
+		Short: "Display version & build information",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return doVersion(cmd)
+		},
+	}
 
-func init() {
-	// TODO: add any additional flags
-	RootCmd.AddCommand(versionCmd)
+	return versionCmd
 }
 
 func doVersion(_ *cobra.Command) error {
