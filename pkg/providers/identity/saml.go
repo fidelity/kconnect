@@ -21,30 +21,41 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// EmptyIdentityProvider is an identity provider that does nothing. Its used for testing
-type EmptyIdentityProvider struct {
+type SAMLIdentityProvider struct {
+	idpEndpoint *string
+	username    *string
+	password    *string
+
+	flags *pflag.FlagSet
 }
 
-// EmptyIdentity is a empty empty returned from the EmptyIdentityProvider
-type EmptyIdentity struct {
+type SAMLIdentity struct {
 }
 
 // Name returns the name of the plugin
-func (p *EmptyIdentityProvider) Name() string {
-	return "Empty Identity Provider"
+func (p *SAMLIdentityProvider) Name() string {
+	return "saml"
 }
 
 // Flags will return the flags for this plugin
-func (p *EmptyIdentityProvider) Flags() *pflag.FlagSet {
-	return nil
+func (p *SAMLIdentityProvider) Flags() *pflag.FlagSet {
+	if p.flags == nil {
+		p.flags = &pflag.FlagSet{}
+		p.idpEndpoint = p.flags.String("idp-endpoint", "", "identity provider endpoint provided by your IT team")
+
+		p.username = p.flags.String("username", "", "the username used for authentication")
+		p.password = p.flags.String("password", "", "the password to use for authentication")
+	}
+
+	return p.flags
 }
 
 // Authenticate will authenticate a user and returns their identity
-func (p *EmptyIdentityProvider) Authenticate() (providers.Identity, error) {
-	return &EmptyIdentity{}, nil
+func (p *SAMLIdentityProvider) Authenticate() (providers.Identity, error) {
+	return &SAMLIdentity{}, nil
 }
 
 // Usage returns a description for use in the help/usage
-func (p *EmptyIdentityProvider) Usage() string {
-	return "an identity provider that does nothing"
+func (p *SAMLIdentityProvider) Usage() string {
+	return "SAML Idp authentication"
 }

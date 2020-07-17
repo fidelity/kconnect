@@ -19,14 +19,14 @@ package commands
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
 	"github.com/fidelity/kconnect/pkg/logging"
-	"github.com/kris-nova/logger"
+
 	home "github.com/mitchellh/go-homedir"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -38,24 +38,23 @@ var (
 	logFormat  string
 )
 
-func Execute() {
-
+// Execute setups and starts the root kconnect command
+func Execute() error {
 	rootCmd := &cobra.Command{
 		Use:   "kconnect",
 		Short: "The Kubernetes Connection Manager CLI",
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
-				logger.Debug("ignoring cobra error %q", err.Error())
+				log.Debugf("ignoring cobra error %q", err.Error())
 			}
 		},
-		PreRunE: func(_ *cobra.Command, _ []string) error {
-			return logging.Configure(logLevel, logFormat)
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
 		},
-		SilenceUsage: true,
 	}
 
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file (defaults to $HOME/.kconnect/config")
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", logrus.InfoLevel.String(), "Log level for the CLI. Defaults to INFO")
+	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.InfoLevel.String(), "Log level for the CLI. Defaults to INFO")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "TEXT", "Format of the log output. Defaults to text.")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
@@ -64,10 +63,16 @@ func Execute() {
 
 	cobra.OnInitialize(initConfig)
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	err := logging.Configure(logLevel, logFormat)
+	if err != nil {
+		return fmt.Errorf("configuring logging: %w", err)
 	}
+
+	if err := rootCmd.Execute(); err != nil {
+		return fmt.Errorf("executing root command: %w", err)
+	}
+
+	return nil
 }
 
 func initConfig() {

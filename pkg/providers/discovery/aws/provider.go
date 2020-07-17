@@ -27,6 +27,8 @@ type EKSClusterProvider struct {
 	roleArn    *string
 	roleFilter *string
 	cluster    *string
+
+	flags *pflag.FlagSet
 }
 
 // Name returns the name of the provider
@@ -36,14 +38,16 @@ func (p *EKSClusterProvider) Name() string {
 
 // Flags returns the flags for this provider
 func (p *EKSClusterProvider) Flags() *pflag.FlagSet {
-	flags := &pflag.FlagSet{}
-	p.region = flags.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2")
-	p.profile = flags.String("profile", "", "AWS profile to use")
-	p.roleArn = flags.String("role-arn", "", "ARN of the AWS role to be assumed")
-	p.roleFilter = flags.String("role-filter", "*EKS*", "A filter to apply to the roles list")
-	p.cluster = flags.StringP("cluster", "c", "", "Name of a EKS cluster to use.")
+	if p.flags == nil {
+		p.flags = &pflag.FlagSet{}
+		p.region = p.flags.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2")
+		p.profile = p.flags.String("profile", "", "AWS profile to use")
+		p.roleArn = p.flags.String("role-arn", "", "ARN of the AWS role to be assumed")
+		p.roleFilter = p.flags.String("role-filter", "*EKS*", "A filter to apply to the roles list")
+		p.cluster = p.flags.StringP("cluster", "c", "", "Name of a EKS cluster to use.")
+	}
 
-	return flags
+	return p.flags
 }
 
 // FlagsResolver returns the resolver to use for flags with this provider

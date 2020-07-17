@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,15 +34,14 @@ func Configure(logLevel, logFormat string) error {
 		if err != nil {
 			return fmt.Errorf("setting log level to %s: %w", logLevel, err)
 		}
-		logrus.SetLevel(level)
+		log.SetLevel(level)
 	}
 
 	switch strings.ToUpper(logFormat) {
 	case "TEXT":
-		logrus.SetFormatter(&log.TextFormatter{FullTimestamp: true})
-		break
+		log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	case "JSON":
-		logrus.SetFormatter(&log.JSONFormatter{})
+		log.SetFormatter(&log.JSONFormatter{})
 	default:
 		return fmt.Errorf("setting log output to %s: %w", logFormat, errInvalidFomat)
 	}

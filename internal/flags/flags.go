@@ -25,10 +25,17 @@ import (
 
 // AddCommonIdentityFlags will add common identity related flags to a command
 func AddCommonIdentityFlags(cmd *cobra.Command, username, password *string) {
+	flagSet := CommonIdentityFlagSet(username, password)
+	cmd.Flags().AddFlagSet(flagSet)
+}
+
+// CommonIdentityFlagSet creates a flagset with the common identity flags
+func CommonIdentityFlagSet(username, password *string) *pflag.FlagSet {
 	flagSet := &pflag.FlagSet{}
 	flagSet.StringVar(username, "username", "", "the username used for authentication")
 	flagSet.StringVar(password, "password", "", "the password to use for authentication")
-	cmd.Flags().AddFlagSet(flagSet)
+
+	return flagSet
 }
 
 // AddKubeconfigFlag will add the kubeconfig flag to a command

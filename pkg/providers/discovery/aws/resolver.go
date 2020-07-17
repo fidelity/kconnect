@@ -16,17 +16,42 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/fidelity/kconnect/pkg/providers"
 	"github.com/spf13/pflag"
 )
 
+var (
+	errNoRoleArnFlag = errors.New("no role-arn flag found in resolver")
+)
+
 // FlagsResolver is used to resolve the values for AWS related flags interactively.
 type FlagsResolver struct {
+	identity providers.Identity
 }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
 func (r *FlagsResolver) Resolve(identity providers.Identity, flags *pflag.FlagSet) error {
+	r.identity = identity
+
+	if err := r.resolveRoleArn(flags); err != nil {
+		return fmt.Errorf("resolving role-arn: %w", err)
+	}
+
+	return nil
+}
+
+func (r *FlagsResolver) resolveRoleArn(flags *pflag.FlagSet) error {
+	flag := flags.Lookup("role-arn")
+	if flag == nil {
+		return errNoRoleArnFlag
+	}
+	if flag.Value.String() != "" {
+		return nil
+	}
 
 	return nil
 }

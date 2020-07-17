@@ -17,9 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/fidelity/kconnect/internal/commands"
 )
 
 func main() {
-	commands.Execute()
+	if err := commands.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	os.Exit(0)
 }
