@@ -14,32 +14,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package identity
+package saml
 
 import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 
 	"github.com/beevik/etree"
-	"github.com/fidelity/kconnect/pkg/providers"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws"
 	"github.com/versent/saml2aws/pkg/awsconfig"
 	"github.com/versent/saml2aws/pkg/cfg"
 	"github.com/versent/saml2aws/pkg/creds"
+
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 const (
 	responseTag = "Response"
 )
 
-type SAMLIdentityProvider struct {
+func init() {
+	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
+		// TODO: handle fatal error
+		log.Fatalf("Failed to register SAML identity provider plugin: %w", err)
+	}
+}
+
+func newSAMLProvider() *samlIdentityProvider {
+	return &samlIdentityProvider{}
+}
+
+type samlIdentityProvider struct {
 	idpEndpoint *string
 	idpProvider *string
 	username    *string
@@ -63,12 +75,12 @@ func (i *AWSIdentity) Profile() string {
 }
 
 // Name returns the name of the plugin
-func (p *SAMLIdentityProvider) Name() string {
+func (p *samlIdentityProvider) Name() string {
 	return "saml"
 }
 
 // Flags will return the flags for this plugin
-func (p *SAMLIdentityProvider) Flags() *pflag.FlagSet {
+func (p *samlIdentityProvider) Flags() *pflag.FlagSet {
 	if p.flags == nil {
 		p.flags = &pflag.FlagSet{}
 		p.idpEndpoint = p.flags.String("idp-endpoint", "", "identity provider endpoint provided by your IT team")
@@ -82,7 +94,7 @@ func (p *SAMLIdentityProvider) Flags() *pflag.FlagSet {
 }
 
 // Authenticate will authenticate a user and returns their identity
-func (p *SAMLIdentityProvider) Authenticate() (providers.Identity, error) {
+func (p *samlIdentityProvider) Authenticate() (provider.Identity, error) {
 	// cfmgr, err := cfg.NewConfigManager("")
 	// if err != nil {
 	// 	return nil, fmt.Errorf("getting config manager: %w", err)
@@ -186,7 +198,7 @@ func (p *SAMLIdentityProvider) Authenticate() (providers.Identity, error) {
 	return NewAWSIdentity(account.Profile), nil
 }
 
-func (p *SAMLIdentityProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
+func (p *samlIdentityProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
 	var role = new(saml2aws.AWSRole)
 
 	if len(awsRoles) == 1 {
@@ -205,7 +217,7 @@ func (p *SAMLIdentityProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAss
 		return nil, err
 	}
 
-	aud, err := ExtractDestinationURL(samlAssertionData)
+	aud, err := extractDestinationURL(samlAssertionData)
 	if err != nil {
 		//TODO: return a better error
 		return nil, fmt.Errorf("extracting destination utl: %w", err)
@@ -238,7 +250,7 @@ func (p *SAMLIdentityProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAss
 }
 
 // Usage returns a description for use in the help/usage
-func (p *SAMLIdentityProvider) Usage() string {
+func (p *samlIdentityProvider) Usage() string {
 	return "SAML Idp authentication"
 }
 
@@ -278,7 +290,7 @@ func loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAs
 }
 
 // TODO: use the version form saml2aws when modules are fixed
-func ExtractDestinationURL(data []byte) (string, error) {
+func extractDestinationURL(data []byte) (string, error) {
 
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes(data); err != nil {

@@ -16,12 +16,24 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/fidelity/kconnect/pkg/providers"
+	"github.com/fidelity/kconnect/pkg/provider"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 )
 
+func init() {
+	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
+		// TODO: handle fatal error
+		log.Fatalf("Failed to register EKS cluster provider plugin: %w", err)
+	}
+}
+
+func newEKSProvider() *eksClusterProvider {
+	return &eksClusterProvider{}
+}
+
 // EKSClusterProvider will discover EKS clusters in AWS
-type EKSClusterProvider struct {
+type eksClusterProvider struct {
 	region     *string
 	profile    *string
 	roleArn    *string
@@ -32,12 +44,12 @@ type EKSClusterProvider struct {
 }
 
 // Name returns the name of the provider
-func (p *EKSClusterProvider) Name() string {
+func (p *eksClusterProvider) Name() string {
 	return "eks"
 }
 
 // Flags returns the flags for this provider
-func (p *EKSClusterProvider) Flags() *pflag.FlagSet {
+func (p *eksClusterProvider) Flags() *pflag.FlagSet {
 	if p.flags == nil {
 		p.flags = &pflag.FlagSet{}
 		p.region = p.flags.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2")
@@ -51,15 +63,15 @@ func (p *EKSClusterProvider) Flags() *pflag.FlagSet {
 }
 
 // FlagsResolver returns the resolver to use for flags with this provider
-func (p *EKSClusterProvider) FlagsResolver() providers.FlagsResolver {
+func (p *eksClusterProvider) FlagsResolver() provider.FlagsResolver {
 	return &FlagsResolver{}
 }
 
 // Usage returns a description for use in the help/usage
-func (p *EKSClusterProvider) Usage() string {
+func (p *eksClusterProvider) Usage() string {
 	return "discover and connect to AWS EKS clusters"
 }
 
-func (p *EKSClusterProvider) Discover() error {
+func (p *eksClusterProvider) Discover() error {
 	return nil
 }

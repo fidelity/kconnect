@@ -25,8 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 
-	"github.com/fidelity/kconnect/pkg/providers"
-	idprov "github.com/fidelity/kconnect/pkg/providers/identity"
+	idprov "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
+	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/spf13/pflag"
 )
 
@@ -42,7 +42,7 @@ type FlagsResolver struct {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (r *FlagsResolver) Resolve(identity providers.Identity, flags *pflag.FlagSet) error {
+func (r *FlagsResolver) Resolve(identity provider.Identity, flags *pflag.FlagSet) error {
 	r.id = identity.(*idprov.AWSIdentity)
 
 	session, err := session.NewSession(&aws.Config{

@@ -28,8 +28,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/fidelity/kconnect/internal/flags"
-	"github.com/fidelity/kconnect/pkg/providers"
-	"github.com/fidelity/kconnect/pkg/providers/registry"
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 var (
@@ -43,8 +42,8 @@ type useCmdParams struct {
 	Kubeconfig       string
 	IdpProtocol      string
 	IdpEndpoint      string
-	Provider         providers.ClusterProvider
-	IdentityProvider providers.IdentityProvider
+	Provider         provider.ClusterProvider
+	IdentityProvider provider.IdentityProvider
 }
 
 // Command creates the use command
@@ -60,8 +59,7 @@ func Command() *cobra.Command {
 				return errMissingProvider
 			}
 
-			factory := registry.NewProviderFactory()
-			selectedProvider, err := factory.CreateClusterProvider(args[0])
+			selectedProvider, err := provider.GetClusterProvider(args[0])
 			if err != nil {
 				return fmt.Errorf("creating cluster provider %s: %w", args[0], err)
 			}
@@ -74,7 +72,7 @@ func Command() *cobra.Command {
 			if idpProtocol == "" {
 				return errMissingIdpProtocol
 			}
-			idProvider, err := factory.CreateIdentityProvider(idpProtocol)
+			idProvider, err := provider.GetIdentityProvider(idpProtocol)
 			if err != nil {
 				return fmt.Errorf("creating identity provider %s: %w", idpProtocol, err)
 			}
@@ -109,8 +107,7 @@ func usage(cmd *cobra.Command) error {
 	//usage := cmd.UseLine()
 	usage := []string{fmt.Sprintf("Usage: %s %s [provider] [flags]", cmd.Parent().CommandPath(), cmd.Use)}
 
-	factory := registry.NewProviderFactory()
-	providers := factory.ListClusterProviders()
+	providers := provider.ListClusterProviders()
 	usage = append(usage, "\nProviders:")
 	for _, provider := range providers {
 		line := fmt.Sprintf("      %s - %s", provider.Name(), provider.Usage())
