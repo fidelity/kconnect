@@ -80,7 +80,6 @@ func (kc *KubeCfgClient) ModifyConfig(newConfig *clientcmdapi.Config, opts ...Mo
 	for _, opt := range opts {
 		opt(config)
 	}
-
 	if err := clientcmd.Validate(*newConfig) ; err != nil {
 		return fmt.Errorf("error while trying to validate given config %w", err)
 	}
@@ -105,7 +104,7 @@ func (kc *KubeCfgClient) ModifyConfig(newConfig *clientcmdapi.Config, opts ...Mo
 		}
 	}
 
-	err = clientcmd.ModifyConfig(kc.cfgAccess, *newConfig, kc.RelativizePath)
+	err = clientcmd.ModifyConfig(kc.cfgAccess, *currentConfig, kc.RelativizePath)
 	if err !=nil {
 		fmt.Errorf("unable to modify kubeconfig at %s %w",kc.path, err)
 	}
