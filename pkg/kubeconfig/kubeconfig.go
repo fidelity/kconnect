@@ -60,6 +60,14 @@ func (kc *KubeCfgClient) GetConfig() (*clientcmdapi.Config, error) {
 	return kc.cfgAccess.GetStartingConfig()
 }
 
+func (kc *KubeCfgClient) GetConfigAsBytes() ([]byte, error) {
+	currentConfig, err := kc.cfgAccess.GetStartingConfig()
+	if err != nil {
+		return nil, fmt.Errorf("unable to read kubeconfig file at %s %w", kc.path, err)
+	}
+	return clientcmd.Write(*currentConfig)
+}
+
 type ModifyConfigOptions func(*Config)
 
 func WithOverride(c *Config)  {
