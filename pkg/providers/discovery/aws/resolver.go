@@ -19,7 +19,14 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
+	awsclient "github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
+
 	"github.com/fidelity/kconnect/pkg/providers"
+	idprov "github.com/fidelity/kconnect/pkg/providers/identity"
 	"github.com/spf13/pflag"
 )
 
@@ -29,13 +36,23 @@ var (
 
 // FlagsResolver is used to resolve the values for AWS related flags interactively.
 type FlagsResolver struct {
-	identity providers.Identity
+	id      *idprov.AWSIdentity
+	session awsclient.ConfigProvider
 }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
 func (r *FlagsResolver) Resolve(identity providers.Identity, flags *pflag.FlagSet) error {
-	r.identity = identity
+	r.id = identity.(*idprov.AWSIdentity)
+
+	session, err := session.NewSession(&aws.Config{
+		Region:      aws.String("eu-west-2"),
+		Credentials: credentials.NewSharedCredentials("", r.id.Profile()),
+	})
+	if err != nil {
+		return fmt.Errorf("getting aws session: %w", err)
+	}
+	r.session = session
 
 	if err := r.resolveRoleArn(flags); err != nil {
 		return fmt.Errorf("resolving role-arn: %w", err)
@@ -52,6 +69,24 @@ func (r *FlagsResolver) resolveRoleArn(flags *pflag.FlagSet) error {
 	if flag.Value.String() != "" {
 		return nil
 	}
+
+	iamClient := newIAMClient(r.session)
+
+	input := &iam.ListRolesInput{}
+
+	roles := []*iam.Role{}
+	err := iamClient.ListRolesPages(input, func(page *iam.ListRolesOutput, lastPage bool) bool {
+		for _, role := range page.Roles {
+			//TODO: apply the filter
+			roles = append(roles, role)
+		}
+		return true
+	})
+	if err != nil {
+		return fmt.Errorf("listing iam roles: %w", err)
+	}
+
+	//TODO: prompt user
 
 	return nil
 }

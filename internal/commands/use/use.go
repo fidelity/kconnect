@@ -138,6 +138,8 @@ func usage(cmd *cobra.Command) error {
 }
 
 func doUse(c *cobra.Command, params *useCmdParams) error {
+	log.WithField("command", "use")
+
 	provider := params.Provider
 
 	err := provider.Discover()
