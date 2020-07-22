@@ -10,16 +10,21 @@ on:
       - reopened
 
 jobs:
-  titlecheck:
-    name: pr title checker
-
-    # The type of runner that the job will run on
+  wipcheck:
+    name: Check if work-in-progress
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    # Block if WIP
+    - name: check WIP
+      uses: wip/action@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Checks the title of the PR
+  titlecheck:
+    name: PR title follows coventional commit
+    needs: wipcheck
+    runs-on: ubuntu-latest
+    steps:
     - name: Check conventinal title
       uses: aslafy-z/conventional-pr-title-action@master
       with:
@@ -27,11 +32,5 @@ jobs:
         failure-state: Title does not follow the specification.
         context-name: conventional-pr-title
         preset: conventional-changelog-angular@latest
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Block if WIP
-    - name: check WIP
-      uses: wip/action@v1.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
