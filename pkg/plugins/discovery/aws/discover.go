@@ -55,7 +55,7 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 		return nil
 	}
 
-	logger.Debug("found clusters: %s", clusters)
+	logger.Debugf("found clusters: %#v", clusters)
 
 	// Prompt user to select cluster
 
