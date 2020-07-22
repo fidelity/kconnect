@@ -33,17 +33,17 @@ type ClusterProvider interface {
 
 	// NOTE: this needs to return something like map[credentials][]clusters
 	// and also have identity and options passed in
-	Discover() error
+	Discover(ctx *Context, identity Identity) error
 }
 
 // FlagsResolver is used to resolve the values for flags interactively.
 // There will be a flags resolver for Azure, AWS and Rancher initially.
 type FlagsResolver interface {
 
-	// Resolve will resolve the values for the supplied flags. It would interactively
+	// Resolve will resolve the values for the supplied context. It will interactively
 	// resolve the values by asking the user for selections. It will basically set the
 	// Value on each pflag.Flag
-	Resolve(identity Identity, flags *pflag.FlagSet) error
+	Resolve(ctx *Context, identity Identity) error
 }
 
 // IdentityProvider represents the interface used to implement an identity provider
@@ -53,7 +53,7 @@ type IdentityProvider interface {
 
 	// Authenticate will authenticate a user and return details of
 	// their identity.
-	Authenticate() (Identity, error)
+	Authenticate(ctx *Context) (Identity, error)
 }
 
 // Cluster represents the information about a discovered k8s cluster

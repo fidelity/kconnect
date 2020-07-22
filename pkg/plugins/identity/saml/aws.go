@@ -14,21 +14,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
-
-import (
-	"fmt"
-	"os"
-
-	"github.com/fidelity/kconnect/internal/commands"
-	_ "github.com/fidelity/kconnect/pkg/plugins" // Import all the plugins
-)
-
-func main() {
-	if err := commands.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	os.Exit(0)
-}
+package saml

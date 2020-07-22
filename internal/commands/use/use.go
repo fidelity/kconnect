@@ -34,6 +34,8 @@ import (
 var (
 	errMissingProvider    = errors.New("required provider name argument")
 	errMissingIdpProtocol = errors.New("missing idp protocol, please use --idp-protocol")
+
+	logger = log.WithField("command", "use")
 )
 
 type useCmdParams struct {
@@ -44,6 +46,8 @@ type useCmdParams struct {
 	IdpEndpoint      string
 	Provider         provider.ClusterProvider
 	IdentityProvider provider.IdentityProvider
+	Identity         provider.Identity
+	Context          *provider.Context
 }
 
 // Command creates the use command
@@ -58,6 +62,8 @@ func Command() *cobra.Command {
 			if len(args) < 1 {
 				return errMissingProvider
 			}
+
+			params.Context = provider.NewContext(nil, cmd, logger)
 
 			selectedProvider, err := provider.GetClusterProvider(args[0])
 			if err != nil {
@@ -83,12 +89,13 @@ func Command() *cobra.Command {
 			return nil
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			identity, err := params.IdentityProvider.Authenticate()
+			identity, err := params.IdentityProvider.Authenticate(params.Context)
 			if err != nil {
 				return fmt.Errorf("authenticating using provider %s: %w", params.IdentityProvider.Name(), err)
 			}
+			params.Identity = identity
 
-			return params.Provider.FlagsResolver().Resolve(identity, cmd.Flags())
+			return params.Provider.FlagsResolver().Resolve(params.Context, identity)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doUse(cmd, params)
@@ -135,11 +142,11 @@ func usage(cmd *cobra.Command) error {
 }
 
 func doUse(c *cobra.Command, params *useCmdParams) error {
-	log.WithField("command", "use")
+	logger.Info("Executing command")
 
 	provider := params.Provider
 
-	err := provider.Discover()
+	err := provider.Discover(params.Context, params.Identity)
 	if err != nil {
 		return fmt.Errorf("discovering clusters using %s: %w", provider.Name(), err)
 	}

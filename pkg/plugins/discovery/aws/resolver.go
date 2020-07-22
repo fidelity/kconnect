@@ -25,9 +25,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+
 	idprov "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/spf13/pflag"
 )
 
 var (
@@ -38,15 +40,22 @@ var (
 type FlagsResolver struct {
 	id      *idprov.AWSIdentity
 	session awsclient.ConfigProvider
+	logger  *log.Entry
 }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (r *FlagsResolver) Resolve(identity provider.Identity, flags *pflag.FlagSet) error {
+func (r *FlagsResolver) Resolve(ctx *provider.Context, identity provider.Identity) error {
+	r.logger = ctx.Logger.WithField("resolver", "aws")
+	r.logger.Debug("resolving AWS flags")
+
 	r.id = identity.(*idprov.AWSIdentity)
 
+	//TODO: handle region
+	region := "eu-west-2"
+	r.logger.Debugf("creating AWS session with region %s and profile %s", region, r.id.Profile())
 	session, err := session.NewSession(&aws.Config{
-		Region:      aws.String("eu-west-2"),
+		Region:      aws.String(region),
 		Credentials: credentials.NewSharedCredentials("", r.id.Profile()),
 	})
 	if err != nil {
@@ -54,7 +63,7 @@ func (r *FlagsResolver) Resolve(identity provider.Identity, flags *pflag.FlagSet
 	}
 	r.session = session
 
-	if err := r.resolveRoleArn(flags); err != nil {
+	if err := r.resolveRoleArn(ctx.Command.Flags()); err != nil {
 		return fmt.Errorf("resolving role-arn: %w", err)
 	}
 
@@ -62,6 +71,8 @@ func (r *FlagsResolver) Resolve(identity provider.Identity, flags *pflag.FlagSet
 }
 
 func (r *FlagsResolver) resolveRoleArn(flags *pflag.FlagSet) error {
+	r.logger.Debug("resolving role arn")
+
 	flag := flags.Lookup("role-arn")
 	if flag == nil {
 		return errNoRoleArnFlag

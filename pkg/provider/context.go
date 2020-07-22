@@ -14,21 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package provider
 
 import (
-	"fmt"
-	"os"
+	"context"
 
-	"github.com/fidelity/kconnect/internal/commands"
-	_ "github.com/fidelity/kconnect/pkg/plugins" // Import all the plugins
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	if err := commands.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+// Context represents a context for the providers
+type Context struct {
+	context.Context
+
+	Command *cobra.Command
+	Logger  *logrus.Entry
+}
+
+// NewContext creates a new context
+func NewContext(ctx context.Context, cmd *cobra.Command, logger *logrus.Entry) *Context {
+	c := &Context{
+		Context: ctx,
+		Command: cmd,
+		Logger:  logger,
 	}
 
-	os.Exit(0)
+	if c.Context == nil {
+		c.Context = context.Background()
+	}
+
+	return c
 }

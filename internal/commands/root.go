@@ -33,9 +33,10 @@ import (
 )
 
 var (
-	configFile string
-	logLevel   string
-	logFormat  string
+	configFile  string
+	logLevel    string
+	logFormat   string
+	interactive bool
 )
 
 // Execute setups and starts the root kconnect command
@@ -56,6 +57,7 @@ func Execute() error {
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file (defaults to $HOME/.kconnect/config")
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.InfoLevel.String(), "Log level for the CLI. Defaults to INFO")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "TEXT", "Format of the log output. Defaults to text.")
+	rootCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "i", true, "Run with interactive flag resolution. Defaults to true")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
 	rootCmd.AddCommand(use.Command())

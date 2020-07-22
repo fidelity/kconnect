@@ -94,17 +94,9 @@ func (p *samlIdentityProvider) Flags() *pflag.FlagSet {
 }
 
 // Authenticate will authenticate a user and returns their identity
-func (p *samlIdentityProvider) Authenticate() (provider.Identity, error) {
-	// cfmgr, err := cfg.NewConfigManager("")
-	// if err != nil {
-	// 	return nil, fmt.Errorf("getting config manager: %w", err)
-	// }
+func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Identity, error) {
 
-	// account, err := cfmgr.LoadIDPAccount(*p.idpProvider)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("getting idp account: %w", err)
-	// }
-
+	// TODO: pipulate from the flags
 	account := &cfg.IDPAccount{
 		URL:                  *p.idpEndpoint,
 		Provider:             "GoogleApps",

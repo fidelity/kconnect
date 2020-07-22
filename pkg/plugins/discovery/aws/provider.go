@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package aws
 
 import (
@@ -70,8 +71,4 @@ func (p *eksClusterProvider) FlagsResolver() provider.FlagsResolver {
 // Usage returns a description for use in the help/usage
 func (p *eksClusterProvider) Usage() string {
 	return "discover and connect to AWS EKS clusters"
-}
-
-func (p *eksClusterProvider) Discover() error {
-	return nil
 }
