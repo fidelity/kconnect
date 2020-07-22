@@ -1,0 +1,37 @@
+name: titlecheck
+
+# Run on PR
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+jobs:
+  titlecheck:
+    name: pr title checker
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+    # Checks the title of the PR
+    - name: Check conventinal title
+      uses: aslafy-z/conventional-pr-title-action@master
+      with:
+        success-state: Title follows the specification.
+        failure-state: Title does not follow the specification.
+        context-name: conventional-pr-title
+        preset: conventional-changelog-angular@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Block if WIP
+    - name: check WIP
+      uses: wip/action@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
