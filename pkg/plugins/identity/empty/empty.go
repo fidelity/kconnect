@@ -26,7 +26,7 @@ import (
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("empty", newEmptyProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register Empty identity provider plugin: %w", err)
+		log.Fatalf("Failed to register Empty identity provider plugin: %v", err)
 	}
 }
 

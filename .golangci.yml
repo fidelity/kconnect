@@ -8,6 +8,11 @@ issues:
     - linters: [golint]
       text: "should not use dot imports|don't use an underscore in package name"
 
+linters-settings:
+  funlen:
+    lines: 80
+    statements: 60
+
 linters:
     fast: true
     enable-all: true

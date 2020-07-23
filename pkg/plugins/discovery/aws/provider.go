@@ -25,7 +25,7 @@ import (
 func init() {
 	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register EKS cluster provider plugin: %w", err)
+		log.Fatalf("Failed to register EKS cluster provider plugin: %v", err)
 	}
 }
 

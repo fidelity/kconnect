@@ -17,19 +17,12 @@ limitations under the License.
 package saml
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
-
-	"github.com/beevik/etree"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws"
-	"github.com/versent/saml2aws/pkg/awsconfig"
 	"github.com/versent/saml2aws/pkg/cfg"
 	"github.com/versent/saml2aws/pkg/creds"
 
@@ -37,13 +30,21 @@ import (
 )
 
 const (
-	responseTag = "Response"
+	responseTag    = "Response"
+	defaultSession = 3600
+)
+
+var (
+	ErrNoClusterProvider      = errors.New("no cluster provider on the context")
+	ErrUnsuportedProvider     = errors.New("cluster provider not supported")
+	ErrMissingResponseElement = errors.New("missing response element")
+	ErrNoSAMLAssertions       = errors.New("no SAML assertions")
 )
 
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register SAML identity provider plugin: %w", err)
+		log.Fatalf("Failed to register SAML identity provider plugin: %v", err)
 	}
 }
 
@@ -60,18 +61,9 @@ type samlIdentityProvider struct {
 	flags *pflag.FlagSet
 }
 
-type AWSIdentity struct {
-	profileName string
-}
-
-func NewAWSIdentity(profileName string) *AWSIdentity {
-	return &AWSIdentity{
-		profileName: profileName,
-	}
-}
-
-func (i *AWSIdentity) Profile() string {
-	return i.profileName
+type samlServiceProvider interface {
+	PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error
+	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error)
 }
 
 // Name returns the name of the plugin
@@ -86,6 +78,7 @@ func (p *samlIdentityProvider) Flags() *pflag.FlagSet {
 		p.idpEndpoint = p.flags.String("idp-endpoint", "", "identity provider endpoint provided by your IT team")
 		p.idpProvider = p.flags.String("idp-provider", "", "the name of the idp provider")
 
+		//TODO: how to handle flags applicable to all providers
 		p.username = p.flags.String("username", "", "the username used for authentication")
 		p.password = p.flags.String("password", "", "the password to use for authentication")
 	}
@@ -95,31 +88,44 @@ func (p *samlIdentityProvider) Flags() *pflag.FlagSet {
 
 // Authenticate will authenticate a user and returns their identity
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Identity, error) {
+	logger := ctx.Logger.WithField("provider", "saml")
+	logger.Info("Authenticating user")
 
-	// TODO: pipulate from the flags
-	account := &cfg.IDPAccount{
-		URL:                  *p.idpEndpoint,
-		Provider:             "GoogleApps",
-		MFA:                  "Auto",
-		AmazonWebservicesURN: "urn:amazon:webservices",
-		Profile:              "saml3",
-		RoleARN:              "arn:aws:iam::482649550366:role/AdministratorAccess",
-		Region:               "eu-west-2",
-		SessionDuration:      3600,
+	if ctx.ClusterProvider == nil {
+		return nil, ErrNoClusterProvider
+	}
+	clusterProvider := ctx.ClusterProvider.Name()
+
+	store, err := p.createIdentityStore(ctx, clusterProvider)
+	if err != nil {
+		return nil, fmt.Errorf("creating identity store for %s: %w", clusterProvider, err)
+	}
+	sp, err := p.createServiceProvider(ctx, clusterProvider)
+	if err != nil {
+		return nil, fmt.Errorf("creating service provider for %s: %w", clusterProvider, err)
 	}
 
-	sharedCreds := awsconfig.NewSharedCredentials(account.Profile)
-	exist, err := sharedCreds.CredsExists()
+	account := &cfg.IDPAccount{
+		URL:             *p.idpEndpoint,
+		Provider:        *p.idpProvider,
+		MFA:             "Auto",
+		SessionDuration: defaultSession,
+	}
+	err = sp.PopulateAccount(account, ctx.Command.Flags())
+	if err != nil {
+		return nil, fmt.Errorf("populating account: %w", err)
+	}
+
+	exist, err := store.CredsExists()
 	if err != nil {
 		return nil, fmt.Errorf("checking if creds exist: %w", err)
 	}
 	if exist {
-		if !sharedCreds.Expired() {
-			log.Println("using cached creds")
-			return NewAWSIdentity(account.Profile), nil
-		} else {
-			log.Println("cached creds expired, renewing")
+		if !store.Expired() {
+			logger.Info("using cached creds")
+			return newAWSIdentity(account.Profile), nil
 		}
+		logger.Info("cached creds expired, renewing")
 	}
 
 	err = account.Validate()
@@ -128,6 +134,9 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Ide
 	}
 
 	client, err := saml2aws.NewSAMLClient(account)
+	if err != nil {
+		return nil, fmt.Errorf("creating saml client: %w", err)
+	}
 
 	loginDetails := &creds.LoginDetails{
 		Username: *p.username,
@@ -142,162 +151,49 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Ide
 	fmt.Println(samlAssertion)
 
 	if samlAssertion == "" {
-		//TODO: proper error here
-		return nil, errors.New("no SAML assertaions")
+		return nil, ErrNoSAMLAssertions
 	}
 
-	data, err := base64.StdEncoding.DecodeString(samlAssertion)
+	userID, err := sp.ProcessAssertions(account, samlAssertion)
 	if err != nil {
-		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
+		return nil, fmt.Errorf("processing assertions for: %s: %w", clusterProvider, err)
 	}
 
-	// if provider == EKS
-	roles, err := saml2aws.ExtractAwsRoles(data)
+	err = store.Save(userID)
 	if err != nil {
-		return nil, fmt.Errorf("extracting AWS roles from assertion: %w", err)
+		return nil, fmt.Errorf("saving identity: %w", err)
 	}
 
-	if len(roles) == 0 {
-		//TODO: handl this better
-		return nil, nil
-	}
-
-	awsRoles, err := saml2aws.ParseAWSRoles(roles)
-	if err != nil {
-		return nil, fmt.Errorf("parsing aws roles: %w", err)
-	}
-
-	fmt.Println(awsRoles)
-
-	role, err := p.resolveRole(awsRoles, samlAssertion, account)
-	if err != nil {
-		return nil, fmt.Errorf("resolving aws role: %w", err)
-	}
-
-	log.Printf("selected role: %s", role.RoleARN)
-
-	awsCreds, err := loginToStsUsingRole(account, role, samlAssertion)
-	if err != nil {
-		return nil, fmt.Errorf("logging into AWS using STS and SAMLAssertion: %w", err)
-	}
-
-	// TODO: save the creds
-	err = sharedCreds.Save(awsCreds)
-	if err != nil {
-		return nil, fmt.Errorf("saving aws credentials: %w", err)
-	}
-
-	return NewAWSIdentity(account.Profile), nil
+	return userID, nil
 }
 
-func (p *samlIdentityProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
-	var role = new(saml2aws.AWSRole)
-
-	if len(awsRoles) == 1 {
-		if account.RoleARN != "" {
-			return saml2aws.LocateRole(awsRoles, account.RoleARN)
-		}
-		return awsRoles[0], nil
-	} else if len(awsRoles) == 0 {
-		return nil, errors.New("no aws roles")
+func (p *samlIdentityProvider) createServiceProvider(_ *provider.Context, providerName string) (samlServiceProvider, error) {
+	switch providerName {
+	case "eks":
+		return &awsServiveProvider{}, nil
+	default:
+		return nil, ErrUnsuportedProvider
 	}
+}
 
-	// TODO: change this so its passed in
-	samlAssertionData, err := base64.StdEncoding.DecodeString(samlAssertion)
+func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
+	var store provider.IdentityStore
+	var err error
+
+	switch providerName {
+	case "eks":
+		store, err = newAWSIdentityStore(ctx.Command.Flags())
+	default:
+		return nil, ErrUnsuportedProvider
+	}
 	if err != nil {
-		//TODO: change tpo specific error
-		return nil, err
+		return nil, fmt.Errorf("creating identity store: %w", err)
 	}
 
-	aud, err := extractDestinationURL(samlAssertionData)
-	if err != nil {
-		//TODO: return a better error
-		return nil, fmt.Errorf("extracting destination utl: %w", err)
-	}
-
-	awsAccounts, err := saml2aws.ParseAWSAccounts(aud, samlAssertion)
-	if err != nil {
-		//TODO: handle error better
-		return nil, err
-	}
-	if len(awsAccounts) == 0 {
-		return nil, errors.New("no accounts available")
-	}
-
-	saml2aws.AssignPrincipals(awsRoles, awsAccounts)
-
-	if account.RoleARN != "" {
-		return saml2aws.LocateRole(awsRoles, account.RoleARN)
-	}
-
-	for {
-		role, err = saml2aws.PromptForAWSRoleSelection(awsAccounts)
-		if err == nil {
-			break
-		}
-		log.Println("Error selecting role, try again")
-	}
-
-	return role, nil
+	return store, nil
 }
 
 // Usage returns a description for use in the help/usage
 func (p *samlIdentityProvider) Usage() string {
 	return "SAML Idp authentication"
-}
-
-func loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region: &account.Region,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("creating aws session: %w", err)
-	}
-
-	svc := sts.New(sess)
-
-	params := &sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:    aws.String(role.PrincipalARN),
-		RoleArn:         aws.String(role.RoleARN),
-		SAMLAssertion:   aws.String(samlAssertion),
-		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
-	}
-
-	log.Println("Requesting AWS credentials using SAML")
-
-	resp, err := svc.AssumeRoleWithSAML(params)
-	if err != nil {
-		return nil, fmt.Errorf("retrieving STS credentials using SAML: %w", err)
-	}
-
-	return &awsconfig.AWSCredentials{
-		AWSAccessKey:     aws.StringValue(resp.Credentials.AccessKeyId),
-		AWSSecretKey:     aws.StringValue(resp.Credentials.SecretAccessKey),
-		AWSSessionToken:  aws.StringValue(resp.Credentials.SessionToken),
-		AWSSecurityToken: aws.StringValue(resp.Credentials.SessionToken),
-		PrincipalARN:     aws.StringValue(resp.AssumedRoleUser.Arn),
-		Expires:          resp.Credentials.Expiration.Local(),
-	}, nil
-
-}
-
-// TODO: use the version form saml2aws when modules are fixed
-func extractDestinationURL(data []byte) (string, error) {
-
-	doc := etree.NewDocument()
-	if err := doc.ReadFromBytes(data); err != nil {
-		return "", err
-	}
-
-	rootElement := doc.Root()
-	if rootElement == nil {
-		return "", fmt.Errorf("missing element: %s", responseTag)
-	}
-
-	destination := rootElement.SelectAttrValue("Destination", "none")
-	if destination == "none" {
-		return "", fmt.Errorf("missing element: %s", responseTag)
-	}
-
-	return destination, nil
 }

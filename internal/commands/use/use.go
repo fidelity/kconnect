@@ -63,13 +63,17 @@ func Command() *cobra.Command {
 				return errMissingProvider
 			}
 
-			params.Context = provider.NewContext(nil, cmd, logger)
-
 			selectedProvider, err := provider.GetClusterProvider(args[0])
 			if err != nil {
 				return fmt.Errorf("creating cluster provider %s: %w", args[0], err)
 			}
 			params.Provider = selectedProvider
+
+			params.Context = provider.NewContext(
+				cmd,
+				provider.WithLogger(logger),
+				provider.WithClusterProvider(selectedProvider),
+			)
 
 			log.Infof("using cluster provider %s", params.Provider.Name())
 			cmd.Flags().AddFlagSet(params.Provider.Flags())

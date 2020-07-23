@@ -53,10 +53,10 @@ func (r *FlagsResolver) Resolve(ctx *provider.Context, identity provider.Identit
 
 	//TODO: handle region
 	region := "eu-west-2"
-	r.logger.Debugf("creating AWS session with region %s and profile %s", region, r.id.Profile())
+	r.logger.Debugf("creating AWS session with region %s and profile %s", region, r.id.ProfileName)
 	session, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
-		Credentials: credentials.NewSharedCredentials("", r.id.Profile()),
+		Credentials: credentials.NewSharedCredentials("", r.id.ProfileName),
 	})
 	if err != nil {
 		return fmt.Errorf("getting aws session: %w", err)
@@ -87,10 +87,7 @@ func (r *FlagsResolver) resolveRoleArn(flags *pflag.FlagSet) error {
 
 	roles := []*iam.Role{}
 	err := iamClient.ListRolesPages(input, func(page *iam.ListRolesOutput, lastPage bool) bool {
-		for _, role := range page.Roles {
-			//TODO: apply the filter
-			roles = append(roles, role)
-		}
+		roles = append(roles, page.Roles...)
 		return true
 	})
 	if err != nil {

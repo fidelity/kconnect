@@ -31,10 +31,8 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 
 	awsID := identity.(*idprov.AWSIdentity)
 
-	//TODO: handle region
-	region := "us-west-2"
-	logger.Debugf("creating AWS session with region %s and profile %s", region, awsID.Profile())
-	session, err := newSession(region, awsID.Profile())
+	logger.Debugf("creating AWS session with region %s and profile %s", *p.region, awsID.ProfileName)
+	session, err := newSession(*p.region, awsID.ProfileName)
 	if err != nil {
 		return fmt.Errorf("getting aws session: %w", err)
 	}
@@ -49,6 +47,9 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 		clusters = append(clusters, page.Clusters...)
 		return true
 	})
+	if err != nil {
+		return fmt.Errorf("listing clusters: %w", err)
+	}
 
 	if len(clusters) == 0 {
 		logger.Info("no EKS clusters discovered")

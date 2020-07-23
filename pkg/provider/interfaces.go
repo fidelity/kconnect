@@ -56,6 +56,14 @@ type IdentityProvider interface {
 	Authenticate(ctx *Context) (Identity, error)
 }
 
+// IdentityStore represents an way to store and retrieve credentials
+type IdentityStore interface {
+	CredsExists() (bool, error)
+	Save(identity Identity) error
+	Load() (Identity, error)
+	Expired() bool
+}
+
 // Cluster represents the information about a discovered k8s cluster
 // NOTE: fields in this struct are only for illustration and more though needs to
 // go into it

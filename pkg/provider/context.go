@@ -23,25 +23,49 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type ContextOption func(*Context)
+
 // Context represents a context for the providers
 type Context struct {
 	context.Context
 
 	Command *cobra.Command
 	Logger  *logrus.Entry
+
+	ClusterProvider ClusterProvider
 }
 
 // NewContext creates a new context
-func NewContext(ctx context.Context, cmd *cobra.Command, logger *logrus.Entry) *Context {
+func NewContext(cmd *cobra.Command, opts ...ContextOption) *Context {
+	defaultContext := context.Background()
+
 	c := &Context{
-		Context: ctx,
+		Context: defaultContext,
 		Command: cmd,
-		Logger:  logger,
+		Logger:  logrus.StandardLogger().WithContext(defaultContext),
 	}
 
-	if c.Context == nil {
-		c.Context = context.Background()
+	for _, opt := range opts {
+		opt(c)
 	}
 
 	return c
+}
+
+func WithContext(ctx context.Context) ContextOption {
+	return func(c *Context) {
+		c.Context = ctx
+	}
+}
+
+func WithClusterProvider(provider ClusterProvider) ContextOption {
+	return func(c *Context) {
+		c.ClusterProvider = provider
+	}
+}
+
+func WithLogger(logger *logrus.Entry) ContextOption {
+	return func(c *Context) {
+		c.Logger = logger
+	}
 }

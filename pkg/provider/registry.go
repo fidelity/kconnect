@@ -17,6 +17,7 @@ limitations under the License.
 package provider
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -25,6 +26,9 @@ var (
 	pluginsLock     sync.Mutex
 	identityPlugins = make(map[string]IdentityProvider)
 	clusterPlugins  = make(map[string]ClusterProvider)
+
+	ErrDuplicatePlugin = errors.New("plugin already registered with same name")
+	ErrPluginNotFound  = errors.New("plugin not found")
 )
 
 func RegisterIdentityProviderPlugin(name string, plugin IdentityProvider) error {
@@ -32,7 +36,7 @@ func RegisterIdentityProviderPlugin(name string, plugin IdentityProvider) error 
 	defer pluginsLock.Unlock()
 
 	if _, found := identityPlugins[name]; found {
-		return fmt.Errorf("Identity plugin with name %q already registsred", name)
+		return ErrDuplicatePlugin
 	}
 	identityPlugins[name] = plugin
 
@@ -44,7 +48,7 @@ func RegisterClusterProviderPlugin(name string, plugin ClusterProvider) error {
 	defer pluginsLock.Unlock()
 
 	if _, found := clusterPlugins[name]; found {
-		return fmt.Errorf("Cluster plugin with name %q already registsred", name)
+		return ErrDuplicatePlugin
 	}
 	clusterPlugins[name] = plugin
 
@@ -59,7 +63,7 @@ func GetClusterProvider(name string) (ClusterProvider, error) {
 		return plugin, nil
 	}
 
-	return nil, fmt.Errorf("no cluster plugin with name %q", name)
+	return nil, fmt.Errorf("getting cluster plugin %s: %w", name, ErrPluginNotFound)
 }
 
 func GetIdentityProvider(name string) (IdentityProvider, error) {
@@ -70,7 +74,7 @@ func GetIdentityProvider(name string) (IdentityProvider, error) {
 		return plugin, nil
 	}
 
-	return nil, fmt.Errorf("no identity plugin with name %q", name)
+	return nil, fmt.Errorf("getting identity plugin %s: %w", name, ErrPluginNotFound)
 }
 
 func ListClusterProviders() []ClusterProvider {
