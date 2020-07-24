@@ -29,22 +29,34 @@ import (
 type ClusterProvider interface {
 	Plugin
 
-	FlagsResolver() FlagsResolver
-
 	// NOTE: this needs to return something like map[credentials][]clusters
 	// and also have identity and options passed in
 	Discover(ctx *Context, identity Identity) error
+
+	FlagsResolver() FlagsResolver
 }
+
+// type ProviderScope string
+
+// const (
+// 	IdentityProviderScope ProviderScope = "Identity"
+// 	ClusterProviderScope  ProviderScope = "Cluster"
+// )
 
 // FlagsResolver is used to resolve the values for flags interactively.
 // There will be a flags resolver for Azure, AWS and Rancher initially.
 type FlagsResolver interface {
 
+	// Validate is used to validate the flags and return any errors
+	Validate(ctx *Context, flags *pflag.FlagSet) []error
+
 	// Resolve will resolve the values for the supplied context. It will interactively
 	// resolve the values by asking the user for selections. It will basically set the
 	// Value on each pflag.Flag
-	Resolve(ctx *Context, identity Identity) error
+	Resolve(ctx *Context, flags *pflag.FlagSet) error
 }
+
+type FlagResolveFunc func(name string, flags *pflag.FlagSet) error
 
 // IdentityProvider represents the interface used to implement an identity provider
 // plugin. It provides authentication and authorization functionality.
@@ -53,7 +65,7 @@ type IdentityProvider interface {
 
 	// Authenticate will authenticate a user and return details of
 	// their identity.
-	Authenticate(ctx *Context) (Identity, error)
+	Authenticate(ctx *Context, clusterProvider string) (Identity, error)
 }
 
 // IdentityStore represents an way to store and retrieve credentials
@@ -79,6 +91,12 @@ type Cluster interface {
 // NOTE: details of this need finalising
 type Identity interface {
 }
+
+// type PluginFlag struct {
+// 	pflag.Flag
+
+// 	Required bool
+// }
 
 // Plugin is an interface that can be implemented for returned usage information
 type Plugin interface {

@@ -29,10 +29,12 @@ type ContextOption func(*Context)
 type Context struct {
 	context.Context
 
-	Command *cobra.Command
-	Logger  *logrus.Entry
+	command *cobra.Command
+	logger  *logrus.Entry
 
-	ClusterProvider ClusterProvider
+	interactive bool
+
+	//ClusterProvider ClusterProvider
 }
 
 // NewContext creates a new context
@@ -40,9 +42,10 @@ func NewContext(cmd *cobra.Command, opts ...ContextOption) *Context {
 	defaultContext := context.Background()
 
 	c := &Context{
-		Context: defaultContext,
-		Command: cmd,
-		Logger:  logrus.StandardLogger().WithContext(defaultContext),
+		Context:     defaultContext,
+		command:     cmd,
+		logger:      logrus.StandardLogger().WithContext(defaultContext),
+		interactive: true,
 	}
 
 	for _, opt := range opts {
@@ -58,14 +61,32 @@ func WithContext(ctx context.Context) ContextOption {
 	}
 }
 
-func WithClusterProvider(provider ClusterProvider) ContextOption {
-	return func(c *Context) {
-		c.ClusterProvider = provider
-	}
-}
+// func WithClusterProvider(provider ClusterProvider) ContextOption {
+// 	return func(c *Context) {
+// 		c.ClusterProvider = provider
+// 	}
+// }
 
 func WithLogger(logger *logrus.Entry) ContextOption {
 	return func(c *Context) {
-		c.Logger = logger
+		c.logger = logger
 	}
+}
+
+func WithInteractive(interactive bool) ContextOption {
+	return func(c *Context) {
+		c.interactive = interactive
+	}
+}
+
+func (c *Context) Command() *cobra.Command {
+	return c.command
+}
+
+func (c *Context) Logger() *logrus.Entry {
+	return c.logger
+}
+
+func (c *Context) IsInteractive() bool {
+	return c.interactive
 }

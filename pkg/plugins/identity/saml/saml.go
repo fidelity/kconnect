@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws"
@@ -62,6 +63,7 @@ type samlIdentityProvider struct {
 }
 
 type samlServiceProvider interface {
+	Resolver() provider.FlagsResolver
 	PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error
 	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error)
 }
@@ -81,28 +83,35 @@ func (p *samlIdentityProvider) Flags() *pflag.FlagSet {
 		//TODO: how to handle flags applicable to all providers
 		p.username = p.flags.String("username", "", "the username used for authentication")
 		p.password = p.flags.String("password", "", "the password to use for authentication")
+
 	}
 
 	return p.flags
 }
 
 // Authenticate will authenticate a user and returns their identity
-func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Identity, error) {
-	logger := ctx.Logger.WithField("provider", "saml")
+func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
+	logger := ctx.Logger().WithField("provider", "saml")
 	logger.Info("Authenticating user")
 
-	if ctx.ClusterProvider == nil {
-		return nil, ErrNoClusterProvider
-	}
-	clusterProvider := ctx.ClusterProvider.Name()
-
-	store, err := p.createIdentityStore(ctx, clusterProvider)
-	if err != nil {
-		return nil, fmt.Errorf("creating identity store for %s: %w", clusterProvider, err)
-	}
-	sp, err := p.createServiceProvider(ctx, clusterProvider)
+	sp, err := p.createServiceProvider(ctx, clusterProvider, logger)
 	if err != nil {
 		return nil, fmt.Errorf("creating service provider for %s: %w", clusterProvider, err)
+	}
+	if ctx.IsInteractive() {
+		err = sp.Resolver().Resolve(ctx, ctx.Command().Flags())
+		if err != nil {
+			return nil, fmt.Errorf("resolving flags: %w", err)
+		}
+	}
+	if errs := sp.Resolver().Validate(ctx, ctx.Command().Flags()); len(errs) > 0 {
+		//TODO: handle thos better
+		return nil, errors.New("validation failed")
+	}
+
+	store, err := p.createIdentityStore(ctx, clusterProvider, logger)
+	if err != nil {
+		return nil, fmt.Errorf("creating identity store for %s: %w", clusterProvider, err)
 	}
 
 	account := &cfg.IDPAccount{
@@ -111,7 +120,7 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Ide
 		MFA:             "Auto",
 		SessionDuration: defaultSession,
 	}
-	err = sp.PopulateAccount(account, ctx.Command.Flags())
+	err = sp.PopulateAccount(account, ctx.Command().Flags())
 	if err != nil {
 		return nil, fmt.Errorf("populating account: %w", err)
 	}
@@ -167,22 +176,22 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context) (provider.Ide
 	return userID, nil
 }
 
-func (p *samlIdentityProvider) createServiceProvider(_ *provider.Context, providerName string) (samlServiceProvider, error) {
+func (p *samlIdentityProvider) createServiceProvider(_ *provider.Context, providerName string, logger *logrus.Entry) (samlServiceProvider, error) {
 	switch providerName {
 	case "eks":
-		return &awsServiveProvider{}, nil
+		return &awsServiveProvider{logger: logger}, nil
 	default:
 		return nil, ErrUnsuportedProvider
 	}
 }
 
-func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
+func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string, logger *logrus.Entry) (provider.IdentityStore, error) {
 	var store provider.IdentityStore
 	var err error
 
 	switch providerName {
 	case "eks":
-		store, err = newAWSIdentityStore(ctx.Command.Flags())
+		store, err = newAWSIdentityStore(ctx.Command().Flags())
 	default:
 		return nil, ErrUnsuportedProvider
 	}

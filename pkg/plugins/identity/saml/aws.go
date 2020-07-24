@@ -26,7 +26,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/beevik/etree"
+	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws"
@@ -43,13 +45,10 @@ var (
 )
 
 func newAWSIdentityStore(providerFlags *pflag.FlagSet) (provider.IdentityStore, error) {
-	profileFlag := providerFlags.Lookup("profile-name")
-	if profileFlag == nil {
+	if !flags.ExistsWithValue("profile", providerFlags) {
 		return nil, ErrNoProfile
 	}
-	if profileFlag.Value.String() == "" {
-		return nil, ErrNoProfile
-	}
+	profileFlag := providerFlags.Lookup("profile")
 
 	return &awsIdentityStore{
 		configProvider: awsconfig.NewSharedCredentials(profileFlag.Value.String()),
@@ -106,6 +105,7 @@ func newAWSIdentity(profileName string) *AWSIdentity {
 }
 
 type awsServiveProvider struct {
+	logger *logrus.Entry
 }
 
 func (p *awsServiveProvider) PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error {
@@ -272,6 +272,10 @@ func (p *awsServiveProvider) extractDestinationURL(data []byte) (string, error) 
 	}
 
 	return destination, nil
+}
+
+func (p *awsServiveProvider) Resolver() provider.FlagsResolver {
+	return NewAWSFlagsResolver(p.logger)
 }
 
 func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *AWSIdentity {

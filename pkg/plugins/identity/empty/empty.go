@@ -53,7 +53,7 @@ func (p *emptyIdentityProvider) Flags() *pflag.FlagSet {
 }
 
 // Authenticate will authenticate a user and returns their identity
-func (p *emptyIdentityProvider) Authenticate(ctx *provider.Context) (provider.Identity, error) {
+func (p *emptyIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
 	return &EmptyIdentity{}, nil
 }
 

@@ -3,7 +3,7 @@ module github.com/fidelity/kconnect
 go 1.13
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.8 // indirect
+	github.com/AlecAivazis/survey/v2 v2.0.8
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect

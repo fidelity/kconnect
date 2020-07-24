@@ -16,7 +16,7 @@ import (
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-func newSession(region, profile string) (client.ConfigProvider, error) {
+func NewSession(region, profile string) (client.ConfigProvider, error) {
 	awsSession, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
 		Credentials: credentials.NewSharedCredentials("", profile),
@@ -28,14 +28,14 @@ func newSession(region, profile string) (client.ConfigProvider, error) {
 	return awsSession, nil
 }
 
-func newIAMClient(session client.ConfigProvider) iamiface.IAMAPI {
+func NewIAMClient(session client.ConfigProvider) iamiface.IAMAPI {
 	iamClient := iam.New(session)
 	iamClient.Handlers.Build.PushFrontNamed(getUserAgentHandler())
 
 	return iamClient
 }
 
-func newEKSClient(session client.ConfigProvider) eksiface.EKSAPI {
+func NewEKSClient(session client.ConfigProvider) eksiface.EKSAPI {
 	eksClient := eks.New(session)
 	eksClient.Handlers.Build.PushFrontNamed(getUserAgentHandler())
 

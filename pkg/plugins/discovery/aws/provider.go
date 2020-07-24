@@ -65,7 +65,7 @@ func (p *eksClusterProvider) Flags() *pflag.FlagSet {
 
 // FlagsResolver returns the resolver to use for flags with this provider
 func (p *eksClusterProvider) FlagsResolver() provider.FlagsResolver {
-	return &FlagsResolver{}
+	return &awsFlagsResolver{}
 }
 
 // Usage returns a description for use in the help/usage

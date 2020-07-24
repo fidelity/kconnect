@@ -72,7 +72,7 @@ func Command() *cobra.Command {
 			params.Context = provider.NewContext(
 				cmd,
 				provider.WithLogger(logger),
-				provider.WithClusterProvider(selectedProvider),
+				//TODO: add interactive flag
 			)
 
 			log.Infof("using cluster provider %s", params.Provider.Name())
@@ -93,13 +93,13 @@ func Command() *cobra.Command {
 			return nil
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			identity, err := params.IdentityProvider.Authenticate(params.Context)
+			identity, err := params.IdentityProvider.Authenticate(params.Context, params.Provider.Name())
 			if err != nil {
 				return fmt.Errorf("authenticating using provider %s: %w", params.IdentityProvider.Name(), err)
 			}
 			params.Identity = identity
 
-			return params.Provider.FlagsResolver().Resolve(params.Context, identity)
+			return params.Provider.FlagsResolver().Resolve(params.Context, cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doUse(cmd, params)

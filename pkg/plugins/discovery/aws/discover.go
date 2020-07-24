@@ -21,23 +21,24 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/eks"
 
+	"github.com/fidelity/kconnect/pkg/aws"
 	idprov "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) error {
-	logger := ctx.Logger.WithField("provider", "eks")
+	logger := ctx.Logger().WithField("provider", "eks")
 	logger.Info("discovering EKS clusters AWS")
 
 	awsID := identity.(*idprov.AWSIdentity)
 
 	logger.Debugf("creating AWS session with region %s and profile %s", *p.region, awsID.ProfileName)
-	session, err := newSession(*p.region, awsID.ProfileName)
+	session, err := aws.NewSession(*p.region, awsID.ProfileName)
 	if err != nil {
 		return fmt.Errorf("getting aws session: %w", err)
 	}
 
-	eksClient := newEKSClient(session)
+	eksClient := aws.NewEKSClient(session)
 	input := &eks.ListClustersInput{}
 
 	//TODO: handle cluster name flag
