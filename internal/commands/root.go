@@ -55,7 +55,8 @@ func Execute() error {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file (defaults to $HOME/.kconnect/config")
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.InfoLevel.String(), "Log level for the CLI. Defaults to INFO")
+	//TODO: change the below back to INFO
+	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.DebugLevel.String(), "Log level for the CLI. Defaults to INFO")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "TEXT", "Format of the log output. Defaults to text.")
 	rootCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "i", true, "Run with interactive flag resolution. Defaults to true")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
@@ -93,6 +94,6 @@ func initConfig() {
 
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Infof("Using config file:", viper.ConfigFileUsed())
 	}
 }

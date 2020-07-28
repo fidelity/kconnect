@@ -104,9 +104,9 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 			return nil, fmt.Errorf("resolving flags: %w", err)
 		}
 	}
-	if errs := sp.Resolver().Validate(ctx, ctx.Command().Flags()); len(errs) > 0 {
-		//TODO: handle thos better
-		return nil, errors.New("validation failed")
+	err = sp.Resolver().Validate(ctx, ctx.Command().Flags())
+	if err != nil {
+		return nil, fmt.Errorf("validating supplied flags: %w", err)
 	}
 
 	store, err := p.createIdentityStore(ctx, clusterProvider, logger)
@@ -157,7 +157,6 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	if err != nil {
 		return nil, fmt.Errorf("authenticating: %w", err)
 	}
-	fmt.Println(samlAssertion)
 
 	if samlAssertion == "" {
 		return nil, ErrNoSAMLAssertions

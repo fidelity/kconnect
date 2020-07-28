@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 
+	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -52,17 +53,21 @@ type awsFlagsResolver struct {
 	logger  *logrus.Entry
 }
 
-func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSet) []error {
-	errsValidation := []error{}
+func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSet) error {
+	errsValidation := &kerrors.ValidationFailed{}
 
 	//TODO: create a declarative way to define flags
 
 	// Region
 	if flags.ExistsWithValue("role-arn", flagset) == false {
-		errsValidation = append(errsValidation, errors.New("role-arn is required"))
+		errsValidation.AddFailure("role-arn is required")
 	}
 
-	return errsValidation
+	if len(errsValidation.Failures()) > 0 {
+		return errsValidation
+	}
+
+	return nil
 }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will

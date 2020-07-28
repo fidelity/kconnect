@@ -29,9 +29,7 @@ import (
 type ClusterProvider interface {
 	Plugin
 
-	// NOTE: this needs to return something like map[credentials][]clusters
-	// and also have identity and options passed in
-	Discover(ctx *Context, identity Identity) error
+	Discover(ctx *Context, identity Identity) (*DiscoverOutput, error)
 
 	FlagsResolver() FlagsResolver
 }
@@ -48,7 +46,7 @@ type ClusterProvider interface {
 type FlagsResolver interface {
 
 	// Validate is used to validate the flags and return any errors
-	Validate(ctx *Context, flags *pflag.FlagSet) []error
+	Validate(ctx *Context, flags *pflag.FlagSet) error
 
 	// Resolve will resolve the values for the supplied context. It will interactively
 	// resolve the values by asking the user for selections. It will basically set the
@@ -76,15 +74,22 @@ type IdentityStore interface {
 	Expired() bool
 }
 
+// DiscoverOutput holds details of the output of the discovery
+type DiscoverOutput struct {
+	ClusterProviderName  string `yaml:"clusterprovider"`
+	IdentityProviderName string `yaml:"identityprovider"`
+
+	Clusters map[string]*Cluster `yaml:"clusters"`
+}
+
 // Cluster represents the information about a discovered k8s cluster
 // NOTE: fields in this struct are only for illustration and more though needs to
 // go into it
-type Cluster interface {
-	Name() string
-
-	ID() string
-
-	Region() string
+type Cluster struct {
+	ID                       string  `yaml:"id"`
+	Name                     string  `yaml:"name"`
+	ControlPlaneEndpoint     *string `yaml:"endpoint"`
+	CertificateAuthorityData *string `yaml:"ca"`
 }
 
 // Identity represents a users identity for use with discovery.

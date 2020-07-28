@@ -19,14 +19,16 @@ package aws
 import (
 	"fmt"
 
+	awsgo "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 
 	"github.com/fidelity/kconnect/pkg/aws"
 	idprov "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) error {
+func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
 	logger := ctx.Logger().WithField("provider", "eks")
 	logger.Info("discovering EKS clusters AWS")
 
@@ -35,31 +37,70 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 	logger.Debugf("creating AWS session with region %s and profile %s", *p.region, awsID.ProfileName)
 	session, err := aws.NewSession(*p.region, awsID.ProfileName)
 	if err != nil {
-		return fmt.Errorf("getting aws session: %w", err)
+		return nil, fmt.Errorf("getting aws session: %w", err)
+	}
+	eksClient := aws.NewEKSClient(session)
+
+	clusters, err := p.listClusters(eksClient)
+	if err != nil {
+		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
 
-	eksClient := aws.NewEKSClient(session)
+	discoverOutput := &provider.DiscoverOutput{
+		ClusterProviderName:  "eks",
+		IdentityProviderName: "",
+		Clusters:             make(map[string]*provider.Cluster),
+	}
+
+	if len(clusters) == 0 {
+		logger.Info("no EKS clusters discovered")
+		return discoverOutput, nil
+	}
+
+	for _, clusterName := range clusters {
+		clusterDetail, err := p.getClusterConfig(*clusterName, eksClient)
+		if err != nil {
+			return nil, fmt.Errorf("getting cluster config: %w", err)
+		}
+		discoverOutput.Clusters[clusterDetail.Name] = clusterDetail
+
+	}
+
+	return discoverOutput, nil
+}
+
+func (p *eksClusterProvider) listClusters(client eksiface.EKSAPI) ([]*string, error) {
 	input := &eks.ListClustersInput{}
 
 	//TODO: handle cluster name flag
 
 	clusters := []*string{}
-	err = eksClient.ListClustersPages(input, func(page *eks.ListClustersOutput, lastPage bool) bool {
+	err := client.ListClustersPages(input, func(page *eks.ListClustersOutput, lastPage bool) bool {
 		clusters = append(clusters, page.Clusters...)
 		return true
 	})
 	if err != nil {
-		return fmt.Errorf("listing clusters: %w", err)
+		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
 
-	if len(clusters) == 0 {
-		logger.Info("no EKS clusters discovered")
-		return nil
+	return clusters, nil
+}
+
+func (p *eksClusterProvider) getClusterConfig(clusterName string, client eksiface.EKSAPI) (*provider.Cluster, error) {
+
+	input := &eks.DescribeClusterInput{
+		Name: awsgo.String(clusterName),
 	}
 
-	logger.Debugf("found clusters: %#v", clusters)
+	output, err := client.DescribeCluster(input)
+	if err != nil {
+		return nil, fmt.Errorf("describing cluster %s: %w", clusterName, err)
+	}
 
-	// Prompt user to select cluster
-
-	return nil
+	return &provider.Cluster{
+		ID:                       *output.Cluster.Arn,
+		Name:                     *output.Cluster.Name,
+		ControlPlaneEndpoint:     output.Cluster.Endpoint,
+		CertificateAuthorityData: output.Cluster.CertificateAuthority.Data,
+	}, nil
 }

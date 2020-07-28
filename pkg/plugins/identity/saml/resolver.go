@@ -16,7 +16,6 @@ limitations under the License.
 package saml
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -24,6 +23,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/fidelity/kconnect/pkg/aws"
+	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -41,37 +41,41 @@ type awsFlagsResolver struct {
 	session client.ConfigProvider
 }
 
-func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSet) []error {
-	errsValidation := []error{}
+func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSet) error {
+	errsValidation := &kerrors.ValidationFailed{}
 
 	//TODO: create a declarative way to define flags
 
 	// Region
 	if flags.ExistsWithValue("region", flagset) == false {
-		errsValidation = append(errsValidation, errors.New("region is required"))
+		errsValidation.AddFailure("region is required")
 	}
 
 	// Profile
 	if flags.ExistsWithValue("profile", flagset) == false {
-		errsValidation = append(errsValidation, errors.New("profile is required"))
+		errsValidation.AddFailure("profile is required")
 	}
 
 	// Username
 	if flags.ExistsWithValue("username", flagset) == false {
-		errsValidation = append(errsValidation, errors.New("username is required"))
+		errsValidation.AddFailure("username is required")
 	}
 
 	// Password
 	if flags.ExistsWithValue("password", flagset) == false {
-		errsValidation = append(errsValidation, errors.New("password is required"))
+		errsValidation.AddFailure("password is required")
 	}
 
 	// IDPEndpoint
 	if flags.ExistsWithValue("idp-endpoint", flagset) == false {
-		errsValidation = append(errsValidation, errors.New("idp-endpoint is required"))
+		errsValidation.AddFailure("idp-endpoint is required")
 	}
 
-	return errsValidation
+	if len(errsValidation.Failures()) > 0 {
+		return errsValidation
+	}
+
+	return nil
 }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
@@ -82,21 +86,22 @@ func (r *awsFlagsResolver) Resolve(ctx *provider.Context, flagset *pflag.FlagSet
 
 	// TODO: handle in declarative mannor
 	// NOTE: resolution is only needed for required fields
+	if err := r.resolveIdpEndpoint("idp-endpoint", flagset); err != nil {
+		return fmt.Errorf("resolving idp-endpoint: %w", err)
+	}
 	if err := r.resolveProfile("profile", flagset); err != nil {
 		return fmt.Errorf("resolving profile: %w", err)
 	}
 	if err := r.resolveRegion("region", flagset); err != nil {
 		return fmt.Errorf("resolving region: %w", err)
 	}
-	if err := r.resolvePassword("password", flagset); err != nil {
-		return fmt.Errorf("resolving password: %w", err)
-	}
 	if err := r.resolveUsername("username", flagset); err != nil {
 		return fmt.Errorf("resolving username: %w", err)
 	}
-	if err := r.resolveIdpEndpoint("username", flagset); err != nil {
-		return fmt.Errorf("resolving username: %w", err)
+	if err := r.resolvePassword("password", flagset); err != nil {
+		return fmt.Errorf("resolving password: %w", err)
 	}
+
 	// if err := r.resolveRoleARN("role-arn", flagset); err != nil {
 	// 	return fmt.Errorf("resolving role-arn: %w", err)
 	// }

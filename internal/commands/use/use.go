@@ -22,10 +22,11 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
+	"gopkg.in/yaml.v2"
 
+	survey "github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"github.com/fidelity/kconnect/internal/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -78,7 +79,7 @@ func Command() *cobra.Command {
 			log.Infof("using cluster provider %s", params.Provider.Name())
 			cmd.Flags().AddFlagSet(params.Provider.Flags())
 
-			idpProtocol := fundIdpProtocolFromArgs(args)
+			idpProtocol := findIdpProtocolFromArgs(args)
 			if idpProtocol == "" {
 				return errMissingIdpProtocol
 			}
@@ -150,19 +151,56 @@ func doUse(c *cobra.Command, params *useCmdParams) error {
 
 	provider := params.Provider
 
-	err := provider.Discover(params.Context, params.Identity)
+	discoverOutput, err := provider.Discover(params.Context, params.Identity)
 	if err != nil {
 		return fmt.Errorf("discovering clusters using %s: %w", provider.Name(), err)
 	}
 
-	c.Flags().VisitAll(func(flag *pflag.Flag) {
-		fmt.Printf("flag %s = %s\n", flag.Name, flag.Value.String())
-	})
+	if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
+		logger.Info("no clusters discovered, not continuing")
+	}
+
+	cluster, err := selectCluster(discoverOutput)
+	if err != nil {
+		return fmt.Errorf("selecting cluster: %w", err)
+	}
+
+	//TODO create the config
+
+	data, err := yaml.Marshal(cluster)
+	if err != nil {
+		return fmt.Errorf("marsahlling cluster as yaml: %w", err)
+	}
+	fmt.Printf(string(data))
 
 	return nil
 }
 
-func fundIdpProtocolFromArgs(args []string) string {
+func selectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cluster, error) {
+	options := []string{}
+	for _, cluster := range discoverOutput.Clusters {
+		options = append(options, cluster.Name)
+	}
+
+	if len(options) == 1 {
+		return discoverOutput.Clusters[options[0]], nil
+	}
+
+	clusterName := ""
+	prompt := &survey.Select{
+		Message:  "Select the cluster",
+		Options:  options,
+		PageSize: 10,
+		Help:     "Select a cluster to connect to from the discovered clusters",
+	}
+	if err := survey.AskOne(prompt, &clusterName, survey.WithValidator(survey.Required)); err != nil {
+		return nil, fmt.Errorf("selecting a cluster: %w", err)
+	}
+
+	return discoverOutput.Clusters[clusterName], nil
+}
+
+func findIdpProtocolFromArgs(args []string) string {
 	index := -1
 	for i, arg := range args {
 		if arg == "--idp-protocol" {
