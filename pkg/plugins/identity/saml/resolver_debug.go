@@ -101,6 +101,21 @@ func (r *awsFlagsResolver) resolveIdpEndpoint(name string, flagset *pflag.FlagSe
 	return nil
 }
 
+func (r *awsFlagsResolver) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
+	if flags.ExistsWithValue(name, flagset) {
+		return nil
+	}
+
+	idpProvider := "GoogleApps"
+
+	if err := flagset.Set(name, idpProvider); err != nil {
+		r.logger.Errorf("failed setting idp-provider flag to %s: %s", idpProvider, err.Error())
+		return fmt.Errorf("setting idp-provider flag: %w", err)
+	}
+
+	return nil
+}
+
 // func (r *awsFlagsResolver) resolveRoleARN(name string, flagset *pflag.FlagSet) error {
 // 	if flags.ExistsWithValue(name, flagset) {
 // 		return nil

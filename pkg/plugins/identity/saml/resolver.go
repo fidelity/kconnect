@@ -86,6 +86,9 @@ func (r *awsFlagsResolver) Resolve(ctx *provider.Context, flagset *pflag.FlagSet
 
 	// TODO: handle in declarative mannor
 	// NOTE: resolution is only needed for required fields
+	if err := r.resolveIdpProvider("idp-provider", flagset); err != nil {
+		return fmt.Errorf("resolving idp-provider: %w", err)
+	}
 	if err := r.resolveIdpEndpoint("idp-endpoint", flagset); err != nil {
 		return fmt.Errorf("resolving idp-endpoint: %w", err)
 	}

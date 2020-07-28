@@ -19,9 +19,11 @@ package logging
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -31,21 +33,25 @@ var (
 // Configure will configure the logging
 func Configure(logLevel, logFormat string) error {
 	if logLevel != "" {
-		level, err := log.ParseLevel(strings.ToUpper(logLevel))
+		level, err := logrus.ParseLevel(strings.ToUpper(logLevel))
 		if err != nil {
 			return fmt.Errorf("setting log level to %s: %w", logLevel, err)
 		}
-		log.SetLevel(level)
+		logrus.SetLevel(level)
 	}
 
 	switch strings.ToUpper(logFormat) {
 	case "TEXT":
-		log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+		logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 	case "JSON":
-		log.SetFormatter(&log.JSONFormatter{})
+		logrus.SetFormatter(&logrus.JSONFormatter{})
 	default:
 		return fmt.Errorf("setting log output to %s: %w", logFormat, errInvalidFomat)
 	}
+
+	logrus.SetOutput(os.Stderr)
+	log.SetOutput(os.Stderr)
+	log.SetFlags(0)
 
 	return nil
 }

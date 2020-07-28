@@ -98,7 +98,7 @@ func (r *awsFlagsResolver) resolvePassword(name string, flagset *pflag.FlagSet) 
 
 	//TODO: change to blank out the characters
 	password := ""
-	prompt := &survey.Input{
+	prompt := &survey.Password{
 		Message: "Enter your password",
 	}
 	if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
@@ -129,6 +129,30 @@ func (r *awsFlagsResolver) resolveIdpEndpoint(name string, flagset *pflag.FlagSe
 	if err := flagset.Set(name, endpoint); err != nil {
 		r.logger.Errorf("failed setting idp-endpoint flag to %s: %s", endpoint, err.Error())
 		return fmt.Errorf("setting idp-endpoint flag: %w", err)
+	}
+
+	return nil
+}
+
+func (r *awsFlagsResolver) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
+	if flags.ExistsWithValue(name, flagset) {
+		return nil
+	}
+	//TODO: get this from saml2aws????
+	options := []string{"Akamai", "AzureAD", "ADFS", "ADFS2", "GoogleApps", "Ping", "JumpCloud", "Okta", "OneLogin", "PSU", "KeyCloak", "F5APM", "Shibboleth", "ShibbolethECP", "NetIQ"}
+
+	idpProvider := ""
+	prompt := &survey.Select{
+		Message: "Select your identity provider",
+		Options: options,
+	}
+	if err := survey.AskOne(prompt, &idpProvider, survey.WithValidator(survey.Required)); err != nil {
+		return fmt.Errorf("asking for idp-provider: %w", err)
+	}
+
+	if err := flagset.Set(name, idpProvider); err != nil {
+		r.logger.Errorf("failed setting idp-provider flag to %s: %s", idpProvider, err.Error())
+		return fmt.Errorf("setting idp-provider flag: %w", err)
 	}
 
 	return nil

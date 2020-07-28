@@ -57,6 +57,8 @@ func (p *eksClusterProvider) Flags() *pflag.FlagSet {
 		p.profile = p.flags.String("profile", "", "AWS profile to use")
 		p.roleArn = p.flags.String("role-arn", "", "ARN of the AWS role to be assumed")
 		p.roleFilter = p.flags.String("role-filter", "*EKS*", "A filter to apply to the roles list")
+
+		//TODO: this is a common provider tag
 		p.cluster = p.flags.StringP("cluster", "c", "", "Name of a EKS cluster to use.")
 	}
 
