@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws"
 	"github.com/versent/saml2aws/pkg/cfg"
@@ -45,7 +44,7 @@ var (
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register SAML identity provider plugin: %v", err)
+		logrus.Fatalf("Failed to register SAML identity provider plugin: %v", err)
 	}
 }
 
@@ -109,7 +108,7 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, fmt.Errorf("validating supplied flags: %w", err)
 	}
 
-	store, err := p.createIdentityStore(ctx, clusterProvider, logger)
+	store, err := p.createIdentityStore(ctx, clusterProvider)
 	if err != nil {
 		return nil, fmt.Errorf("creating identity store for %s: %w", clusterProvider, err)
 	}
@@ -184,7 +183,7 @@ func (p *samlIdentityProvider) createServiceProvider(_ *provider.Context, provid
 	}
 }
 
-func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string, logger *logrus.Entry) (provider.IdentityStore, error) {
+func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
 	var store provider.IdentityStore
 	var err error
 

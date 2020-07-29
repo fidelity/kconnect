@@ -31,14 +31,26 @@ const (
 	TagName = "flag"
 )
 
+var (
+	ErrMustBePtr           = errors.New("must marshall into a pointer")
+	ErrNilStruct           = errors.New("cannot unmarshall flags into nil structure")
+	ErrRequireStruct       = errors.New(("must unmarshall into struct"))
+	ErrFieldNotAddressable = errors.New("field cannot be set as its not addressable")
+	ErrFlagNotFound        = errors.New("flag not found in flagset")
+	ErrUnsupportedType     = errors.New("type not supported for unmarshalling")
+)
+
 // Unmarshal will decode the flagset into the out interface
 func Unmarshal(flagset *pflag.FlagSet, out interface{}, opts ...BinderOption) error {
 	b := newFlagBinder(opts...)
 	return b.Unmarshal(flagset, out)
 }
 
+// BinderOption defines a functional option for creations of the flags binder
 type BinderOption func(*flagBinder)
 
+// IgnoreFlagNotFound is an option that specifies that if a flag doesn't
+// exist then no error should be returned
 func IgnoreFlagNotFound() BinderOption {
 	return func(b *flagBinder) {
 		b.IgnoreNotFound = true
@@ -61,20 +73,21 @@ type flagBinder struct {
 	IgnoreNotFound bool
 }
 
+// Unmarshal will decode the flagset into the out structure
 func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 	rv := reflect.ValueOf(out)
 
 	if rv.Kind() != reflect.Ptr {
-		return fmt.Errorf("must be a pointer, got kind %s", rv.Kind())
+		return fmt.Errorf("out interface is kind %s: %w", rv.Kind(), ErrMustBePtr)
 	}
 	if rv.IsNil() {
-		return errors.New("cannot unmarshall into nil structure")
+		return ErrNilStruct
 	}
 
 	val := reflect.Indirect(rv)
 	t := val.Type()
 	if val.Kind() != reflect.Struct {
-		return errors.New("must unmarshall into struct")
+		return ErrRequireStruct
 	}
 
 	// Loop through the struct fields and see if there
@@ -86,7 +99,7 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 		fieldT := fieldV.Type()
 
 		if !fieldV.CanAddr() {
-			return fmt.Errorf("field cannot be set as its not addressable")
+			return ErrFieldNotAddressable
 		}
 
 		isStruct := fieldT.Kind() == reflect.Struct
@@ -115,7 +128,7 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 			if b.IgnoreNotFound {
 				continue
 			}
-			return fmt.Errorf("no flag named %s found", flagName)
+			return fmt.Errorf("failed looking up flag %s: %w", flagName, ErrFlagNotFound)
 		}
 		if flag.Value == nil {
 			//TODO: if field is pointer set to nil
@@ -167,7 +180,7 @@ func unmarshallFlag(flag *pflag.Flag, out reflect.Value) error {
 		out = out.Elem()
 		return unmarshallFlag(flag, out)
 	default:
-		return fmt.Errorf("can'y unmarshall to field of type: %s", fieldT.Name())
+		return fmt.Errorf("failed unmarshalling to field of type %s: %w", fieldT.Name(), ErrUnsupportedType)
 	}
 
 	return nil

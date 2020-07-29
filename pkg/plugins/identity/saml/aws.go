@@ -28,7 +28,6 @@ import (
 	"github.com/beevik/etree"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws"
@@ -105,7 +104,7 @@ func newAWSIdentity(profileName string) *AWSIdentity {
 }
 
 type awsServiveProvider struct {
-	logger *logrus.Entry
+	logger *log.Entry
 }
 
 func (p *awsServiveProvider) PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error {

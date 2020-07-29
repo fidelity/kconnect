@@ -32,6 +32,10 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
+const (
+	defaultPageSize = 10
+)
+
 var (
 	errMissingProvider    = errors.New("required provider name argument")
 	errMissingIdpProtocol = errors.New("missing idp protocol, please use --idp-protocol")
@@ -103,7 +107,7 @@ func Command() *cobra.Command {
 			return params.Provider.FlagsResolver().Resolve(params.Context, cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doUse(cmd, params)
+			return doUse(params)
 		},
 	}
 
@@ -141,12 +145,12 @@ func usage(cmd *cobra.Command) error {
 		usage = append(usage, strings.TrimRightFunc(cmd.InheritedFlags().FlagUsages(), unicode.IsSpace))
 	}
 
-	fmt.Println(strings.Join(usage, "\n"))
+	fmt.Printf("%s\n", strings.Join(usage, "\n"))
 
 	return nil
 }
 
-func doUse(c *cobra.Command, params *useCmdParams) error {
+func doUse(params *useCmdParams) error {
 	logger.Info("Executing command")
 
 	provider := params.Provider
@@ -171,7 +175,7 @@ func doUse(c *cobra.Command, params *useCmdParams) error {
 	if err != nil {
 		return fmt.Errorf("marsahlling cluster as yaml: %w", err)
 	}
-	fmt.Printf(string(data))
+	fmt.Printf("%s\n", string(data))
 
 	return nil
 }
@@ -190,7 +194,7 @@ func selectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cluster, 
 	prompt := &survey.Select{
 		Message:  "Select the cluster",
 		Options:  options,
-		PageSize: 10,
+		PageSize: defaultPageSize,
 		Help:     "Select a cluster to connect to from the discovered clusters",
 	}
 	if err := survey.AskOne(prompt, &clusterName, survey.WithValidator(survey.Required)); err != nil {

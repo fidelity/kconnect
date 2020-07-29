@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package flags
+package flags_test
 
 import (
 	"testing"
 
 	. "github.com/onsi/gomega"
 	"github.com/spf13/pflag"
+
+	"github.com/fidelity/kconnect/pkg/flags"
 )
 
 func TestUnmarshallStruct(t *testing.T) {
@@ -44,7 +46,7 @@ func TestUnmarshallStruct(t *testing.T) {
 	err := flagset.Parse(args)
 	g.Expect(err).To(BeNil())
 
-	err = Unmarshal(flagset, input)
+	err = flags.Unmarshal(flagset, input)
 	g.Expect(err).To(BeNil())
 	g.Expect(input.Name).To(Equal("test"))
 	g.Expect(input.Number).To(Equal(99))
@@ -73,7 +75,7 @@ func TestUnmarshallStructWithStructField(t *testing.T) {
 	err := flagset.Parse(args)
 	g.Expect(err).To(BeNil())
 
-	err = Unmarshal(flagset, input)
+	err = flags.Unmarshal(flagset, input)
 	g.Expect(err).To(BeNil())
 	g.Expect(input.SubStruct.ReadOnly).To(BeTrue())
 }
@@ -100,7 +102,7 @@ func TestUnmarshallStructWithEmbeddedStruct(t *testing.T) {
 	err := flagset.Parse(args)
 	g.Expect(err).To(BeNil())
 
-	err = Unmarshal(flagset, input)
+	err = flags.Unmarshal(flagset, input)
 	g.Expect(err).To(BeNil())
 	g.Expect(input.Name).NotTo(BeNil())
 	g.Expect(*input.Name).To(Equal("testname"))

@@ -47,27 +47,27 @@ func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSe
 	//TODO: create a declarative way to define flags
 
 	// Region
-	if flags.ExistsWithValue("region", flagset) == false {
+	if !flags.ExistsWithValue("region", flagset) {
 		errsValidation.AddFailure("region is required")
 	}
 
 	// Profile
-	if flags.ExistsWithValue("profile", flagset) == false {
+	if !flags.ExistsWithValue("profile", flagset) {
 		errsValidation.AddFailure("profile is required")
 	}
 
 	// Username
-	if flags.ExistsWithValue("username", flagset) == false {
+	if !flags.ExistsWithValue("username", flagset) {
 		errsValidation.AddFailure("username is required")
 	}
 
 	// Password
-	if flags.ExistsWithValue("password", flagset) == false {
+	if !flags.ExistsWithValue("password", flagset) {
 		errsValidation.AddFailure("password is required")
 	}
 
 	// IDPEndpoint
-	if flags.ExistsWithValue("idp-endpoint", flagset) == false {
+	if !flags.ExistsWithValue("idp-endpoint", flagset) {
 		errsValidation.AddFailure("idp-endpoint is required")
 	}
 

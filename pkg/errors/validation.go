@@ -26,7 +26,7 @@ type ValidationFailed struct {
 }
 
 func (e *ValidationFailed) Error() string {
-	errorList := strings.Join(e.validationErrors[:], "\n")
+	errorList := strings.Join(e.validationErrors, "\n")
 	return fmt.Sprintf("Validation failed with the following:\n%s", errorList)
 }
 

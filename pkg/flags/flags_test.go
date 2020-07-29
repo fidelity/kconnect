@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package flags
+package flags_test
 
 import (
 	"fmt"
@@ -22,6 +22,8 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/spf13/pflag"
+
+	"github.com/fidelity/kconnect/pkg/flags"
 )
 
 func TestExistsWithValue(t *testing.T) {
@@ -55,8 +57,8 @@ func TestExistsWithValue(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			g := NewWithT(t)
 
-			actual := ExistsWithValue(tc.flag, tc.flagset)
-			g.Expect(actual).To(Equal(tc.expect))
+			actual := flags.ExistsWithValue(tc.flag, tc.flagset) //nolint:scopelint
+			g.Expect(actual).To(Equal(tc.expect))                //nolint:scopelint
 		})
 	}
 }

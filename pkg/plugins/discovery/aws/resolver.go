@@ -59,7 +59,7 @@ func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSe
 	//TODO: create a declarative way to define flags
 
 	// Region
-	if flags.ExistsWithValue("role-arn", flagset) == false {
+	if !flags.ExistsWithValue("role-arn", flagset) {
 		errsValidation.AddFailure("role-arn is required")
 	}
 
