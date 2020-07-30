@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package flags
+package provider
 
 import (
 	"github.com/spf13/cobra"
@@ -23,23 +23,45 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// ClusterProviderConfig represents the base configuration for
+// a cluster provider
+type ClusterProviderConfig struct {
+	ClusterName *string `flag:"cluster"`
+}
+
+// IdentityProviderConfig represents the base configuration for an
+// identity provider.
+type IdentityProviderConfig struct {
+	Username *string `flag:"username"`
+	Password *string `flag:"password"`
+}
+
+// AddCommonClusterProviderFlags will add flags that are common to
+// all cluster providers
+func AddCommonClusterProviderFlags(cmd *cobra.Command) {
+	fs := pflag.NewFlagSet("", pflag.ContinueOnError)
+	fs.StringP("cluster", "c", "", "Name of the cluster to use.")
+
+	cmd.Flags().AddFlagSet(fs)
+}
+
 // AddCommonIdentityFlags will add common identity related flags to a command
-func AddCommonIdentityFlags(cmd *cobra.Command, username, password *string) {
-	flagSet := CommonIdentityFlagSet(username, password)
+func AddCommonIdentityFlags(cmd *cobra.Command) {
+	flagSet := CommonIdentityFlagSet()
 	cmd.Flags().AddFlagSet(flagSet)
 }
 
 // CommonIdentityFlagSet creates a flagset with the common identity flags
-func CommonIdentityFlagSet(username, password *string) *pflag.FlagSet {
+func CommonIdentityFlagSet() *pflag.FlagSet {
 	flagSet := &pflag.FlagSet{}
-	flagSet.StringVar(username, "username", "", "the username used for authentication")
-	flagSet.StringVar(password, "password", "", "the password to use for authentication")
+	flagSet.String("username", "", "the username used for authentication")
+	flagSet.String("password", "", "the password to use for authentication")
 
 	return flagSet
 }
 
 // AddKubeconfigFlag will add the kubeconfig flag to a command
-func AddKubeconfigFlag(cmd *cobra.Command, kubeconfig *string) {
+func AddKubeconfigFlag(cmd *cobra.Command) {
 	flagSet := &pflag.FlagSet{}
 
 	pathOptions := clientcmd.NewDefaultPathOptions()

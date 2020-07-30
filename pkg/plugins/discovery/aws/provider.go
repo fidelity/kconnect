@@ -17,9 +17,17 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/fidelity/kconnect/pkg/provider"
+	"fmt"
+
+	"github.com/aws/aws-sdk-go/service/eks/eksiface"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
+
+	"github.com/fidelity/kconnect/pkg/aws"
+	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/plugins/identity/saml"
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 func init() {
@@ -33,15 +41,21 @@ func newEKSProvider() *eksClusterProvider {
 	return &eksClusterProvider{}
 }
 
+type eksClusteProviderConfig struct {
+	provider.ClusterProviderConfig
+
+	Region     *string `flag:"region"`
+	Profile    *string `flag:"profile"`
+	RoleArn    *string `flag:"role-arn"`
+	RoleFilter *string `flag:"role-filter"`
+}
+
 // EKSClusterProvider will discover EKS clusters in AWS
 type eksClusterProvider struct {
-	region     *string
-	profile    *string
-	roleArn    *string
-	roleFilter *string
-	cluster    *string
-
-	flags *pflag.FlagSet
+	config    *eksClusteProviderConfig
+	identity  *saml.AWSIdentity
+	logger    *logrus.Entry
+	eksClient eksiface.EKSAPI
 }
 
 // Name returns the name of the provider
@@ -51,18 +65,13 @@ func (p *eksClusterProvider) Name() string {
 
 // Flags returns the flags for this provider
 func (p *eksClusterProvider) Flags() *pflag.FlagSet {
-	if p.flags == nil {
-		p.flags = &pflag.FlagSet{}
-		p.region = p.flags.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2")
-		p.profile = p.flags.String("profile", "", "AWS profile to use")
-		p.roleArn = p.flags.String("role-arn", "", "ARN of the AWS role to be assumed")
-		p.roleFilter = p.flags.String("role-filter", "*EKS*", "A filter to apply to the roles list")
+	fs := pflag.NewFlagSet("", pflag.ContinueOnError)
+	fs.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2")
+	fs.String("profile", "", "AWS profile to use")
+	fs.String("role-arn", "", "ARN of the AWS role to be assumed")
+	fs.String("role-filter", "*EKS*", "A filter to apply to the roles list")
 
-		//TODO: this is a common provider tag
-		p.cluster = p.flags.StringP("cluster", "c", "", "Name of a EKS cluster to use.")
-	}
-
-	return p.flags
+	return fs
 }
 
 // FlagsResolver returns the resolver to use for flags with this provider
@@ -73,4 +82,28 @@ func (p *eksClusterProvider) FlagsResolver() provider.FlagsResolver {
 // Usage returns a description for use in the help/usage
 func (p *eksClusterProvider) Usage() string {
 	return "discover and connect to AWS EKS clusters"
+}
+
+func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity, logger *logrus.Entry) error {
+	cfg := &eksClusteProviderConfig{}
+	if err := flags.Unmarshal(ctx.Command().Flags(), cfg); err != nil {
+		return fmt.Errorf("unmarshalling flags into config: %w", err)
+	}
+	p.config = cfg
+
+	awsID, ok := identity.(*saml.AWSIdentity)
+	if !ok {
+		return ErrNotAWSIdentity
+	}
+	p.identity = awsID
+
+	logger.Debugf("creating AWS session with region %s and profile %s", *p.config.Region, awsID.ProfileName)
+	session, err := aws.NewSession(*p.config.Region, awsID.ProfileName)
+	if err != nil {
+		return fmt.Errorf("getting aws session: %w", err)
+	}
+	p.eksClient = aws.NewEKSClient(session)
+
+	p.logger = logger
+	return nil
 }

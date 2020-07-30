@@ -21,10 +21,7 @@ import (
 
 	awsgo "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 
-	"github.com/fidelity/kconnect/pkg/aws"
-	idprov "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -32,16 +29,11 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 	logger := ctx.Logger().WithField("provider", "eks")
 	logger.Info("discovering EKS clusters AWS")
 
-	awsID := identity.(*idprov.AWSIdentity)
-
-	logger.Debugf("creating AWS session with region %s and profile %s", *p.region, awsID.ProfileName)
-	session, err := aws.NewSession(*p.region, awsID.ProfileName)
-	if err != nil {
-		return nil, fmt.Errorf("getting aws session: %w", err)
+	if err := p.setup(ctx, identity, logger); err != nil {
+		return nil, fmt.Errorf("setting up eks provider: %w", err)
 	}
-	eksClient := aws.NewEKSClient(session)
 
-	clusters, err := p.listClusters(eksClient)
+	clusters, err := p.listClusters()
 	if err != nil {
 		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
@@ -58,7 +50,7 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 	}
 
 	for _, clusterName := range clusters {
-		clusterDetail, err := p.getClusterConfig(*clusterName, eksClient)
+		clusterDetail, err := p.getClusterConfig(*clusterName)
 		if err != nil {
 			return nil, fmt.Errorf("getting cluster config: %w", err)
 		}
@@ -69,13 +61,13 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 	return discoverOutput, nil
 }
 
-func (p *eksClusterProvider) listClusters(client eksiface.EKSAPI) ([]*string, error) {
+func (p *eksClusterProvider) listClusters() ([]*string, error) {
 	input := &eks.ListClustersInput{}
 
 	//TODO: handle cluster name flag
 
 	clusters := []*string{}
-	err := client.ListClustersPages(input, func(page *eks.ListClustersOutput, lastPage bool) bool {
+	err := p.eksClient.ListClustersPages(input, func(page *eks.ListClustersOutput, lastPage bool) bool {
 		clusters = append(clusters, page.Clusters...)
 		return true
 	})
@@ -86,13 +78,13 @@ func (p *eksClusterProvider) listClusters(client eksiface.EKSAPI) ([]*string, er
 	return clusters, nil
 }
 
-func (p *eksClusterProvider) getClusterConfig(clusterName string, client eksiface.EKSAPI) (*provider.Cluster, error) {
+func (p *eksClusterProvider) getClusterConfig(clusterName string) (*provider.Cluster, error) {
 
 	input := &eks.DescribeClusterInput{
 		Name: awsgo.String(clusterName),
 	}
 
-	output, err := client.DescribeCluster(input)
+	output, err := p.eksClient.DescribeCluster(input)
 	if err != nil {
 		return nil, fmt.Errorf("describing cluster %s: %w", clusterName, err)
 	}

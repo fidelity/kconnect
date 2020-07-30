@@ -17,8 +17,6 @@ limitations under the License.
 package aws
 
 import (
-	"errors"
-
 	awsclient "github.com/aws/aws-sdk-go/aws/client"
 
 	"github.com/sirupsen/logrus"
@@ -27,12 +25,6 @@ import (
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
-)
-
-var (
-	ErrNoRoleArnFlag = errors.New("no role-arn flag found in resolver")
-	ErrNoSession     = errors.New("no aws session supplied")
-	ErrFlagMissing   = errors.New("flag missing")
 )
 
 // NewFlagsResolver creates a new flags resolver for AWS

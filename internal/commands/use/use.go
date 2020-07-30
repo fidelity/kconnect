@@ -28,7 +28,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/fidelity/kconnect/internal/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -112,7 +111,10 @@ func Command() *cobra.Command {
 	}
 
 	useCmd.Flags().StringVar(&params.IdpProtocol, "idp-protocol", "", "the idp protocol to use (e.g. saml)")
-	flags.AddKubeconfigFlag(useCmd, &params.Kubeconfig)
+	provider.AddKubeconfigFlag(useCmd)
+	//TODO: should these be added in the actual plugins???
+	provider.AddCommonIdentityFlags(useCmd)
+	provider.AddCommonClusterProviderFlags(useCmd)
 
 	useCmd.SetUsageFunc(usage)
 
