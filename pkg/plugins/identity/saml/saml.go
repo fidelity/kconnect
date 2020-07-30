@@ -40,6 +40,7 @@ var (
 	ErrUnsuportedProvider     = errors.New("cluster provider not supported")
 	ErrMissingResponseElement = errors.New("missing response element")
 	ErrNoSAMLAssertions       = errors.New("no SAML assertions")
+	ErrCreatingAccount        = errors.New("creating account")
 )
 
 func init() {
@@ -102,7 +103,7 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 
 	account, err := p.createAccount(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("creating account")
+		return nil, ErrCreatingAccount
 	}
 
 	exist, err := p.store.CredsExists()

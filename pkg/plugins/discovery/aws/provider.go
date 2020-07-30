@@ -21,7 +21,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 
 	"github.com/fidelity/kconnect/pkg/aws"
@@ -33,7 +32,7 @@ import (
 func init() {
 	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register EKS cluster provider plugin: %v", err)
+		logrus.Fatalf("Failed to register EKS cluster provider plugin: %v", err)
 	}
 }
 
