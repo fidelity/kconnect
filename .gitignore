@@ -19,3 +19,5 @@ bin/
 # vim swp files
 *.swp
 
+.vscode/
+

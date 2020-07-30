@@ -13,19 +13,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package aws
+
+package flags
 
 import (
-	"github.com/fidelity/kconnect/pkg/providers"
+	"errors"
+
 	"github.com/spf13/pflag"
 )
 
-// AWSFlagsResolver is used to resolve the values for AWS related flags interactively.
-type FlagsResolver struct {
-}
+var (
+	// ErrFlagMissing is an error when there is no flag with a given name
+	ErrFlagMissing = errors.New("flag missing")
+)
 
-// Resolve will resolve the values for the AWS specific flags that have no value. It will
-// query AWS and interactively ask the user for selections.
-func (r *FlagsResolver) Resolve(identity providers.Identity, flags *pflag.FlagSet) error {
-	return nil
+// ExistsWithValue returns true if a flag exists in a flagset and has a value
+// and that value is non-empty
+func ExistsWithValue(name string, flags *pflag.FlagSet) bool {
+	flag := flags.Lookup(name)
+	if flag == nil {
+		return false
+	}
+
+	if flag.Value == nil {
+		return false
+	}
+
+	if flag.Value.String() == "" {
+		return false
+	}
+
+	return true
 }

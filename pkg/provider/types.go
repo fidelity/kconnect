@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package providers
+
+package provider
 
 import (
 	"github.com/spf13/pflag"
@@ -28,20 +29,32 @@ import (
 type ClusterProvider interface {
 	Plugin
 
-	FlagsResolver() FlagsResolver
+	Discover(ctx *Context, identity Identity) (*DiscoverOutput, error)
 
-	//Discover(identity identity.Identity, options map[string]string) (map[credentials][]clusters, error)
+	FlagsResolver() FlagsResolver
 }
+
+// type ProviderScope string
+
+// const (
+// 	IdentityProviderScope ProviderScope = "Identity"
+// 	ClusterProviderScope  ProviderScope = "Cluster"
+// )
 
 // FlagsResolver is used to resolve the values for flags interactively.
 // There will be a flags resolver for Azure, AWS and Rancher initially.
 type FlagsResolver interface {
 
-	// Resolve will resolve the values for the supplied flags. It would interactively
+	// Validate is used to validate the flags and return any errors
+	Validate(ctx *Context, flags *pflag.FlagSet) error
+
+	// Resolve will resolve the values for the supplied context. It will interactively
 	// resolve the values by asking the user for selections. It will basically set the
 	// Value on each pflag.Flag
-	Resolve(identity Identity, flags *pflag.FlagSet) error
+	Resolve(ctx *Context, flags *pflag.FlagSet) error
 }
+
+type FlagResolveFunc func(name string, flags *pflag.FlagSet) error
 
 // IdentityProvider represents the interface used to implement an identity provider
 // plugin. It provides authentication and authorization functionality.
@@ -50,24 +63,45 @@ type IdentityProvider interface {
 
 	// Authenticate will authenticate a user and return details of
 	// their identity.
-	Authenticate() (Identity, error)
+	Authenticate(ctx *Context, clusterProvider string) (Identity, error)
+}
+
+// IdentityStore represents an way to store and retrieve credentials
+type IdentityStore interface {
+	CredsExists() (bool, error)
+	Save(identity Identity) error
+	Load() (Identity, error)
+	Expired() bool
+}
+
+// DiscoverOutput holds details of the output of the discovery
+type DiscoverOutput struct {
+	ClusterProviderName  string `yaml:"clusterprovider"`
+	IdentityProviderName string `yaml:"identityprovider"`
+
+	Clusters map[string]*Cluster `yaml:"clusters"`
 }
 
 // Cluster represents the information about a discovered k8s cluster
 // NOTE: fields in this struct are only for illustration and more though needs to
 // go into it
-type Cluster interface {
-	Name() string
-
-	ID() string
-
-	Region() string
+type Cluster struct {
+	ID                       string  `yaml:"id"`
+	Name                     string  `yaml:"name"`
+	ControlPlaneEndpoint     *string `yaml:"endpoint"`
+	CertificateAuthorityData *string `yaml:"ca"`
 }
 
 // Identity represents a users identity for use with discovery.
 // NOTE: details of this need finalising
 type Identity interface {
 }
+
+// type PluginFlag struct {
+// 	pflag.Flag
+
+// 	Required bool
+// }
 
 // Plugin is an interface that can be implemented for returned usage information
 type Plugin interface {
