@@ -22,12 +22,11 @@ import (
 	"strings"
 	"unicode"
 
-	"gopkg.in/yaml.v2"
-
 	survey "github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/fidelity/kconnect/pkg/k8s/kubeconfig"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -43,11 +42,8 @@ var (
 )
 
 type useCmdParams struct {
-	Username         string
-	Password         string
 	Kubeconfig       string
 	IdpProtocol      string
-	IdpEndpoint      string
 	Provider         provider.ClusterProvider
 	IdentityProvider provider.IdentityProvider
 	Identity         provider.Identity
@@ -171,13 +167,14 @@ func doUse(params *useCmdParams) error {
 		return fmt.Errorf("selecting cluster: %w", err)
 	}
 
-	//TODO create the config
-
-	data, err := yaml.Marshal(cluster)
+	kubeConfig, err := provider.GetClusterConfig(params.Context, cluster)
 	if err != nil {
-		return fmt.Errorf("marsahlling cluster as yaml: %w", err)
+		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
-	fmt.Printf("%s\n", string(data))
+
+	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig); err != nil {
+		return fmt.Errorf("writing cluster kubeconfig: %w", err)
+	}
 
 	return nil
 }

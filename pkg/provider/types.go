@@ -18,6 +18,7 @@ package provider
 
 import (
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 // ClusterProvider is the interface that is used to implement providers
@@ -29,8 +30,12 @@ import (
 type ClusterProvider interface {
 	Plugin
 
+	// Discover will discover what clusters the supplied identity has access to
 	Discover(ctx *Context, identity Identity) (*DiscoverOutput, error)
 
+	GetClusterConfig(ctx *Context, cluster *Cluster) (*api.Config, error)
+
+	// FlagsResolver returns the resolver used to inetractively resolve flags
 	FlagsResolver() FlagsResolver
 }
 
@@ -83,8 +88,6 @@ type DiscoverOutput struct {
 }
 
 // Cluster represents the information about a discovered k8s cluster
-// NOTE: fields in this struct are only for illustration and more though needs to
-// go into it
 type Cluster struct {
 	ID                       string  `yaml:"id"`
 	Name                     string  `yaml:"name"`
@@ -96,12 +99,6 @@ type Cluster struct {
 // NOTE: details of this need finalising
 type Identity interface {
 }
-
-// type PluginFlag struct {
-// 	pflag.Flag
-
-// 	Required bool
-// }
 
 // Plugin is an interface that can be implemented for returned usage information
 type Plugin interface {
