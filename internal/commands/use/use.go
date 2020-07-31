@@ -19,6 +19,7 @@ package use
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -72,7 +73,6 @@ func Command() *cobra.Command {
 			params.Context = provider.NewContext(
 				cmd,
 				provider.WithLogger(logger),
-				//TODO: add interactive flag
 			)
 
 			log.Infof("using cluster provider %s", params.Provider.Name())
@@ -93,6 +93,17 @@ func Command() *cobra.Command {
 			return nil
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// Update the context now the flags have been parsed
+			interactive, err := isInteractive(cmd)
+			if err != nil {
+				return fmt.Errorf("getting interactive flag: %w", err)
+			}
+			params.Context = provider.NewContext(
+				cmd,
+				provider.WithLogger(logger),
+				provider.WithInteractive(interactive),
+			)
+
 			identity, err := params.IdentityProvider.Authenticate(params.Context, params.Provider.Name())
 			if err != nil {
 				return fmt.Errorf("authenticating using provider %s: %w", params.IdentityProvider.Name(), err)
@@ -118,7 +129,6 @@ func Command() *cobra.Command {
 }
 
 func usage(cmd *cobra.Command) error {
-	//usage := cmd.UseLine()
 	usage := []string{fmt.Sprintf("Usage: %s %s [provider] [flags]", cmd.Parent().CommandPath(), cmd.Use)}
 
 	providers := provider.ListClusterProviders()
@@ -216,4 +226,18 @@ func findIdpProtocolFromArgs(args []string) string {
 	}
 
 	return args[index+1]
+}
+
+func isInteractive(cmd *cobra.Command) (bool, error) {
+	flag := cmd.Flags().Lookup("non-interactive")
+	if flag == nil {
+		return false, nil
+	}
+
+	ni, err := strconv.ParseBool(flag.Value.String())
+	if err != nil {
+		return false, fmt.Errorf("parsing interactive flag: %w", err)
+	}
+
+	return !ni, nil
 }

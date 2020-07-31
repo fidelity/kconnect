@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.23.15
 	github.com/beevik/etree v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/go-playground/validator/v10 v10.3.0
 	github.com/imdario/mergo v0.3.10
 	github.com/kr/text v0.2.0 // indirect
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect

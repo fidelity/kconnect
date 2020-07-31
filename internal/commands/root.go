@@ -58,7 +58,7 @@ func Execute() error {
 	//TODO: change the below back to INFO
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.DebugLevel.String(), "Log level for the CLI. Defaults to INFO")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "TEXT", "Format of the log output. Defaults to text.")
-	rootCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "i", true, "Run with interactive flag resolution. Defaults to true")
+	rootCmd.PersistentFlags().BoolVar(&interactive, "non-interactive", false, "Run without interactive flag resolution. Defaults to false")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
 	rootCmd.AddCommand(use.Command())

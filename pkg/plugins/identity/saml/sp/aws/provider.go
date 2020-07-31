@@ -14,100 +14,64 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package saml
+package aws
 
 import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/beevik/etree"
-	"github.com/fidelity/kconnect/pkg/flags"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
+
 	"github.com/versent/saml2aws"
 	"github.com/versent/saml2aws/pkg/awsconfig"
 	"github.com/versent/saml2aws/pkg/cfg"
+
+	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
+	"github.com/fidelity/kconnect/pkg/provider"
+)
+
+const (
+	responseTag = "Response"
 )
 
 var (
-	ErrUnexpectedIdentity = errors.New("unexpected identity type")
-	ErrNoRegion           = errors.New("no region found")
-	ErrNoProfile          = errors.New("no profile found")
-	ErrNoRolesFound       = errors.New("no aws roles found")
-	ErrNotAccounts        = errors.New("no accounts available")
+	ErrUnexpectedIdentity     = errors.New("unexpected identity type")
+	ErrNoRegion               = errors.New("no region found")
+	ErrNoProfile              = errors.New("no profile supplied")
+	ErrNoRolesFound           = errors.New("no aws roles found")
+	ErrNotAccounts            = errors.New("no accounts available")
+	ErrMissingResponseElement = errors.New("missing response element")
 )
 
-func newAWSIdentityStore(providerFlags *pflag.FlagSet) (provider.IdentityStore, error) {
-	if !flags.ExistsWithValue("profile", providerFlags) {
-		return nil, ErrNoProfile
-	}
-	profileFlag := providerFlags.Lookup("profile")
+type awsProviderConfig struct {
+	sp.ProviderConfig
 
-	return &awsIdentityStore{
-		configProvider: awsconfig.NewSharedCredentials(profileFlag.Value.String()),
-	}, nil
+	Region  string `flag:"region" validate:"required"`
+	Profile string `flag:"profile" validate:"required"`
 }
 
-type awsIdentityStore struct {
-	configProvider *awsconfig.CredentialsProvider
-}
-
-func (s *awsIdentityStore) CredsExists() (bool, error) {
-	return s.configProvider.CredsExists()
-}
-
-func (s *awsIdentityStore) Save(identity provider.Identity) error {
-	awsIdentity, ok := identity.(*AWSIdentity)
-	if !ok {
-		return fmt.Errorf("expected AWSIdentity but got a %T: %w", identity, ErrUnexpectedIdentity)
-	}
-	awsCreds := mapIdentityToCreds(awsIdentity)
-
-	return s.configProvider.Save(awsCreds)
-}
-
-func (s *awsIdentityStore) Load() (provider.Identity, error) {
-	creds, err := s.configProvider.Load()
-	if err != nil {
-		return nil, fmt.Errorf("loading credentials: %w", err)
-	}
-	awsID := mapCredsToIdentity(creds, s.configProvider.Profile)
-
-	return awsID, nil
-}
-
-func (s *awsIdentityStore) Expired() bool {
-	return s.configProvider.Expired()
-}
-
-type AWSIdentity struct {
-	ProfileName      string
-	AWSAccessKey     string
-	AWSSecretKey     string
-	AWSSessionToken  string
-	AWSSecurityToken string
-	PrincipalARN     string
-	Expires          time.Time
-	Region           string
-}
-
-func newAWSIdentity(profileName string) *AWSIdentity {
-	return &AWSIdentity{
-		ProfileName: profileName,
+func NewServiceProvider(logger *log.Entry) sp.ServiceProvider {
+	return &ServiceProvider{
+		logger: logger.WithField("serviceprovider", "aws"),
 	}
 }
 
-type awsServiveProvider struct {
-	logger *log.Entry
+type ServiceProvider struct {
+	logger  *log.Entry
+	session client.ConfigProvider
 }
 
-func (p *awsServiveProvider) PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error {
+func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error {
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 
 	regionFlag := flags.Lookup("region")
@@ -131,7 +95,7 @@ func (p *awsServiveProvider) PopulateAccount(account *cfg.IDPAccount, flags *pfl
 	return nil
 }
 
-func (p *awsServiveProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error) {
+func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error) {
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -167,7 +131,7 @@ func (p *awsServiveProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsse
 	return awsIdentity, nil
 }
 
-func (p *awsServiveProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
+func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
 	var role = new(saml2aws.AWSRole)
 
 	if len(awsRoles) == 1 {
@@ -218,7 +182,7 @@ func (p *awsServiveProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAsser
 	return role, nil
 }
 
-func (p *awsServiveProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
+func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: &account.Region,
 	})
@@ -253,7 +217,7 @@ func (p *awsServiveProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *
 }
 
 // TODO: use the version form saml2aws when modules are fixed
-func (p *awsServiveProvider) extractDestinationURL(data []byte) (string, error) {
+func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes(data); err != nil {
@@ -273,12 +237,23 @@ func (p *awsServiveProvider) extractDestinationURL(data []byte) (string, error) 
 	return destination, nil
 }
 
-func (p *awsServiveProvider) Resolver() provider.FlagsResolver {
-	return NewAWSFlagsResolver(p.logger)
+func (p *ServiceProvider) Validate(ctx *provider.Context, flagset *pflag.FlagSet) error {
+	config := &awsProviderConfig{}
+
+	if err := flags.Unmarshal(flagset, config); err != nil {
+		return fmt.Errorf("unmarshlling flags to config: %w", err)
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(config); err != nil {
+		return fmt.Errorf("validating config struct: %w", err)
+	}
+
+	return nil
 }
 
-func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *AWSIdentity {
-	return &AWSIdentity{
+func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {
+	return &Identity{
 		AWSAccessKey:     creds.AWSAccessKey,
 		AWSSecretKey:     creds.AWSSecretKey,
 		AWSSecurityToken: creds.AWSSecurityToken,
@@ -289,7 +264,7 @@ func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *AW
 	}
 }
 
-func mapIdentityToCreds(awsIdentity *AWSIdentity) *awsconfig.AWSCredentials {
+func mapIdentityToCreds(awsIdentity *Identity) *awsconfig.AWSCredentials {
 	return &awsconfig.AWSCredentials{
 		AWSAccessKey:     awsIdentity.AWSAccessKey,
 		AWSSecretKey:     awsIdentity.AWSSecretKey,

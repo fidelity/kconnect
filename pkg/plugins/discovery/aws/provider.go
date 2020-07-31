@@ -25,7 +25,7 @@ import (
 
 	"github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/flags"
-	"github.com/fidelity/kconnect/pkg/plugins/identity/saml"
+	awssp "github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -52,7 +52,7 @@ type eksClusteProviderConfig struct {
 // EKSClusterProvider will discover EKS clusters in AWS
 type eksClusterProvider struct {
 	config    *eksClusteProviderConfig
-	identity  *saml.AWSIdentity
+	identity  *awssp.Identity
 	logger    *logrus.Entry
 	eksClient eksiface.EKSAPI
 }
@@ -90,7 +90,7 @@ func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Iden
 	}
 	p.config = cfg
 
-	awsID, ok := identity.(*saml.AWSIdentity)
+	awsID, ok := identity.(*awssp.Identity)
 	if !ok {
 		return ErrNotAWSIdentity
 	}

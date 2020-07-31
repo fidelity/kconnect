@@ -32,8 +32,8 @@ type ClusterProviderConfig struct {
 // IdentityProviderConfig represents the base configuration for an
 // identity provider.
 type IdentityProviderConfig struct {
-	Username *string `flag:"username"`
-	Password *string `flag:"password"`
+	Username string `flag:"username" validate:"required"`
+	Password string `flag:"password" validate:"required"`
 }
 
 // AddCommonClusterProviderFlags will add flags that are common to

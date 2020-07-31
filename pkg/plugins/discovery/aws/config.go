@@ -25,12 +25,11 @@ import (
 )
 
 func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster) (*api.Config, error) {
-	clusterName := fmt.Sprintf("kc-eks-%s", *&cluster.Name)
-	userName := fmt.Sprintf("kc-%s", p.identity.ProfileName)
+	clusterName := fmt.Sprintf("kconnect-eks-%s", cluster.Name)
+	userName := fmt.Sprintf("kconnect-%s", p.identity.ProfileName)
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
 
 	cfg := &api.Config{
-		APIVersion: api.SchemeGroupVersion.Version,
 		Clusters: map[string]*api.Cluster{
 			clusterName: {
 				Server:                   *cluster.ControlPlaneEndpoint,
@@ -51,7 +50,7 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 		Args: []string{
 			"token",
 			"-i",
-			*&cluster.Name,
+			cluster.Name,
 		},
 		Env: []api.ExecEnvVar{
 			{
