@@ -19,9 +19,10 @@ package version
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/version"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+
+	"github.com/fidelity/kconnect/internal/version"
 )
 
 //Command creates the version cobra command

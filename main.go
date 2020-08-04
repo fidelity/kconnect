@@ -17,18 +17,15 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"os"
+	"github.com/sirupsen/logrus"
 
 	"github.com/fidelity/kconnect/internal/commands"
 	_ "github.com/fidelity/kconnect/pkg/plugins" // Import all the plugins
 )
 
 func main() {
-	if err := commands.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	rootCmd := commands.RootCmd()
+	if err := rootCmd.Execute(); err != nil {
+		logrus.Fatal(err)
 	}
-
-	os.Exit(0)
 }
