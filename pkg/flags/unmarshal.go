@@ -145,7 +145,6 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 
 func unmarshallFlag(flag *pflag.Flag, out reflect.Value) error {
 	fieldT := out.Type()
-	fmt.Println(fieldT.Kind())
 
 	flagValueStr := flag.Value.String()
 
