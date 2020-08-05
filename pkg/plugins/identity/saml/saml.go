@@ -27,20 +27,20 @@ import (
 	"github.com/versent/saml2aws/pkg/creds"
 
 	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
+	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-const (
-	responseTag    = "Response"
-	defaultSession = 3600
+var (
+	ErrNoClusterProvider  = errors.New("no cluster provider on the context")
+	ErrUnsuportedProvider = errors.New("cluster provider not supported")
+	ErrNoSAMLAssertions   = errors.New("no SAML assertions")
+	ErrCreatingAccount    = errors.New("creating account")
 )
 
-var (
-	ErrNoClusterProvider      = errors.New("no cluster provider on the context")
-	ErrUnsuportedProvider     = errors.New("cluster provider not supported")
-	ErrMissingResponseElement = errors.New("missing response element")
-	ErrNoSAMLAssertions       = errors.New("no SAML assertions")
-	ErrCreatingAccount        = errors.New("creating account")
+const (
+	defaultSession = 3600
 )
 
 func init() {
@@ -50,27 +50,15 @@ func init() {
 	}
 }
 
-type samlProviderConfig struct {
-	provider.IdentityProviderConfig
-	IdpEndpoint *string `flag:"idp-endpoint"`
-	IdpProvider *string `flag:"idp-provider"`
-}
-
 func newSAMLProvider() *samlIdentityProvider {
 	return &samlIdentityProvider{}
 }
 
 type samlIdentityProvider struct {
-	config          *samlProviderConfig
+	config          *sp.ProviderConfig
 	logger          *logrus.Entry
-	serviceProvider samlServiceProvider
+	serviceProvider sp.ServiceProvider
 	store           provider.IdentityStore
-}
-
-type samlServiceProvider interface {
-	Resolver() provider.FlagsResolver
-	PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error
-	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error)
 }
 
 // Name returns the name of the plugin
@@ -89,16 +77,23 @@ func (p *samlIdentityProvider) Flags() *pflag.FlagSet {
 
 // Authenticate will authenticate a user and returns their identity
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	logger := ctx.Logger().WithField("provider", "saml")
-	logger.Info("Authenticating user")
+	p.logger = ctx.Logger().WithField("provider", "saml")
+	p.logger.Info("Authenticating user")
 
-	//TODO: should this be on the interface and the registry call it???
-	if err := p.setup(ctx, clusterProvider, logger); err != nil {
+	if err := p.createServiceProvider(clusterProvider); err != nil {
 		return nil, fmt.Errorf("setting up saml provider: %w", err)
 	}
 
 	if err := p.resolveAndValidateFlags(ctx); err != nil {
 		return nil, err
+	}
+
+	if err := p.bindFlags(ctx); err != nil {
+		return nil, fmt.Errorf("binding flags: %w", err)
+	}
+
+	if err := p.createStore(ctx, clusterProvider); err != nil {
+		return nil, fmt.Errorf("creating identity store: %w", err)
 	}
 
 	account, err := p.createAccount(ctx)
@@ -112,10 +107,14 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	}
 	if exist {
 		if !p.store.Expired() {
-			logger.Info("using cached creds")
-			return newAWSIdentity(account.Profile), nil
+			p.logger.Info("using cached creds")
+			id, err := p.store.Load()
+			if err != nil {
+				return nil, fmt.Errorf("loading idebtity: %w", err)
+			}
+			return id, nil
 		}
-		logger.Info("cached creds expired, renewing")
+		p.logger.Info("cached creds expired, renewing")
 	}
 
 	err = account.Validate()
@@ -129,9 +128,9 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	}
 
 	loginDetails := &creds.LoginDetails{
-		Username: *p.config.Username,
-		Password: *p.config.Password,
-		URL:      *p.config.IdpEndpoint,
+		Username: p.config.Username,
+		Password: p.config.Password,
+		URL:      p.config.IdpEndpoint,
 	}
 
 	samlAssertion, err := client.Authenticate(loginDetails)
@@ -156,34 +155,30 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	return userID, nil
 }
 
-func (p *samlIdentityProvider) setup(ctx *provider.Context, providerName string, logger *logrus.Entry) error {
-	cfg := &samlProviderConfig{}
+func (p *samlIdentityProvider) bindFlags(ctx *provider.Context) error {
+	cfg := &sp.ProviderConfig{}
 	if err := flags.Unmarshal(ctx.Command().Flags(), cfg); err != nil {
 		return fmt.Errorf("unmarshalling flags into config: %w", err)
 	}
+	p.config = cfg
 
-	sp, err := p.createServiceProvider(ctx, providerName, logger)
-	if err != nil {
-		return fmt.Errorf("creating SAML service provider for %s: %w", providerName, err)
-	}
-	p.serviceProvider = sp
+	return nil
+}
 
+func (p *samlIdentityProvider) createStore(ctx *provider.Context, providerName string) error {
 	store, err := p.createIdentityStore(ctx, providerName)
 	if err != nil {
 		return fmt.Errorf("creating identity store for %s: %w", providerName, err)
 	}
 	p.store = store
 
-	p.config = cfg
-	p.logger = logger
-
 	return nil
 }
 
 func (p *samlIdentityProvider) createAccount(ctx *provider.Context) (*cfg.IDPAccount, error) {
 	account := &cfg.IDPAccount{
-		URL:             *p.config.IdpEndpoint,
-		Provider:        *p.config.IdpProvider,
+		URL:             p.config.IdpEndpoint,
+		Provider:        p.config.IdpProvider,
 		MFA:             "Auto",
 		SessionDuration: defaultSession,
 	}
@@ -195,29 +190,31 @@ func (p *samlIdentityProvider) createAccount(ctx *provider.Context) (*cfg.IDPAcc
 }
 
 func (p *samlIdentityProvider) resolveAndValidateFlags(ctx *provider.Context) error {
-	resolver := p.serviceProvider.Resolver()
+	sp := p.serviceProvider
 
 	if ctx.IsInteractive() {
 		p.logger.Debug("running interactively, resolving SAML provider flags")
-		if err := resolver.Resolve(ctx, ctx.Command().Flags()); err != nil {
+		if err := sp.ResolveFlags(ctx, ctx.Command().Flags()); err != nil {
 			return fmt.Errorf("resolving flags: %w", err)
 		}
 	}
 
-	if err := resolver.Validate(ctx, ctx.Command().Flags()); err != nil {
+	if err := sp.Validate(ctx, ctx.Command().Flags()); err != nil {
 		return fmt.Errorf("validating supplied flags: %w", err)
 	}
 
 	return nil
 }
 
-func (p *samlIdentityProvider) createServiceProvider(_ *provider.Context, providerName string, logger *logrus.Entry) (samlServiceProvider, error) {
+func (p *samlIdentityProvider) createServiceProvider(providerName string) error {
 	switch providerName {
 	case "eks":
-		return &awsServiveProvider{logger: logger}, nil
+		p.serviceProvider = aws.NewServiceProvider(p.logger)
 	default:
-		return nil, ErrUnsuportedProvider
+		return ErrUnsuportedProvider
 	}
+
+	return nil
 }
 
 func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
@@ -226,7 +223,7 @@ func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, provid
 
 	switch providerName {
 	case "eks":
-		store, err = newAWSIdentityStore(ctx.Command().Flags())
+		store, err = aws.NewIdentityStore(ctx.Command().Flags())
 	default:
 		return nil, ErrUnsuportedProvider
 	}

@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package saml
+package aws
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func (r *awsFlagsResolver) resolveProfile(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveProfile(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -40,7 +40,7 @@ func (r *awsFlagsResolver) resolveProfile(name string, flagset *pflag.FlagSet) e
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveRegion(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveRegion(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -55,7 +55,7 @@ func (r *awsFlagsResolver) resolveRegion(name string, flagset *pflag.FlagSet) er
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveUsername(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveUsername(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -70,7 +70,7 @@ func (r *awsFlagsResolver) resolveUsername(name string, flagset *pflag.FlagSet) 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolvePassword(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolvePassword(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (r *awsFlagsResolver) resolvePassword(name string, flagset *pflag.FlagSet) 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveIdpEndpoint(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveIdpEndpoint(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -101,7 +101,7 @@ func (r *awsFlagsResolver) resolveIdpEndpoint(name string, flagset *pflag.FlagSe
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -116,7 +116,7 @@ func (r *awsFlagsResolver) resolveIdpProvider(name string, flagset *pflag.FlagSe
 	return nil
 }
 
-// func (r *awsFlagsResolver) resolveRoleARN(name string, flagset *pflag.FlagSet) error {
+// func (r *ServiceProvider) resolveRoleARN(name string, flagset *pflag.FlagSet) error {
 // 	if flags.ExistsWithValue(name, flagset) {
 // 		return nil
 // 	}

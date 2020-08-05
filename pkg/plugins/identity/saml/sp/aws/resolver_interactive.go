@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package saml
+package aws
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/flags"
 )
 
-func (r *awsFlagsResolver) resolveProfile(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveProfile(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -41,14 +41,14 @@ func (r *awsFlagsResolver) resolveProfile(name string, flagset *pflag.FlagSet) e
 	}
 
 	if err := flagset.Set(name, profile); err != nil {
-		r.logger.Errorf("failed setting profile flag to %s: %s", profile, err.Error())
+		p.logger.Errorf("failed setting profile flag to %s: %s", profile, err.Error())
 		return fmt.Errorf("setting profile flag: %w", err)
 	}
 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveRegion(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveRegion(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -63,14 +63,14 @@ func (r *awsFlagsResolver) resolveRegion(name string, flagset *pflag.FlagSet) er
 	}
 
 	if err := flagset.Set(name, region); err != nil {
-		r.logger.Errorf("failed setting region flag to %s: %s", region, err.Error())
+		p.logger.Errorf("failed setting region flag to %s: %s", region, err.Error())
 		return fmt.Errorf("setting region flag: %w", err)
 	}
 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveUsername(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveUsername(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -84,14 +84,14 @@ func (r *awsFlagsResolver) resolveUsername(name string, flagset *pflag.FlagSet) 
 	}
 
 	if err := flagset.Set(name, username); err != nil {
-		r.logger.Errorf("failed setting username flag to %s: %s", username, err.Error())
+		p.logger.Errorf("failed setting username flag to %s: %s", username, err.Error())
 		return fmt.Errorf("setting username flag: %w", err)
 	}
 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolvePassword(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolvePassword(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -106,14 +106,14 @@ func (r *awsFlagsResolver) resolvePassword(name string, flagset *pflag.FlagSet) 
 	}
 
 	if err := flagset.Set(name, password); err != nil {
-		r.logger.Errorf("failed setting password flag to %s: %s", password, err.Error())
+		p.logger.Errorf("failed setting password flag to %s: %s", password, err.Error())
 		return fmt.Errorf("setting password flag: %w", err)
 	}
 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveIdpEndpoint(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveIdpEndpoint(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -127,14 +127,14 @@ func (r *awsFlagsResolver) resolveIdpEndpoint(name string, flagset *pflag.FlagSe
 	}
 
 	if err := flagset.Set(name, endpoint); err != nil {
-		r.logger.Errorf("failed setting idp-endpoint flag to %s: %s", endpoint, err.Error())
+		p.logger.Errorf("failed setting idp-endpoint flag to %s: %s", endpoint, err.Error())
 		return fmt.Errorf("setting idp-endpoint flag: %w", err)
 	}
 
 	return nil
 }
 
-func (r *awsFlagsResolver) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -151,14 +151,14 @@ func (r *awsFlagsResolver) resolveIdpProvider(name string, flagset *pflag.FlagSe
 	}
 
 	if err := flagset.Set(name, idpProvider); err != nil {
-		r.logger.Errorf("failed setting idp-provider flag to %s: %s", idpProvider, err.Error())
+		p.logger.Errorf("failed setting idp-provider flag to %s: %s", idpProvider, err.Error())
 		return fmt.Errorf("setting idp-provider flag: %w", err)
 	}
 
 	return nil
 }
 
-// func (r *awsFlagsResolver) resolveRoleARN(name string, flagset *pflag.FlagSet) error {
+// func (r *ServiceProvider) resolveRoleARN(name string, flagset *pflag.FlagSet) error {
 // 	if flags.ExistsWithValue(name, flagset) {
 // 		return nil
 // 	}

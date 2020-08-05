@@ -18,11 +18,9 @@ package commands
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
-	"github.com/fidelity/kconnect/pkg/logging"
 
 	home "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
@@ -39,8 +37,8 @@ var (
 	interactive bool
 )
 
-// Execute setups and starts the root kconnect command
-func Execute() error {
+// RootCmd creates the root kconnect command
+func RootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "kconnect",
 		Short: "The Kubernetes Connection Manager CLI",
@@ -58,7 +56,7 @@ func Execute() error {
 	//TODO: change the below back to INFO
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.DebugLevel.String(), "Log level for the CLI. Defaults to INFO")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "TEXT", "Format of the log output. Defaults to text.")
-	rootCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "i", true, "Run with interactive flag resolution. Defaults to true")
+	rootCmd.PersistentFlags().BoolVar(&interactive, "non-interactive", false, "Run without interactive flag resolution. Defaults to false")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
 	rootCmd.AddCommand(use.Command())
@@ -66,16 +64,16 @@ func Execute() error {
 
 	cobra.OnInitialize(initConfig)
 
-	err := logging.Configure(logLevel, logFormat)
-	if err != nil {
-		return fmt.Errorf("configuring logging: %w", err)
-	}
+	// err := logging.Configure(logLevel, logFormat)
+	// if err != nil {
+	// 	return fmt.Errorf("configuring logging: %w", err)
+	// }
 
-	if err := rootCmd.Execute(); err != nil {
-		return fmt.Errorf("executing root command: %w", err)
-	}
+	// if err := rootCmd.Execute(); err != nil {
+	// 	return fmt.Errorf("executing root command: %w", err)
+	// }
 
-	return nil
+	return rootCmd
 }
 
 func initConfig() {

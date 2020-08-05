@@ -14,18 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package aws
 
 import (
-	"github.com/sirupsen/logrus"
-
-	"github.com/fidelity/kconnect/internal/commands"
-	_ "github.com/fidelity/kconnect/pkg/plugins" // Import all the plugins
+	"time"
 )
 
-func main() {
-	rootCmd := commands.RootCmd()
-	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
-	}
+// Identity represents an AWS identity
+type Identity struct {
+	ProfileName      string
+	AWSAccessKey     string
+	AWSSecretKey     string
+	AWSSessionToken  string
+	AWSSecurityToken string
+	PrincipalARN     string
+	Expires          time.Time
+	Region           string
 }
