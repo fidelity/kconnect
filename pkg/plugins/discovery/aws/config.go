@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -29,11 +30,16 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 	userName := fmt.Sprintf("kconnect-%s", p.identity.ProfileName)
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
 
+	certData, err := base64.StdEncoding.DecodeString(*cluster.CertificateAuthorityData)
+	if err != nil {
+		return nil, fmt.Errorf("decoding certificate: %w", err)
+	}
+
 	cfg := &api.Config{
 		Clusters: map[string]*api.Cluster{
 			clusterName: {
 				Server:                   *cluster.ControlPlaneEndpoint,
-				CertificateAuthorityData: []byte(*cluster.CertificateAuthorityData),
+				CertificateAuthorityData: certData,
 			},
 		},
 		Contexts: map[string]*api.Context{
