@@ -18,6 +18,9 @@ builds:
       goarch:
         - amd64
 
+release:
+    prerelease: auto
+
 archives:
     -
       id: default
@@ -47,4 +50,5 @@ changelog:
             - '^test:'
             - '^chore:'
             - '^style:'
+            - '^Merge'
 
