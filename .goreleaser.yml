@@ -52,3 +52,16 @@ changelog:
             - '^style:'
             - '^Merge'
 
+brews:
+  -
+    id: default
+    tap:
+        owner: fidelity
+        name: homebrew-tap
+    homepage: "https://github.com/fidelity/kconnect"
+    description: "The Kubernetes Connection Manager CLI"
+    dependencies:
+      - kubernetes-cli
+      - aws-iam-authenticator
+
+
