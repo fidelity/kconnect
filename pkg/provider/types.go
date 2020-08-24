@@ -39,13 +39,6 @@ type ClusterProvider interface {
 	FlagsResolver() FlagsResolver
 }
 
-// type ProviderScope string
-
-// const (
-// 	IdentityProviderScope ProviderScope = "Identity"
-// 	ClusterProviderScope  ProviderScope = "Cluster"
-// )
-
 // FlagsResolver is used to resolve the values for flags interactively.
 // There will be a flags resolver for Azure, AWS and Rancher initially.
 type FlagsResolver interface {

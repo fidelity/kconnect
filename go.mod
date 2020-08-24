@@ -45,4 +45,8 @@ require (
 
 )
 
-replace github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
+replace (
+	github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
+	//github.com/versent/saml2aws => github.com/richardcase/saml2aws v1.8.5-0.20200812194235-9d04b17acf54
+    github.com/versent/saml2aws => ./third_party/saml2aws
+)

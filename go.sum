@@ -318,6 +318,8 @@ github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e h1:ACf2DcT/E+y
 github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e/go.mod h1:yk5b0mALVusDL5fMM6Rd1wgnoO5jUPhwsQ6LQAJTidQ=
 github.com/richardcase/saml2aws v1.8.5-0.20200622110128-d94772688a70 h1:8BJyN9P1DF+9CLGaDjDaJBnVMKTtupmq2TMaTw1MaVY=
 github.com/richardcase/saml2aws v1.8.5-0.20200622110128-d94772688a70/go.mod h1:IkCttPFg7ucVCBigLR8SD/CBJ2k9Dw6qLW5oAPrG6WI=
+github.com/richardcase/saml2aws v1.8.5-0.20200812194235-9d04b17acf54 h1:s6mDpYBUbg9SZMgUPs9hQACj1b1YSwYzIPANLT+z/ac=
+github.com/richardcase/saml2aws v1.8.5-0.20200812194235-9d04b17acf54/go.mod h1:IkCttPFg7ucVCBigLR8SD/CBJ2k9Dw6qLW5oAPrG6WI=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/russross/blackfriday/v2 v2.0.1 h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0RK8m9o+Q=

@@ -146,14 +146,14 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	// TODO: change this so its passed in
 	samlAssertionData, err := base64.StdEncoding.DecodeString(samlAssertion)
 	if err != nil {
-		//TODO: change tpo specific error
+		//TODO: change to specific error
 		return nil, err
 	}
 
 	aud, err := p.extractDestinationURL(samlAssertionData)
 	if err != nil {
 		//TODO: return a better error
-		return nil, fmt.Errorf("extracting destination utl: %w", err)
+		return nil, fmt.Errorf("extracting destination url: %w", err)
 	}
 
 	awsAccounts, err := saml2aws.ParseAWSAccounts(aud, samlAssertion)
@@ -230,11 +230,20 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 	}
 
 	destination := rootElement.SelectAttrValue("Destination", "none")
-	if destination == "none" {
-		return "", fmt.Errorf("getting response element Destination: %w", ErrMissingResponseElement)
+	if destination != "none" {
+		return destination, nil
+
 	}
 
-	return destination, nil
+	confirmData := doc.FindElement("//SubjectConfirmationData")
+	if confirmData != nil {
+		recipient := confirmData.SelectAttr("Recipient")
+		if recipient != nil {
+			return recipient.Value, nil
+		}
+	}
+
+	return "", fmt.Errorf("getting response element Destination or SubjectConfirmationData: %w", ErrMissingResponseElement)
 }
 
 func (p *ServiceProvider) Validate(ctx *provider.Context, flagset *pflag.FlagSet) error {

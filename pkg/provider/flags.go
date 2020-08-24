@@ -34,6 +34,7 @@ type ClusterProviderConfig struct {
 type IdentityProviderConfig struct {
 	Username string `flag:"username" validate:"required"`
 	Password string `flag:"password" validate:"required"`
+	Force    bool   `flag:"force"`
 }
 
 // AddCommonClusterProviderFlags will add flags that are common to
@@ -56,6 +57,7 @@ func CommonIdentityFlagSet() *pflag.FlagSet {
 	flagSet := &pflag.FlagSet{}
 	flagSet.String("username", "", "the username used for authentication")
 	flagSet.String("password", "", "the password to use for authentication")
+	flagSet.Bool("force", false, "If true then we force authentication every invocation")
 
 	return flagSet
 }
