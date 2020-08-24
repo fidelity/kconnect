@@ -106,7 +106,7 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, fmt.Errorf("checking if creds exist: %w", err)
 	}
 	if exist {
-		if !p.store.Expired() {
+		if !p.store.Expired() && !p.config.Force {
 			p.logger.Info("using cached creds")
 			id, err := p.store.Load()
 			if err != nil {
@@ -114,7 +114,7 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 			}
 			return id, nil
 		}
-		p.logger.Info("cached creds expired, renewing")
+		p.logger.Info("cached creds expired or force enabled, renewing")
 	}
 
 	err = account.Validate()
