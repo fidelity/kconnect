@@ -1,4 +1,8 @@
-# kconnect - The Kubernetes Connection Manager CLI
+# `kconnect` - The Kubernetes Connection Manager CLI
+
+![GitHub issues](https://img.shields.io/github/issues/fidelity/kconnect)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go Report Card](https://goreportcard.com/badge/github.com/fidelity/kconnect)](https://goreportcard.com/report/github.com/fidelity/kconnect)
 
 ## What is kconnect?
 
@@ -8,12 +12,32 @@ Based on the authentication mechanism chosen the CLI will discover Kubernetes cl
 
 ## Installation
 
-There are currently no releases. This section will be updated with installation instructions.
+[Releases](https://github.com/fidelity/kconnect/releases) are available for download for OSX, Linux and Windows.
 
-## Documentation
+To install on OSX you can use homebrew:
 
-Documentation is contained in the `/docs` directory. The [index is here](docs/README.md). 
+```bash
+brew install fidelity/tap/kconnect
+```
+
+## Getting Started
+
+Once you have installed kconnect you can see a list of the commands available by running:
+
+```bash
+kconnect
+```
+
+If you wanted to discover clusters in EKS and generate a kubeconfig for a selected cluster you can run the following command which will guide you through connecting:
+
+```bash
+kconnect use eks --idp-protocol saml
+```
+
+NOTE: only saml is supported at present for IdP.
+
+Documentation is contained in the `/docs` directory. The [index is here](docs/README.md).
 
 ## Contributions
 
-Contributions are very welcome. We will be publishing a contributing guide soon to help.
+Contributions are very welcome. Please read the [contributing guide](CONTRIBUTING.md).
