@@ -73,7 +73,7 @@ snapcrafts:
     summary: "The Kubernetes Connection Manager CLI"
     description: "kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments."
     grade: devel # TODO: change to stable when we are ready to release
-    confinement: strict
+    confinement: devmode
     license:  Apache-2.0
     base: bare
     apps:
