@@ -21,7 +21,7 @@ jobs:
             - name: Setup snapcraft
               run: |
                 sudo snap install snapcraft --classic
-                echo "$SNAP_TOKEN" | snapcraft login with -
+                echo "$SNAP_TOKEN" | snapcraft login --with -
                 snapcraft
               env:
                 SNAP_TOKEN: ${{secrets.SNAP_LOGIN}}
