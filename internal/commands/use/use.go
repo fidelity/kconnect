@@ -69,6 +69,7 @@ func Command() *cobra.Command {
 	}
 
 	useCmd.Flags().StringVar(&params.IdpProtocol, "idp-protocol", "", "the idp protocol to use (e.g. saml)")
+	useCmd.Flags().BoolVar(&params.SetCurrent, "set-current", false, "sets the current context in the kubeconfig to selected cluster")
 	provider.AddKubeconfigFlag(useCmd)
 	provider.AddCommonIdentityFlags(useCmd)
 	provider.AddCommonClusterProviderFlags(useCmd)
