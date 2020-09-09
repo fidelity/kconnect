@@ -81,9 +81,9 @@ func (a *App) Use(params *UseParams) error {
 		return fmt.Errorf("adding connection to history: %w", err)
 	}
 
-	historyExtension := historyv1alpha.NewHistoryExtension(entry.Spec.ID)
+	historyRef := historyv1alpha.NewHistoryReference(entry.Spec.ID)
 	kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
-	kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyExtension
+	kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
 
 	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig); err != nil {
 		return fmt.Errorf("writing cluster kubeconfig: %w", err)

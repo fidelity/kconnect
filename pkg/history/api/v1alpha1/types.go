@@ -71,11 +71,11 @@ type HistoryEntryList struct {
 // +kubebuilder:object:root=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// HistoryExtension is a kubeconfig extension to hold a reference to a history item
-type HistoryExtension struct {
+// HistoryReference is a kubeconfig extension to hold a reference to a history item
+type HistoryReference struct {
 	metav1.TypeMeta `json:",inline"`
 
-	HistoryEntryID string
+	EntryID string
 }
 
 func NewHistoryEntryList() *HistoryEntryList {
@@ -109,13 +109,13 @@ func NewHistoryEntry() *HistoryEntry {
 	return entry
 }
 
-func NewHistoryExtension(historyID string) *HistoryExtension {
-	return &HistoryExtension{
+func NewHistoryReference(entryID string) *HistoryReference {
+	return &HistoryReference{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: SchemeGroupVersion.String(),
-			Kind:       "HistoryExtension",
+			Kind:       "HistoryReference",
 		},
-		HistoryEntryID: historyID,
+		EntryID: entryID,
 	}
 }
 
