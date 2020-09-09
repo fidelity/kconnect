@@ -110,3 +110,13 @@ func AddCommonCommandConfig(cs config.ConfigurationSet) error {
 
 	return nil
 }
+
+// ConvertToMap will convert a flagset to a map
+func ConvertToMap(fs *pflag.FlagSet) map[string]string {
+	flags := make(map[string]string)
+	fs.VisitAll(func(flag *pflag.Flag) {
+		flags[flag.Name] = flag.Value.String()
+	})
+
+	return flags
+}

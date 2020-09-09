@@ -19,19 +19,27 @@ package app
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/runtime"
+
+	historyv1alpha "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/k8s/kubeconfig"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // UseParams are the parameters to the use function
 type UseParams struct {
-	Kubeconfig       string
-	SetCurrent       bool
-	IdpProtocol      string
+	HistoryConfig
+	KubernetesConfig
+	provider.IdentityProviderConfig
+
+	SetCurrent bool `json:"set-current,omitempty"`
+
 	Provider         provider.ClusterProvider
 	IdentityProvider provider.IdentityProvider
 	Identity         provider.Identity
 	Context          *provider.Context
+
+	Args map[string]string
 }
 
 func (a *App) Use(params *UseParams) error {
@@ -55,10 +63,27 @@ func (a *App) Use(params *UseParams) error {
 		return fmt.Errorf("selecting cluster: %w", err)
 	}
 
-	kubeConfig, err := provider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
+	kubeConfig, contextName, err := provider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
+
+	entry := historyv1alpha.NewHistoryEntry()
+	//TODO - move this to a function
+	//entry.Spec.Alias = ""
+	entry.Spec.ConfigFile = params.Kubeconfig
+	entry.Spec.Flags = params.Args //TODO: filter sensitive flags
+	entry.Spec.Identity = params.IdentityProvider.Name()
+	entry.Spec.Provider = params.Provider.Name()
+	entry.Spec.ProviderID = cluster.ID
+
+	if err := a.historyStore.Add(entry); err != nil {
+		return fmt.Errorf("adding connection to history: %w", err)
+	}
+
+	historyExtension := historyv1alpha.NewHistoryExtension(entry.Spec.ID)
+	kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
+	kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyExtension
 
 	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig); err != nil {
 		return fmt.Errorf("writing cluster kubeconfig: %w", err)

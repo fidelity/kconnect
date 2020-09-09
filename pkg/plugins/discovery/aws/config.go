@@ -25,14 +25,14 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, setCurrent bool) (*api.Config, error) {
+func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, setCurrent bool) (*api.Config, string, error) {
 	clusterName := fmt.Sprintf("kconnect-eks-%s", cluster.Name)
 	userName := fmt.Sprintf("kconnect-%s", p.identity.ProfileName)
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
 
 	certData, err := base64.StdEncoding.DecodeString(*cluster.CertificateAuthorityData)
 	if err != nil {
-		return nil, fmt.Errorf("decoding certificate: %w", err)
+		return nil, "", fmt.Errorf("decoding certificate: %w", err)
 	}
 
 	cfg := &api.Config{
@@ -77,5 +77,5 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 		cfg.CurrentContext = contextName
 	}
 
-	return cfg, nil
+	return cfg, contextName, nil
 }

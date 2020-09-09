@@ -19,26 +19,30 @@ package use
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/internal/usage"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/history"
+	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 var (
-	errMissingProvider    = errors.New("required provider name argument")
-	errMissingIdpProtocol = errors.New("missing idp protocol, please use --idp-protocol")
+	ErrMissingProvider    = errors.New("required provider name argument")
+	ErrMissingIdpProtocol = errors.New("missing idp protocol, please use --idp-protocol")
+	ErrMustBeDirectory    = errors.New("specified config directory is not a directory")
 )
 
 // Command creates the use command
 func Command() (*cobra.Command, error) {
 	logger := logrus.WithField("command", "use")
-	a := app.New()
 
 	params := &app.UseParams{
 		Context: provider.NewContext(provider.WithLogger(logger)),
@@ -50,15 +54,36 @@ func Command() (*cobra.Command, error) {
 		Args:  cobra.ExactArgs(1),
 		AdditionalSetupE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
-				return errMissingProvider
+				return ErrMissingProvider
 			}
 			return cmdSetup(cmd, args, params, logger)
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
+
+			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
+				return fmt.Errorf("unmarshalling config into use params: %w", err)
+			}
+			params.Args = flags.ConvertToMap(cmd.Flags())
+
 			return preRun(params, logger)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
+				return fmt.Errorf("ensuring app directory exists: %w", err)
+			}
+
+			historyLoader, err := loader.NewFileLoader(params.HistoryLocation)
+			if err != nil {
+				return fmt.Errorf("getting history loader with path %s: %w", params.HistoryLocation, err)
+			}
+			store, err := history.NewStore(params.HistoryMaxItems, historyLoader)
+			if err != nil {
+				return fmt.Errorf("creating history store: %w", err)
+			}
+
+			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+
 			return a.Use(params)
 		},
 	}
@@ -85,14 +110,17 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.Bool("set-current", false, "sets the current context in the kubeconfig to selected cluster"); err != nil {
 		return fmt.Errorf("adding set-current config: %w", err)
 	}
-	if err := provider.AddKubeconfigConfig(cs); err != nil {
-		return fmt.Errorf("adding kubeconfig config items: %w", err)
-	}
 	if err := provider.AddCommonIdentityConfig(cs); err != nil {
 		return fmt.Errorf("adding common identity config items: %w", err)
 	}
 	if err := provider.AddCommonClusterConfig(cs); err != nil {
 		return fmt.Errorf("adding common cluster config items: %w", err)
+	}
+	if err := app.AddHistoryConfigItems(cs); err != nil {
+		return fmt.Errorf("adding history config items: %w", err)
+	}
+	if err := app.AddKubeconfigConfigItems(cs); err != nil {
+		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
 
 	return nil
@@ -113,7 +141,7 @@ func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *
 
 	idpProtocol := findIdpProtocolFromArgs(args)
 	if idpProtocol == "" {
-		return errMissingIdpProtocol
+		return ErrMissingIdpProtocol
 	}
 	idProvider, err := provider.GetIdentityProvider(idpProtocol)
 	if err != nil {
@@ -179,4 +207,24 @@ func isInteractive(cs config.ConfigurationSet) bool {
 	value := item.Value.(bool)
 
 	return !value
+}
+
+func ensureConfigFolder(path string) error {
+	info, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("getting details of config folder %s: %w", path, err)
+	} else if err != nil && os.IsNotExist(err) {
+		errDir := os.MkdirAll(path, 0755)
+		if errDir != nil {
+			return fmt.Errorf("creating config directory %s: %w", path, err)
+		}
+
+		return nil
+	}
+
+	if !info.IsDir() {
+		return ErrMustBeDirectory
+	}
+
+	return nil
 }

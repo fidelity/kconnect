@@ -12,6 +12,10 @@ BIN_DIR := bin
 
 # Binaries
 GOLANGCI_LINT := $(abspath $(TOOLS_BIN_DIR)/golangci-lint)
+CONTROLLER_GEN := $(TOOLS_BIN_DIR)/controller-gen
+DEFAULTER_GEN := $(TOOLS_BIN_DIR)/defaulter-gen
+CONVERSION_GEN := $(TOOLS_BIN_DIR)/conversion-gen
+MOCKGEN := $(TOOLS_BIN_DIR)/mockgen
 
 .DEFAULT_GOAL := help
 
@@ -21,8 +25,17 @@ GOLANGCI_LINT := $(abspath $(TOOLS_BIN_DIR)/golangci-lint)
 build: # Build the CLI binary
 	CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).commitHash=$(git_commit) -X $(version_pkg).buildDate=$(build_date)" .
 
-$(GOLANGCI_LINT): $(TOOLS_DIR)/go.mod # Build golangci-lint from tools folder
-	cd $(TOOLS_DIR); go build -tags=tools -o $(BIN_DIR)/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
+.PHONY: generate
+generate: $(MOCKGEN) $(CONTROLLER_GEN) $(CONVERSION_GEN)  # Generate code for the api definitions
+	go generate
+	$(CONTROLLER_GEN) \
+		paths=./pkg/history/api/... \
+		object:headerFile=./hack/boilerplate.generatego.txt
+
+	$(CONVERSION_GEN) \
+		--input-dirs=./pkg/history/api/v1alpha1 \
+		--output-file-base=zz_generated.conversion \
+		--go-header-file=./hack/boilerplate.generatego.txt
 
 ##@ Release
 
@@ -49,6 +62,22 @@ ci: build test lint # Target for CI
 
 
 ##@ Utility
+
+$(GOLANGCI_LINT): $(TOOLS_DIR)/go.mod # Get and build golangci-lint
+	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) github.com/golangci/golangci-lint/cmd/golangci-lint
+
+$(CONTROLLER_GEN): $(TOOLS_DIR)/go.mod # Get and build controller-gen
+	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) sigs.k8s.io/controller-tools/cmd/controller-gen
+
+$(DEFAULTER_GEN): $(TOOLS_DIR)/go.mod # Get and build defaulter-gen
+	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) k8s.io/code-generator/cmd/defaulter-gen
+
+$(CONVERSION_GEN): $(TOOLS_DIR)/go.mod # Get and build conversion-gen
+	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) k8s.io/code-generator/cmd/conversion-gen
+
+$(MOCKGEN): $(TOOLS_DIR)/go.mod # Get and build mockgen
+	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) github.com/golang/mock/mockgen
+
 
 .PHONY: help
 help:  ## Display this help. Thanks to https://suva.sh/posts/well-documented-makefiles/

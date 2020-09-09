@@ -11,6 +11,7 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
+	github.com/golang/mock v1.3.1
 	github.com/imdario/mergo v0.3.10
 	github.com/kr/text v0.2.0 // indirect
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect
@@ -19,6 +20,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.3.2 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/oklog/ulid v1.3.1
+	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -40,13 +43,15 @@ require (
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/client-go v0.17.7
-	k8s.io/utils v0.0.0-20200603063816-c1c6865ac451 // indirect
+	k8s.io/api v0.17.8
+	k8s.io/apimachinery v0.17.8
+	k8s.io/client-go v0.17.8
+	k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19 // indirect
 
 )
 
 replace (
 	github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
 	//github.com/versent/saml2aws => github.com/richardcase/saml2aws v1.8.5-0.20200812194235-9d04b17acf54
-    github.com/versent/saml2aws => ./third_party/saml2aws
+	github.com/versent/saml2aws => ./third_party/saml2aws
 )

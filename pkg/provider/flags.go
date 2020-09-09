@@ -22,31 +22,21 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 // ClusterProviderConfig represents the base configuration for
 // a cluster provider
 type ClusterProviderConfig struct {
-	ClusterName *string `flag:"cluster" json:"cluster"`
+	ClusterName *string `json:"cluster"`
 }
 
 // IdentityProviderConfig represents the base configuration for an
 // identity provider.
 type IdentityProviderConfig struct {
-	Username string `flag:"username" validate:"required" json:"username"`
-	Password string `flag:"password" validate:"required" json:"password"`
-	Force    bool   `flag:"force" json:"force"`
-}
-
-// AddCommonClusterProviderFlags will add flags that are common to
-// all cluster providers
-func AddCommonClusterProviderFlags(cmd *cobra.Command) {
-	fs := pflag.NewFlagSet("", pflag.ContinueOnError)
-	fs.StringP("cluster", "c", "", "Name of the cluster to use.")
-
-	cmd.Flags().AddFlagSet(fs)
+	Username    string `json:"username" validate:"required"`
+	Password    string `json:"password" validate:"required"`
+	Force       bool   `json:"force"`
+	IdpProtocol string `json:"idp-protocol" validate:"required"`
 }
 
 func AddCommonClusterConfig(cs config.ConfigurationSet) error {
@@ -90,28 +80,7 @@ func CommonIdentityFlagSet() *pflag.FlagSet {
 	flagSet.String("username", "", "the username used for authentication")
 	flagSet.String("password", "", "the password to use for authentication")
 	flagSet.Bool("force", false, "If true then we force authentication every invocation")
+	flagSet.String("idp-protocol", "", "the idp protocol to use (e.g. saml)")
 
 	return flagSet
-}
-
-// AddKubeconfigFlag will add the kubeconfig flag to a command
-func AddKubeconfigFlag(cmd *cobra.Command) {
-	flagSet := &pflag.FlagSet{}
-
-	pathOptions := clientcmd.NewDefaultPathOptions()
-	flagSet.StringP("kubeconfig", "k", pathOptions.GetDefaultFilename(), "location of the kubeconfig to use")
-
-	cmd.Flags().AddFlagSet(flagSet)
-}
-
-func AddKubeconfigConfig(cs config.ConfigurationSet) error {
-	pathOptions := clientcmd.NewDefaultPathOptions()
-	if _, err := cs.String("kubeconfig", pathOptions.GetDefaultFilename(), "location of the kubeconfig to use"); err != nil {
-		return fmt.Errorf("adding kubeconfig config: %w", err)
-	}
-	if err := cs.SetShort("kubeconfig", "k"); err != nil {
-		return fmt.Errorf("setting shorthand for kubeconfig config: %w", err)
-	}
-
-	return nil
 }
