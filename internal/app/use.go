@@ -26,6 +26,7 @@ import (
 // UseParams are the parameters to the use function
 type UseParams struct {
 	Kubeconfig       string
+	SetCurrent       bool
 	IdpProtocol      string
 	Provider         provider.ClusterProvider
 	IdentityProvider provider.IdentityProvider
@@ -38,7 +39,7 @@ func (a *App) Use(params *UseParams) error {
 
 	provider := params.Provider
 
-	a.logger.Infof("Disovering clusters using %s provider", provider.Name())
+	a.logger.Infof("Discovering clusters using %s provider", provider.Name())
 	discoverOutput, err := provider.Discover(params.Context, params.Identity)
 	if err != nil {
 		return fmt.Errorf("discovering clusters using %s: %w", provider.Name(), err)
@@ -54,7 +55,7 @@ func (a *App) Use(params *UseParams) error {
 		return fmt.Errorf("selecting cluster: %w", err)
 	}
 
-	kubeConfig, err := provider.GetClusterConfig(params.Context, cluster)
+	kubeConfig, err := provider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}

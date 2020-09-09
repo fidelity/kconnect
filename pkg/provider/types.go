@@ -33,7 +33,7 @@ type ClusterProvider interface {
 	// Discover will discover what clusters the supplied identity has access to
 	Discover(ctx *Context, identity Identity) (*DiscoverOutput, error)
 
-	GetClusterConfig(ctx *Context, cluster *Cluster) (*api.Config, error)
+	GetClusterConfig(ctx *Context, cluster *Cluster, setCurrent bool) (*api.Config, error)
 
 	// FlagsResolver returns the resolver used to inetractively resolve flags
 	FlagsResolver() FlagsResolver
