@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package v1alpha1 contains API Schema definitions for the iam v1alpha1 API group
 // +kubebuilder:object:generate=true
-// +groupName=history.kconnect.fidelity.github.com
+// +groupName=kconnect.fidelity.github.com
 package v1alpha1
 
 import (
@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	GroupName = "history.kconnect.fidelity.github.com"
+	GroupName = "kconnect.fidelity.github.com"
 )
 
 var (

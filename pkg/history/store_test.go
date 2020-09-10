@@ -24,7 +24,7 @@ import (
 	"github.com/golang/mock/gomock"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	historyv1alpha "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
+	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/history/loader/mock_loader"
 	"github.com/fidelity/kconnect/pkg/matchers"
 )

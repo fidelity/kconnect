@@ -17,7 +17,7 @@ limitations under the License.
 package history
 
 import (
-	historyv1alpha "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
+	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 )
 
 // Store is an interface for the history store

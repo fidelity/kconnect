@@ -29,11 +29,11 @@ build: # Build the CLI binary
 generate: $(MOCKGEN) $(CONTROLLER_GEN) $(CONVERSION_GEN)  # Generate code for the api definitions
 	go generate
 	$(CONTROLLER_GEN) \
-		paths=./pkg/history/api/... \
+		paths=./api/... \
 		object:headerFile=./hack/boilerplate.generatego.txt
 
 	$(CONVERSION_GEN) \
-		--input-dirs=./pkg/history/api/v1alpha1 \
+		--input-dirs=./api/v1alpha1 \
 		--output-file-base=zz_generated.conversion \
 		--go-header-file=./hack/boilerplate.generatego.txt
 

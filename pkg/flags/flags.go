@@ -18,10 +18,8 @@ package flags
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -92,23 +90,6 @@ func PopulateConfigFromFlags(flags *pflag.FlagSet, cs config.ConfigurationSet) {
 func PopulateConfigFromCommand(cmd *cobra.Command, cs config.ConfigurationSet) {
 	PopulateConfigFromFlags(cmd.Flags(), cs)
 	PopulateConfigFromFlags(cmd.PersistentFlags(), cs)
-}
-
-func AddCommonCommandConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("config", "", "Configuration file (defaults to $HOME/.kconnect/config"); err != nil {
-		return fmt.Errorf("adding config item: %w", err)
-	}
-	if _, err := cs.String("log-level", logrus.DebugLevel.String(), "Log level for the CLI. Defaults to INFO"); err != nil {
-		return fmt.Errorf("adding log-level config: %w", err)
-	}
-	if _, err := cs.String("log-format", "TEXT", "Format of the log output. Defaults to text."); err != nil {
-		return fmt.Errorf("adding log-format config: %w", err)
-	}
-	if err := cs.SetShort("log-level", "l"); err != nil {
-		return fmt.Errorf("setting shorthand for log-level: %w", err)
-	}
-
-	return nil
 }
 
 // ConvertToMap will convert a flagset to a map

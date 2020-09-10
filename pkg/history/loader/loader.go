@@ -23,7 +23,7 @@ import (
 	"os"
 	"path/filepath"
 
-	historyv1alpha "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
+	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 

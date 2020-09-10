@@ -20,8 +20,6 @@ import (
 	"fmt"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 // ClusterProviderConfig represents the base configuration for
@@ -54,33 +52,23 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 }
 
 // AddCommonIdentityFlags will add common identity related flags to a command
-func AddCommonIdentityFlags(cmd *cobra.Command) {
-	flagSet := CommonIdentityFlagSet()
-	cmd.Flags().AddFlagSet(flagSet)
-}
-
-// AddCommonIdentityFlags will add common identity related flags to a command
 func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("username", "", "the username used for authentication"); err != nil {
-		return fmt.Errorf("adding username config: %w", err)
-	}
-	if _, err := cs.String("password", "", "the password to use for authentication"); err != nil {
-		return fmt.Errorf("adding password config: %w", err)
-	}
-	if _, err := cs.Bool("force", false, "If true then we force authentication every invocation"); err != nil {
-		return fmt.Errorf("adding force config: %w", err)
+	newCS := CommonIdentityConfig()
+
+	if err := cs.AddSet(newCS); err != nil {
+		return fmt.Errorf("adding common identity config items: %w", err)
 	}
 
 	return nil
 }
 
-// CommonIdentityFlagSet creates a flagset with the common identity flags
-func CommonIdentityFlagSet() *pflag.FlagSet {
-	flagSet := &pflag.FlagSet{}
-	flagSet.String("username", "", "the username used for authentication")
-	flagSet.String("password", "", "the password to use for authentication")
-	flagSet.Bool("force", false, "If true then we force authentication every invocation")
-	flagSet.String("idp-protocol", "", "the idp protocol to use (e.g. saml)")
+// CommonIdentityConfig creates a configset with the common identity config items
+func CommonIdentityConfig() config.ConfigurationSet {
+	cs := config.NewConfigurationSet()
+	cs.String("username", "", "the username used for authentication")                //nolint: errcheck
+	cs.String("password", "", "the password to use for authentication")              //nolint: errcheck
+	cs.Bool("force", false, "If true then we force authentication every invocation") //nolint: errcheck
+	cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)")             //nolint: errcheck
 
-	return flagSet
+	return cs
 }

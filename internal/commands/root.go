@@ -20,13 +20,14 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
+	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 
-	home "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -44,7 +45,7 @@ func RootCmd() (*cobra.Command, error) {
 		Short: "The Kubernetes Connection Manager CLI",
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
-				log.Debugf("ignoring cobra error %q", err.Error())
+				logrus.Debugf("ignoring cobra error %q", err.Error())
 			}
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -53,7 +54,7 @@ func RootCmd() (*cobra.Command, error) {
 	}
 
 	cfg = config.NewConfigurationSet()
-	if err := flags.AddCommonCommandConfig(cfg); err != nil {
+	if err := app.AddCommonConfigItems(cfg); err != nil {
 		return nil, fmt.Errorf("adding common configuration: %w", err)
 	}
 	rootFlags, err := flags.CreateFlagsFromConfig(cfg)
@@ -70,33 +71,36 @@ func RootCmd() (*cobra.Command, error) {
 	rootCmd.AddCommand(useCmd)
 	rootCmd.AddCommand(version.Command())
 
-	cobra.OnInitialize(initConfig(rootCmd))
+	flags.PopulateConfigFromCommand(rootCmd, cfg)
+	params := &app.CommonConfig{}
+	if err := config.Unmarshall(cfg, params); err != nil {
+		logrus.Fatalf("unmarshalling config into use params: %w", err)
+	}
+
+	cobra.OnInitialize(initConfig(params))
+
+	// err := logging.Configure(logLevel, logFormat)
+	// if err != nil {
+	// 	return fmt.Errorf("configuring logging: %w", err)
+	// }
 
 	return rootCmd, nil
 }
 
-func initConfig(cmd *cobra.Command) func() {
+func initConfig(cfg *app.CommonConfig) func() {
 	return func() {
-		flags.PopulateConfigFromCommand(cmd, cfg)
-
-		if cfg.ExistsWithValue("config") {
-			configFile := cfg.Get("config").Value.(string)
-			viper.SetConfigFile(configFile)
+		if cfg.ConfigFile != "" {
+			viper.SetConfigFile(cfg.ConfigFile)
 		} else {
-			home, err := home.Dir()
-			if err != nil {
-				panic(err)
-			}
+			home := defaults.AppDirectory()
 
-			//TODO: construct path properyl
 			viper.AddConfigPath(home)
-			viper.SetConfigName(".kconnect")
+			viper.SetConfigName("config")
 		}
 
 		viper.AutomaticEnv()
 		if err := viper.ReadInConfig(); err == nil {
-			log.Infof("Using config file: %s", viper.ConfigFileUsed())
+			logrus.Infof("Using config file: %s", viper.ConfigFileUsed())
 		}
 	}
-
 }

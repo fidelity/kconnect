@@ -21,6 +21,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
 
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/history"
@@ -34,6 +35,7 @@ type App struct {
 	historyStore    history.Store
 	configDirectory string
 	selectCluster   SelectClusterFunc
+	sensitiveFlags  map[string]*pflag.Flag
 }
 
 // Option represents an option to use with the kcinnect application
@@ -48,6 +50,7 @@ func New(opts ...Option) *App {
 		configDirectory: defaults.AppDirectory(),
 		logger:          logrus.StandardLogger().WithField("app", "kconnect"),
 		selectCluster:   DefaultSelectCluster,
+		sensitiveFlags:  make(map[string]*pflag.Flag),
 	}
 
 	for _, opt := range opts {
@@ -103,4 +106,11 @@ func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cl
 	}
 
 	return discoverOutput.Clusters[clusterName], nil
+}
+
+func (a *App) RegisterSensitiveFlag(flag *pflag.Flag) {
+	existing := a.sensitiveFlags[flag.Name]
+	if existing == nil {
+		a.sensitiveFlags[flag.Name] = flag
+	}
 }

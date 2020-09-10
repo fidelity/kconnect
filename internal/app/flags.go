@@ -19,6 +19,7 @@ package app
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/fidelity/kconnect/internal/defaults"
@@ -53,6 +54,34 @@ func AddKubeconfigConfigItems(cs config.ConfigurationSet) error {
 	}
 	if err := cs.SetShort("kubeconfig", "k"); err != nil {
 		return fmt.Errorf("setting kubeconfig shorthand: %w", err)
+	}
+
+	return nil
+}
+
+type CommonConfig struct {
+	ConfigFile  string `json:"config"`
+	LogLevel    string `json:"log-level"`
+	LogFormat   string `json:"log-format"`
+	Interactive bool   `json:"non-interactive"`
+}
+
+func AddCommonConfigItems(cs config.ConfigurationSet) error {
+	if _, err := cs.String("config", "", "Configuration file (defaults to $HOME/.kconnect/config"); err != nil {
+		return fmt.Errorf("adding config item: %w", err)
+	}
+	if _, err := cs.String("log-level", logrus.DebugLevel.String(), "Log level for the CLI. Defaults to INFO"); err != nil {
+		return fmt.Errorf("adding log-level config: %w", err)
+	}
+	if _, err := cs.String("log-format", "TEXT", "Format of the log output. Defaults to text."); err != nil {
+		return fmt.Errorf("adding log-format config: %w", err)
+	}
+	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution. Defaults to false"); err != nil {
+		return fmt.Errorf("adding non-interactive config: %w", err)
+	}
+
+	if err := cs.SetShort("log-level", "l"); err != nil {
+		return fmt.Errorf("setting shorthand for log-level: %w", err)
 	}
 
 	return nil

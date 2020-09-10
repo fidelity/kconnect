@@ -18,16 +18,19 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	historyv1alpha "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
+	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/k8s/kubeconfig"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // UseParams are the parameters to the use function
 type UseParams struct {
+	CommonConfig
 	HistoryConfig
 	KubernetesConfig
 	provider.IdentityProviderConfig
@@ -37,9 +40,8 @@ type UseParams struct {
 	Provider         provider.ClusterProvider
 	IdentityProvider provider.IdentityProvider
 	Identity         provider.Identity
-	Context          *provider.Context
 
-	Args map[string]string
+	Context *provider.Context
 }
 
 func (a *App) Use(params *UseParams) error {
@@ -72,7 +74,7 @@ func (a *App) Use(params *UseParams) error {
 	//TODO - move this to a function
 	//entry.Spec.Alias = ""
 	entry.Spec.ConfigFile = params.Kubeconfig
-	entry.Spec.Flags = params.Args //TODO: filter sensitive flags
+	entry.Spec.Flags = a.filterConfig(params)
 	entry.Spec.Identity = params.IdentityProvider.Name()
 	entry.Spec.Provider = params.Provider.Name()
 	entry.Spec.ProviderID = cluster.ID
@@ -90,4 +92,41 @@ func (a *App) Use(params *UseParams) error {
 	}
 
 	return nil
+}
+
+func (a *App) filterConfig(params *UseParams) map[string]string {
+	filteredConfig := make(map[string]string)
+
+	idConfigSet := params.IdentityProvider.ConfigurationItems()
+	discConfigSet := params.Provider.ConfigurationItems()
+	commonIdConfigSet := provider.CommonIdentityConfig()
+
+	for _, configItem := range params.Context.ConfigurationItems().GetAll() {
+		cmnConfig := commonIdConfigSet.Get(configItem.Name)
+		idConfig := idConfigSet.Get(configItem.Name)
+		discConfig := discConfigSet.Get(configItem.Name)
+
+		if cmnConfig == nil && idConfig == nil && discConfig == nil {
+			continue
+		}
+
+		if configItem.Sensitive {
+			continue
+		}
+
+		val := ""
+		if configItem.Type == config.ItemTypeString {
+			val = configItem.Value.(string)
+		} else if configItem.Type == config.ItemTypeBool {
+			boolVal := configItem.Value.(bool)
+			val = strconv.FormatBool(boolVal)
+		} else if configItem.Type == config.ItemTypeInt {
+			intVal := configItem.Value.(int64)
+			val = strconv.FormatInt(intVal, 10)
+		}
+
+		filteredConfig[configItem.Name] = val
+	}
+
+	return filteredConfig
 }

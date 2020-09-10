@@ -5,7 +5,7 @@
 package mock_loader
 
 import (
-	v1alpha1 "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
+	v1alpha1 "github.com/fidelity/kconnect/api/v1alpha1"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	historyv1alpha "github.com/fidelity/kconnect/pkg/history/api/v1alpha1"
+	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 )
 
 func MatchHistoryList(expected *historyv1alpha.HistoryEntryList) gomock.Matcher {
