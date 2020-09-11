@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
 	"github.com/fidelity/kconnect/internal/defaults"
@@ -69,6 +70,11 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating use command: %w", err)
 	}
 	rootCmd.AddCommand(useCmd)
+	toCmd, err := to.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating to command: %w", err)
+	}
+	rootCmd.AddCommand(toCmd)
 	rootCmd.AddCommand(version.Command())
 
 	flags.PopulateConfigFromCommand(rootCmd, cfg)

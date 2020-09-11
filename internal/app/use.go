@@ -70,22 +70,24 @@ func (a *App) Use(params *UseParams) error {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
 
-	entry := historyv1alpha.NewHistoryEntry()
-	//TODO - move this to a function
-	//entry.Spec.Alias = ""
-	entry.Spec.ConfigFile = params.Kubeconfig
-	entry.Spec.Flags = a.filterConfig(params)
-	entry.Spec.Identity = params.IdentityProvider.Name()
-	entry.Spec.Provider = params.Provider.Name()
-	entry.Spec.ProviderID = cluster.ID
+	if !params.NoHistory {
+		entry := historyv1alpha.NewHistoryEntry()
+		//TODO - move this to a function
+		//entry.Spec.Alias = ""
+		entry.Spec.ConfigFile = params.Kubeconfig
+		entry.Spec.Flags = a.filterConfig(params)
+		entry.Spec.Identity = params.IdentityProvider.Name()
+		entry.Spec.Provider = params.Provider.Name()
+		entry.Spec.ProviderID = cluster.ID
 
-	if err := a.historyStore.Add(entry); err != nil {
-		return fmt.Errorf("adding connection to history: %w", err)
+		if err := a.historyStore.Add(entry); err != nil {
+			return fmt.Errorf("adding connection to history: %w", err)
+		}
+
+		historyRef := historyv1alpha.NewHistoryReference(entry.Spec.ID)
+		kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
+		kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
 	}
-
-	historyRef := historyv1alpha.NewHistoryReference(entry.Spec.ID)
-	kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
-	kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
 
 	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig); err != nil {
 		return fmt.Errorf("writing cluster kubeconfig: %w", err)

@@ -29,6 +29,7 @@ import (
 type HistoryConfig struct {
 	HistoryLocation string `json:"history-location"`
 	HistoryMaxItems int    `json:"max-history"`
+	NoHistory       bool   `json:"no-history"`
 }
 
 func AddHistoryConfigItems(cs config.ConfigurationSet) error {
@@ -37,6 +38,9 @@ func AddHistoryConfigItems(cs config.ConfigurationSet) error {
 	}
 	if _, err := cs.Int("max-history", defaults.MaxHistoryItems, "sets the maximum number of history items to keep"); err != nil {
 		return fmt.Errorf("adding max-history config: %w", err)
+	}
+	if _, err := cs.Bool("no-history", false, "if set to true then no history entry will be written"); err != nil {
+		return fmt.Errorf("adding no-history config: %w", err)
 	}
 
 	return nil
