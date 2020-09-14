@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
@@ -75,6 +76,11 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating to command: %w", err)
 	}
 	rootCmd.AddCommand(toCmd)
+	lsCmd, err := ls.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating ls command: %w", err)
+	}
+	rootCmd.AddCommand(lsCmd)
 	rootCmd.AddCommand(version.Command())
 
 	flags.PopulateConfigFromCommand(rootCmd, cfg)

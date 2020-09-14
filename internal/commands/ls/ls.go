@@ -14,10 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package to
+package ls
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/fidelity/kconnect/internal/app"
@@ -30,43 +29,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	ErrAliasIDRequired = errors.New("alias or id must be specified")
-	ErrAliasOrID       = errors.New("cannot specify id and alias at the same time")
-)
-
 func Command() (*cobra.Command, error) {
-	logger := logrus.New().WithField("command", "to")
+	logger := logrus.New().WithField("command", "ls")
 
-	params := &app.ConnectToParams{
-		Context: provider.NewContext(provider.WithLogger(logger)),
-	}
+	cfg := config.NewConfigurationSet()
 
-	toCmd := &cobra.Command{
-		Use:   "to",
-		Short: "re-connect to a previously connected cluster using your history",
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
-			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
+	lsCmd := &cobra.Command{
+		Use:   "ls",
+		Short: "query your connection history",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			params := &app.HistoryQueryInput{}
+
+			flags.PopulateConfigFromFlags(cmd.Flags(), cfg)
+			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 
-			if params.Alias == "" && params.EntryID == "" {
-				return ErrAliasIDRequired
-			}
-
-			if params.Alias != "" && params.EntryID != "" {
-				return ErrAliasOrID
-			}
-
-			params.Context = provider.NewContext(
-				provider.WithLogger(logger),
-				provider.WithConfig(params.Context.ConfigurationItems()),
-			)
-
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
 			historyLoader, err := loader.NewFileLoader(params.HistoryLocation)
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.HistoryLocation, err)
@@ -78,35 +56,43 @@ func Command() (*cobra.Command, error) {
 
 			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
 
-			return a.ConnectTo(params)
+			ctx := provider.NewContext(
+				provider.WithLogger(logger),
+				provider.WithConfig(cfg),
+			)
+
+			a.QueryHistory(ctx, params)
+
+			return nil
 		},
 	}
 
-	if err := addConfig(params.Context.ConfigurationItems()); err != nil {
+	if err := addConfig(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	flagsToAdd, err := flags.CreateFlagsFromConfig(params.Context.ConfigurationItems())
+	flagsToAdd, err := flags.CreateFlagsFromConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("creating flags: %w", err)
 	}
-	toCmd.Flags().AddFlagSet(flagsToAdd)
+	lsCmd.Flags().AddFlagSet(flagsToAdd)
 
-	return toCmd, nil
+	return lsCmd, nil
+
 }
 
 func addConfig(cs config.ConfigurationSet) error {
-	if err := app.AddHistoryIdentifierConfig(cs); err != nil {
-		return fmt.Errorf("adding history identifier config items: %w", err)
-	}
-	if _, err := cs.String("password", "", "the password to use"); err != nil {
-		return fmt.Errorf("adding password config: %w", err)
+	if err := app.AddHistoryQueryConfig(cs); err != nil {
+		return fmt.Errorf("adding history query config items: %w", err)
 	}
 	if err := app.AddHistoryConfigItems(cs); err != nil {
 		return fmt.Errorf("adding history config items: %w", err)
 	}
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
+	}
+	if _, err := cs.String("output", "json", "output format for the result (Defaults to json)"); err != nil {
+		return fmt.Errorf("adding output config item: %w", err)
 	}
 
 	return nil
