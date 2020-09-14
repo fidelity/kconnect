@@ -18,10 +18,12 @@ package flags
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -100,4 +102,13 @@ func ConvertToMap(fs *pflag.FlagSet) map[string]string {
 	})
 
 	return flags
+}
+
+func BindFlags(cmd *cobra.Command) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		if !f.Changed && viper.IsSet(f.Name) {
+			val := viper.Get(f.Name)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
 }

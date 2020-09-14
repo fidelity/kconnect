@@ -59,6 +59,7 @@ func Command() (*cobra.Command, error) {
 			return cmdSetup(cmd, args, params, logger)
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			flags.BindFlags(cmd)
 			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
 
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
@@ -82,8 +83,6 @@ func Command() (*cobra.Command, error) {
 			}
 
 			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
-			//TODO: change the below as its horrible
-			a.RegisterSensitiveFlag(cmd.Flags().Lookup("password"))
 
 			return a.Use(params)
 		},

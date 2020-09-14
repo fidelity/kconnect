@@ -25,7 +25,9 @@ import (
 // ClusterProviderConfig represents the base configuration for
 // a cluster provider
 type ClusterProviderConfig struct {
-	ClusterName *string `json:"cluster"`
+	// ClusterId is the id of a cluster. The id should be unique for
+	// the cluster provider
+	ClusterID *string `json:"cluster-id"`
 }
 
 // IdentityProviderConfig represents the base configuration for an
@@ -38,20 +40,20 @@ type IdentityProviderConfig struct {
 }
 
 func AddCommonClusterConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("cluster", "", "Name of the cluster to use."); err != nil {
-		return fmt.Errorf("adding cluster setting: %w", err)
+	if _, err := cs.String("cluster-id", "", "Id of the cluster to use."); err != nil {
+		return fmt.Errorf("adding cluster-id setting: %w", err)
 	}
 	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution. Defaults to false"); err != nil {
 		return fmt.Errorf("adding non-interactive setting: %w", err)
 	}
-	if err := cs.SetShort("cluster", "c"); err != nil {
-		return fmt.Errorf("setting shorthand for cluster setting: %w", err)
+	if err := cs.SetShort("cluster-id", "c"); err != nil {
+		return fmt.Errorf("setting shorthand for cluster-id setting: %w", err)
 	}
 
 	return nil
 }
 
-// AddCommonIdentityFlags will add common identity related flags to a command
+// AddCommonIdentityConfig will add common identity related config
 func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
 	newCS := CommonIdentityConfig()
 
@@ -69,6 +71,7 @@ func CommonIdentityConfig() config.ConfigurationSet {
 	cs.String("password", "", "the password to use for authentication")              //nolint: errcheck
 	cs.Bool("force", false, "If true then we force authentication every invocation") //nolint: errcheck
 	cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)")             //nolint: errcheck
+	cs.SetSensitive("password")                                                      //nolint: errcheck
 
 	return cs
 }

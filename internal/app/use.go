@@ -34,6 +34,7 @@ type UseParams struct {
 	HistoryConfig
 	KubernetesConfig
 	provider.IdentityProviderConfig
+	provider.ClusterProviderConfig
 
 	SetCurrent bool `json:"set-current,omitempty"`
 
@@ -46,26 +47,39 @@ type UseParams struct {
 
 func (a *App) Use(params *UseParams) error {
 	a.logger.Debug("Use command")
+	clusterProvider := params.Provider
 
-	provider := params.Provider
+	var cluster *provider.Cluster
+	var err error
 
-	a.logger.Infof("Discovering clusters using %s provider", provider.Name())
-	discoverOutput, err := provider.Discover(params.Context, params.Identity)
-	if err != nil {
-		return fmt.Errorf("discovering clusters using %s: %w", provider.Name(), err)
+	if params.ClusterID == nil || *params.ClusterID == "" {
+		a.logger.Infof("Discovering clusters using %s provider", clusterProvider.Name())
+		discoverOutput, err := clusterProvider.Discover(params.Context, params.Identity)
+		if err != nil {
+			return fmt.Errorf("discovering clusters using %s: %w", clusterProvider.Name(), err)
+		}
+
+		if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
+			a.logger.Info("no clusters discovered")
+			return nil
+		}
+
+		cluster, err = a.selectCluster(discoverOutput)
+		if err != nil {
+			return fmt.Errorf("selecting cluster: %w", err)
+		}
+	} else {
+		a.logger.Infof("Getting cluster %s using %s provider", *params.ClusterID, clusterProvider.Name())
+		cluster, err = clusterProvider.Get(params.Context, *params.ClusterID, params.Identity)
+		if err != nil {
+			return fmt.Errorf("getting cluster: %w", err)
+		}
+		if cluster == nil {
+			return fmt.Errorf("getting cluster with id %s: %w", *params.ClusterID, ErrClusterNotFound)
+		}
 	}
 
-	if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
-		a.logger.Info("no clusters discovered")
-		return nil
-	}
-
-	cluster, err := a.selectCluster(discoverOutput)
-	if err != nil {
-		return fmt.Errorf("selecting cluster: %w", err)
-	}
-
-	kubeConfig, contextName, err := provider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
+	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}

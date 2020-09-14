@@ -87,7 +87,7 @@ func WithHistoryStore(store history.Store) Option {
 func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cluster, error) {
 	options := []string{}
 	for _, cluster := range discoverOutput.Clusters {
-		options = append(options, cluster.Name)
+		options = append(options, cluster.ID)
 	}
 
 	if len(options) == 1 {
@@ -106,11 +106,4 @@ func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cl
 	}
 
 	return discoverOutput.Clusters[clusterName], nil
-}
-
-func (a *App) RegisterSensitiveFlag(flag *pflag.Flag) {
-	existing := a.sensitiveFlags[flag.Name]
-	if existing == nil {
-		a.sensitiveFlags[flag.Name] = flag
-	}
 }

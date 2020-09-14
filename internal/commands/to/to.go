@@ -102,6 +102,9 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("id", "", "id for a history entry to connect to"); err != nil {
 		return fmt.Errorf("adding id config: %w", err)
 	}
+	if _, err := cs.String("password", "", "the password to use"); err != nil {
+		return fmt.Errorf("adding password config: %w", err)
+	}
 	if err := app.AddHistoryConfigItems(cs); err != nil {
 		return fmt.Errorf("adding history config items: %w", err)
 	}

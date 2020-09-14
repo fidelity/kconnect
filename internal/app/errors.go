@@ -14,14 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package app
 
 import "errors"
 
 var (
-	ErrNoRoleArnFlag           = errors.New("no role-arn flag found in resolver")
-	ErrNoSession               = errors.New("no aws session supplied")
-	ErrFlagMissing             = errors.New("flag missing")
-	ErrNotAWSIdentity          = errors.New("unsupported identity, AWSIdentity required")
-	ErrUnexpectedClusterFormat = errors.New("cluster name from ARN has unexpected format")
+	ErrUnknownConfigItemType = errors.New("unknown item type")
+	ErrClusterNotFound       = errors.New("cluster not found")
 )

@@ -40,7 +40,7 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 
 	discoverOutput := &provider.DiscoverOutput{
 		ClusterProviderName:  "eks",
-		IdentityProviderName: "",
+		IdentityProviderName: "aws",
 		Clusters:             make(map[string]*provider.Cluster),
 	}
 
@@ -54,7 +54,7 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 		if err != nil {
 			return nil, fmt.Errorf("getting cluster config: %w", err)
 		}
-		discoverOutput.Clusters[clusterDetail.Name] = clusterDetail
+		discoverOutput.Clusters[clusterDetail.ID] = clusterDetail
 
 	}
 
@@ -63,8 +63,6 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 
 func (p *eksClusterProvider) listClusters() ([]*string, error) {
 	input := &eks.ListClustersInput{}
-
-	//TODO: handle cluster name flag
 
 	clusters := []*string{}
 	err := p.eksClient.ListClustersPages(input, func(page *eks.ListClustersOutput, lastPage bool) bool {

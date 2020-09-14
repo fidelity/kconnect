@@ -18,8 +18,10 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -28,8 +30,9 @@ type ConnectToParams struct {
 	HistoryConfig
 	KubernetesConfig
 
-	Alias   string `flag:"alias"`
-	EntryID string `flag:"id"`
+	Alias    string `json:"alias"`
+	EntryID  string `json:"id"`
+	Password string `json:"password"`
 
 	Context *provider.Context
 }
@@ -51,9 +54,42 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 		return fmt.Errorf("getting cluster provider %s: %w", entry.Spec.Provider, err)
 	}
 
-	idProvider.Authenticate(params.Context, clusterProvider.Name())
+	cs, err := a.buildConnectToConfig(idProvider, clusterProvider, entry)
+	if err != nil {
+		return fmt.Errorf("building connectTo config set: %w", err)
+	}
 
-	return nil
+	if params.Password != "" {
+		if err := cs.SetValue("password", params.Password); err != nil {
+			return fmt.Errorf("setting password config item: %w", err)
+		}
+	}
+
+	ctx := provider.NewContext(
+		provider.WithConfig(cs),
+		provider.WithLogger(a.logger),
+	)
+
+	useParams := &UseParams{
+		Context:          ctx,
+		IdentityProvider: idProvider,
+		Provider:         clusterProvider,
+	}
+
+	if err := config.Unmarshall(cs, useParams); err != nil {
+		return fmt.Errorf("unmarshalling config into use params: %w", err)
+	}
+
+	useParams.NoHistory = true
+	useParams.ClusterID = &entry.Spec.ProviderID
+
+	identity, err := useParams.IdentityProvider.Authenticate(useParams.Context, useParams.Provider.Name())
+	if err != nil {
+		return fmt.Errorf("authenticating using provider %s: %w", useParams.IdentityProvider.Name(), err)
+	}
+	useParams.Identity = identity
+
+	return a.Use(useParams)
 }
 
 func (a *App) getHistoryEntry(id, alias string) (*historyv1alpha.HistoryEntry, error) {
@@ -72,4 +108,51 @@ func (a *App) getHistoryEntry(id, alias string) (*historyv1alpha.HistoryEntry, e
 	}
 
 	return entries[0], nil
+}
+
+func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+	if err := cs.AddSet(idProvider.ConfigurationItems()); err != nil {
+		return nil, fmt.Errorf("adding identity provider config items: %w", err)
+	}
+	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
+		return nil, fmt.Errorf("adding cluster provider config items: %w", err)
+	}
+	if err := provider.AddCommonIdentityConfig(cs); err != nil {
+		return nil, fmt.Errorf("adding common identity config items: %w", err)
+	}
+	if err := provider.AddCommonClusterConfig(cs); err != nil {
+		return nil, fmt.Errorf("adding common cluster config items: %w", err)
+	}
+	if err := AddKubeconfigConfigItems(cs); err != nil {
+		return nil, fmt.Errorf("adding kubeconfig config items: %w", err)
+	}
+
+	for k, v := range historyEntry.Spec.Flags {
+		configItem := cs.Get(k)
+		if configItem == nil {
+			a.logger.Debugf("no config item called %s found", k)
+			continue
+		}
+
+		if configItem.Type == config.ItemTypeString {
+			configItem.Value = v
+		} else if configItem.Type == config.ItemTypeInt {
+			intVal, err := strconv.Atoi(v)
+			if err != nil {
+				return nil, err
+			}
+			configItem.Value = intVal
+		} else if configItem.Type == config.ItemTypeBool {
+			boolVal, err := strconv.ParseBool(v)
+			if err != nil {
+				return nil, err
+			}
+			configItem.Value = boolVal
+		} else {
+			return nil, fmt.Errorf("trying to set config item %s of type %s: %w", configItem.Name, configItem.Type, ErrUnknownConfigItemType)
+		}
+	}
+
+	return cs, nil
 }
