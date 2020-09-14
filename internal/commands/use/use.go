@@ -19,13 +19,14 @@ package use
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/usage"
+	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -34,21 +35,14 @@ var (
 	errMissingIdpProtocol = errors.New("missing idp protocol, please use --idp-protocol")
 )
 
-// type useCmdParams struct {
-// 	Kubeconfig       string
-// 	IdpProtocol      string
-// 	Provider         provider.ClusterProvider
-// 	IdentityProvider provider.IdentityProvider
-// 	Identity         provider.Identity
-// 	Context          *provider.Context
-// }
-
 // Command creates the use command
-func Command() *cobra.Command {
+func Command() (*cobra.Command, error) {
 	logger := logrus.WithField("command", "use")
 	a := app.New()
 
-	params := &app.UseParams{}
+	params := &app.UseParams{
+		Context: provider.NewContext(provider.WithLogger(logger)),
+	}
 
 	useCmd := &cobra.Command{
 		Use:   "use",
@@ -61,22 +55,47 @@ func Command() *cobra.Command {
 			return cmdSetup(cmd, args, params, logger)
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return preRun(cmd, params, logger)
+			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
+			return preRun(params, logger)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return a.Use(params)
 		},
 	}
 
-	useCmd.Flags().StringVar(&params.IdpProtocol, "idp-protocol", "", "the idp protocol to use (e.g. saml)")
-	useCmd.Flags().BoolVar(&params.SetCurrent, "set-current", false, "sets the current context in the kubeconfig to selected cluster")
-	provider.AddKubeconfigFlag(useCmd)
-	provider.AddCommonIdentityFlags(useCmd)
-	provider.AddCommonClusterProviderFlags(useCmd)
+	if err := addConfig(params.Context.ConfigurationItems()); err != nil {
+		return nil, fmt.Errorf("add command config: %w", err)
+	}
+
+	flagsToAdd, err := flags.CreateFlagsFromConfig(params.Context.ConfigurationItems())
+	if err != nil {
+		return nil, fmt.Errorf("creating flags: %w", err)
+	}
+	useCmd.Flags().AddFlagSet(flagsToAdd)
 
 	useCmd.SetUsageFunc(usage.Get)
 
-	return useCmd
+	return useCmd, nil
+}
+
+func addConfig(cs config.ConfigurationSet) error {
+	if _, err := cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)"); err != nil {
+		return fmt.Errorf("adding idp-protocol config: %w", err)
+	}
+	if _, err := cs.Bool("set-current", false, "sets the current context in the kubeconfig to selected cluster"); err != nil {
+		return fmt.Errorf("adding set-current config: %w", err)
+	}
+	if err := provider.AddKubeconfigConfig(cs); err != nil {
+		return fmt.Errorf("adding kubeconfig config items: %w", err)
+	}
+	if err := provider.AddCommonIdentityConfig(cs); err != nil {
+		return fmt.Errorf("adding common identity config items: %w", err)
+	}
+	if err := provider.AddCommonClusterConfig(cs); err != nil {
+		return fmt.Errorf("adding common cluster config items: %w", err)
+	}
+
+	return nil
 }
 
 func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *logrus.Entry) error {
@@ -86,13 +105,11 @@ func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *
 	}
 	params.Provider = selectedProvider
 
-	params.Context = provider.NewContext(
-		cmd,
-		provider.WithLogger(logger),
-	)
-
 	logger.Infof("using cluster provider %s", params.Provider.Name())
-	cmd.Flags().AddFlagSet(params.Provider.Flags())
+	providerCfg := selectedProvider.ConfigurationItems()
+	if err := params.Context.ConfigurationItems().AddSet(providerCfg); err != nil {
+		return err
+	}
 
 	idpProtocol := findIdpProtocolFromArgs(args)
 	if idpProtocol == "" {
@@ -104,21 +121,29 @@ func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *
 	}
 	params.IdentityProvider = idProvider
 	logger.Infof("using identity provider %s", idProvider.Name())
-	cmd.Flags().AddFlagSet(params.IdentityProvider.Flags())
+	idProviderCfg := idProvider.ConfigurationItems()
+	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
+		return err
+	}
+
+	providerFlags, err := flags.CreateFlagsFromConfig(params.Context.ConfigurationItems())
+	if err != nil {
+		return fmt.Errorf("converting provider config to flags: %w", err)
+	}
+
+	cmd.Flags().AddFlagSet(providerFlags)
 
 	return nil
 }
 
-func preRun(cmd *cobra.Command, params *app.UseParams, logger *logrus.Entry) error {
+func preRun(params *app.UseParams, logger *logrus.Entry) error {
 	// Update the context now the flags have been parsed
-	interactive, err := isInteractive(cmd)
-	if err != nil {
-		return fmt.Errorf("getting interactive flag: %w", err)
-	}
+	interactive := isInteractive(params.Context.ConfigurationItems())
+
 	params.Context = provider.NewContext(
-		cmd,
 		provider.WithLogger(logger),
 		provider.WithInteractive(interactive),
+		provider.WithConfig(params.Context.ConfigurationItems()),
 	)
 
 	identity, err := params.IdentityProvider.Authenticate(params.Context, params.Provider.Name())
@@ -127,7 +152,7 @@ func preRun(cmd *cobra.Command, params *app.UseParams, logger *logrus.Entry) err
 	}
 	params.Identity = identity
 
-	return params.Provider.FlagsResolver().Resolve(params.Context, cmd.Flags())
+	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems())
 }
 
 func findIdpProtocolFromArgs(args []string) string {
@@ -145,16 +170,13 @@ func findIdpProtocolFromArgs(args []string) string {
 	return args[index+1]
 }
 
-func isInteractive(cmd *cobra.Command) (bool, error) {
-	flag := cmd.Flags().Lookup("non-interactive")
-	if flag == nil {
-		return false, nil
+func isInteractive(cs config.ConfigurationSet) bool {
+	item := cs.Get("non-interactive")
+	if item == nil {
+		return true
 	}
 
-	ni, err := strconv.ParseBool(flag.Value.String())
-	if err != nil {
-		return false, fmt.Errorf("parsing interactive flag: %w", err)
-	}
+	value := item.Value.(bool)
 
-	return !ni, nil
+	return !value
 }

@@ -19,21 +19,21 @@ package aws
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws/pkg/awsconfig"
 )
 
 // NewIdentityStore will create a new AWS identity store
-func NewIdentityStore(providerFlags *pflag.FlagSet) (provider.IdentityStore, error) {
-	if !flags.ExistsWithValue("profile", providerFlags) {
+func NewIdentityStore(cfg config.ConfigurationSet) (provider.IdentityStore, error) {
+	if !cfg.ExistsWithValue("profile") {
 		return nil, ErrNoProfile
 	}
-	profileFlag := providerFlags.Lookup("profile")
+	profileCfg := cfg.Get("profile")
+	profile := profileCfg.Value.(string)
 
 	return &awsIdentityStore{
-		configProvider: awsconfig.NewSharedCredentials(profileFlag.Value.String()),
+		configProvider: awsconfig.NewSharedCredentials(profile),
 	}, nil
 }
 

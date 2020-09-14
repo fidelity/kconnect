@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The kconnect Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package usage
 
 import (
@@ -5,6 +21,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/spf13/cobra"
 )
@@ -21,9 +38,13 @@ func Get(cmd *cobra.Command) error {
 	}
 
 	for _, provider := range providers {
-		if provider.Flags() != nil {
+		if provider.ConfigurationItems() != nil {
 			usage = append(usage, fmt.Sprintf("\n%s provider flags:", provider.Name()))
-			usage = append(usage, strings.TrimRightFunc(provider.Flags().FlagUsages(), unicode.IsSpace))
+			providerFlags, err := flags.CreateFlagsFromConfig(provider.ConfigurationItems())
+			if err != nil {
+				return fmt.Errorf("converting provider config to flags: %w", err)
+			}
+			usage = append(usage, strings.TrimRightFunc(providerFlags.FlagUsages(), unicode.IsSpace))
 		}
 	}
 

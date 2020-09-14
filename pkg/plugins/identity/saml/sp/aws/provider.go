@@ -22,9 +22,7 @@ import (
 	"fmt"
 
 	"github.com/beevik/etree"
-	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -35,7 +33,7 @@ import (
 	"github.com/versent/saml2aws/pkg/awsconfig"
 	"github.com/versent/saml2aws/pkg/cfg"
 
-	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -53,12 +51,12 @@ var (
 	ErrMissingResponseElement = errors.New("missing response element")
 )
 
-type awsProviderConfig struct {
-	sp.ProviderConfig
+// type awsProviderConfig struct {
+// 	sp.ProviderConfig
 
-	Region  string `flag:"region" validate:"required"`
-	Profile string `flag:"profile" validate:"required"`
-}
+// 	Region  string `flag:"region" validate:"required"`
+// 	Profile string `flag:"profile" validate:"required"`
+// }
 
 func NewServiceProvider(logger *log.Entry) sp.ServiceProvider {
 	return &ServiceProvider{
@@ -71,26 +69,25 @@ type ServiceProvider struct {
 	session client.ConfigProvider
 }
 
-func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error {
+func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 
-	regionFlag := flags.Lookup("region")
-	if regionFlag == nil || regionFlag.Value.String() == "" {
+	regionCfg := cfg.Get("region")
+	if regionCfg == nil || regionCfg.Value.(string) == "" {
 		return ErrNoRegion
 	}
-	account.Region = regionFlag.Value.String()
+	account.Region = regionCfg.Value.(string)
 
-	profileFlag := flags.Lookup("profile")
-	if profileFlag == nil || profileFlag.Value.String() == "" {
+	profileCfg := cfg.Get("profile")
+	if profileCfg == nil || profileCfg.Value.(string) == "" {
 		return ErrNoProfile
 	}
-	account.Profile = profileFlag.Value.String()
+	account.Profile = profileCfg.Value.(string)
 
-	roleFlag := flags.Lookup("role-arn")
-	if roleFlag != nil || roleFlag.Value.String() != "" {
-		account.RoleARN = roleFlag.Value.String()
+	roleCfg := cfg.Get("role-arn")
+	if roleCfg != nil || roleCfg.Value.(string) != "" {
+		account.RoleARN = roleCfg.Value.(string)
 	}
-	account.Region = regionFlag.Value.String()
 
 	return nil
 }
@@ -246,17 +243,18 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 	return "", fmt.Errorf("getting response element Destination or SubjectConfirmationData: %w", ErrMissingResponseElement)
 }
 
-func (p *ServiceProvider) Validate(ctx *provider.Context, flagset *pflag.FlagSet) error {
-	config := &awsProviderConfig{}
+func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
+	//TODO: handle this
+	// config := &awsProviderConfig{}
 
-	if err := flags.Unmarshal(flagset, config); err != nil {
-		return fmt.Errorf("unmarshlling flags to config: %w", err)
-	}
+	// if err := flags.Unmarshal(flagset, config); err != nil {
+	// 	return fmt.Errorf("unmarshlling flags to config: %w", err)
+	// }
 
-	validate := validator.New()
-	if err := validate.Struct(config); err != nil {
-		return fmt.Errorf("validating config struct: %w", err)
-	}
+	// validate := validator.New()
+	// if err := validate.Struct(config); err != nil {
+	// 	return fmt.Errorf("validating config struct: %w", err)
+	// }
 
 	return nil
 }

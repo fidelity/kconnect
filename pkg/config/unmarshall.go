@@ -14,10 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package plugins
+package config
 
 import (
-	// Initialize all the identity, discovery and resolver plugins
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity"
+	"encoding/json"
 )
+
+// Unmarshall will unmarshall the ConfigurationSet into a struct
+func Unmarshall(cs ConfigurationSet, out interface{}) error {
+	items := make(map[string]interface{})
+	for _, item := range cs.GetAll() {
+		items[item.Name] = item.Value
+	}
+
+	data, err := json.Marshal(items)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(data, out); err != nil {
+		return err
+	}
+
+	return nil
+}

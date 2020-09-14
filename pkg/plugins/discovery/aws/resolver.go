@@ -17,42 +17,42 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
+
 	awsclient "github.com/aws/aws-sdk-go/aws/client"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 
+	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-// NewFlagsResolver creates a new flags resolver for AWS
-func NewFlagsResolver(session awsclient.ConfigProvider, logger *logrus.Entry) (provider.FlagsResolver, error) {
+// NewConfigResolver creates a new config resolver for AWS
+func NewConfigResolver(session awsclient.ConfigProvider, logger *logrus.Entry) (provider.ConfigResolver, error) {
 	if session == nil {
 		return nil, ErrNoSession
 	}
 
-	return &awsFlagsResolver{
+	return &awsConfigResolver{
 		session: session,
 		logger:  logger,
 	}, nil
 }
 
-// awsFlagsResolver is used to resolve the values for AWS related flags interactively.
-type awsFlagsResolver struct {
+// awsConfigResolver is used to resolve the config values for AWS interactively.
+type awsConfigResolver struct {
 	session awsclient.ConfigProvider
 	logger  *logrus.Entry
 }
 
-func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSet) error {
+func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
 	errsValidation := &kerrors.ValidationFailed{}
 
-	//TODO: create a declarative way to define flags
-
-	// Region
-	if !flags.ExistsWithValue("role-arn", flagset) {
-		errsValidation.AddFailure("role-arn is required")
+	for _, item := range cfg.GetAll() {
+		if item.Required && !cfg.ExistsWithValue(item.Name) {
+			errsValidation.AddFailure(fmt.Sprintf("%s is required", item.Name))
+		}
 	}
 
 	if len(errsValidation.Failures()) > 0 {
@@ -64,9 +64,8 @@ func (r *awsFlagsResolver) Validate(ctx *provider.Context, flagset *pflag.FlagSe
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (r *awsFlagsResolver) Resolve(ctx *provider.Context, flagset *pflag.FlagSet) error {
-	logger := ctx.Logger().WithField("resolver", "aws")
-	logger.Debug("resolving AWS flags")
+func (r *awsConfigResolver) Resolve(config config.ConfigurationSet) error {
+	r.logger.Debug("resolving AWS flags")
 
 	//TODO: handle in declarative mannor
 

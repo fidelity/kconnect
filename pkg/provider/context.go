@@ -19,8 +19,8 @@ package provider
 import (
 	"context"
 
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 type ContextOption func(*Context)
@@ -29,23 +29,20 @@ type ContextOption func(*Context)
 type Context struct {
 	context.Context
 
-	command *cobra.Command
-	logger  *logrus.Entry
-
+	logger      *logrus.Entry
 	interactive bool
-
-	//ClusterProvider ClusterProvider
+	cfgItems    config.ConfigurationSet
 }
 
 // NewContext creates a new context
-func NewContext(cmd *cobra.Command, opts ...ContextOption) *Context {
+func NewContext(opts ...ContextOption) *Context {
 	defaultContext := context.Background()
 
 	c := &Context{
 		Context:     defaultContext,
-		command:     cmd,
 		logger:      logrus.StandardLogger().WithContext(defaultContext),
 		interactive: true,
+		cfgItems:    config.NewConfigurationSet(),
 	}
 
 	for _, opt := range opts {
@@ -61,12 +58,6 @@ func WithContext(ctx context.Context) ContextOption {
 	}
 }
 
-// func WithClusterProvider(provider ClusterProvider) ContextOption {
-// 	return func(c *Context) {
-// 		c.ClusterProvider = provider
-// 	}
-// }
-
 func WithLogger(logger *logrus.Entry) ContextOption {
 	return func(c *Context) {
 		c.logger = logger
@@ -79,8 +70,10 @@ func WithInteractive(interactive bool) ContextOption {
 	}
 }
 
-func (c *Context) Command() *cobra.Command {
-	return c.command
+func WithConfig(cs config.ConfigurationSet) ContextOption {
+	return func(c *Context) {
+		c.cfgItems = cs
+	}
 }
 
 func (c *Context) Logger() *logrus.Entry {
@@ -89,4 +82,8 @@ func (c *Context) Logger() *logrus.Entry {
 
 func (c *Context) IsInteractive() bool {
 	return c.interactive
+}
+
+func (c *Context) ConfigurationItems() config.ConfigurationSet {
+	return c.cfgItems
 }
