@@ -21,11 +21,11 @@ package aws
 import (
 	"fmt"
 
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
-	"github.com/spf13/pflag"
 )
 
-func (p *ServiceProvider) resolveProfile(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveProfile(name string, cfg config.ConfigurationSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -40,7 +40,7 @@ func (p *ServiceProvider) resolveProfile(name string, flagset *pflag.FlagSet) er
 	return nil
 }
 
-func (p *ServiceProvider) resolveRegion(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -55,7 +55,7 @@ func (p *ServiceProvider) resolveRegion(name string, flagset *pflag.FlagSet) err
 	return nil
 }
 
-func (p *ServiceProvider) resolveUsername(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveUsername(name string, cfg config.ConfigurationSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -70,7 +70,7 @@ func (p *ServiceProvider) resolveUsername(name string, flagset *pflag.FlagSet) e
 	return nil
 }
 
-func (p *ServiceProvider) resolvePassword(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolvePassword(name string, cfg config.ConfigurationSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (p *ServiceProvider) resolvePassword(name string, flagset *pflag.FlagSet) e
 	return nil
 }
 
-func (p *ServiceProvider) resolveIdpEndpoint(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveIdpEndpoint(name string, cfg config.ConfigurationSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -101,7 +101,7 @@ func (p *ServiceProvider) resolveIdpEndpoint(name string, flagset *pflag.FlagSet
 	return nil
 }
 
-func (p *ServiceProvider) resolveIdpProvider(name string, flagset *pflag.FlagSet) error {
+func (p *ServiceProvider) resolveIdpProvider(name string, cfg config.ConfigurationSet) error {
 	if flags.ExistsWithValue(name, flagset) {
 		return nil
 	}
@@ -115,18 +115,3 @@ func (p *ServiceProvider) resolveIdpProvider(name string, flagset *pflag.FlagSet
 
 	return nil
 }
-
-// func (r *ServiceProvider) resolveRoleARN(name string, flagset *pflag.FlagSet) error {
-// 	if flags.ExistsWithValue(name, flagset) {
-// 		return nil
-// 	}
-
-// 	roleArn := "some role"
-
-// 	if err := flagset.Set(name, roleArn); err != nil {
-// 		r.logger.Errorf("failed setting role-arn flag to %s: %s", role-arn, err.Error())
-// 		return fmt.Errorf("setting role-arn flag: %w", err)
-// 	}
-
-// 	return nil
-// }

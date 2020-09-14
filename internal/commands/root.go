@@ -18,9 +18,12 @@ package commands
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
+	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/flags"
 
 	home "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
@@ -31,14 +34,11 @@ import (
 )
 
 var (
-	configFile  string
-	logLevel    string
-	logFormat   string
-	interactive bool
+	cfg config.ConfigurationSet
 )
 
 // RootCmd creates the root kconnect command
-func RootCmd() *cobra.Command {
+func RootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:   "kconnect",
 		Short: "The Kubernetes Connection Manager CLI",
@@ -52,46 +52,51 @@ func RootCmd() *cobra.Command {
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Configuration file (defaults to $HOME/.kconnect/config")
-	//TODO: change the below back to INFO
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.DebugLevel.String(), "Log level for the CLI. Defaults to INFO")
-	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "TEXT", "Format of the log output. Defaults to text.")
-	rootCmd.PersistentFlags().BoolVar(&interactive, "non-interactive", false, "Run without interactive flag resolution. Defaults to false")
+	cfg = config.NewConfigurationSet()
+	if err := flags.AddCommonCommandConfig(cfg); err != nil {
+		return nil, fmt.Errorf("adding common configuration: %w", err)
+	}
+	rootFlags, err := flags.CreateFlagsFromConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("creating root command flags: %w", err)
+	}
+	rootCmd.PersistentFlags().AddFlagSet(rootFlags)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
-	rootCmd.AddCommand(use.Command())
+	useCmd, err := use.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating use command: %w", err)
+	}
+	rootCmd.AddCommand(useCmd)
 	rootCmd.AddCommand(version.Command())
 
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initConfig(rootCmd))
 
-	// err := logging.Configure(logLevel, logFormat)
-	// if err != nil {
-	// 	return fmt.Errorf("configuring logging: %w", err)
-	// }
-
-	// if err := rootCmd.Execute(); err != nil {
-	// 	return fmt.Errorf("executing root command: %w", err)
-	// }
-
-	return rootCmd
+	return rootCmd, nil
 }
 
-func initConfig() {
-	if configFile != "" {
-		viper.SetConfigFile(configFile)
-	} else {
-		home, err := home.Dir()
-		if err != nil {
-			panic(err)
+func initConfig(cmd *cobra.Command) func() {
+	return func() {
+		flags.PopulateConfigFromCommand(cmd, cfg)
+
+		if cfg.ExistsWithValue("config") {
+			configFile := cfg.Get("config").Value.(string)
+			viper.SetConfigFile(configFile)
+		} else {
+			home, err := home.Dir()
+			if err != nil {
+				panic(err)
+			}
+
+			//TODO: construct path properyl
+			viper.AddConfigPath(home)
+			viper.SetConfigName(".kconnect")
 		}
 
-		//TODO: construct path properyl
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".kconnect")
+		viper.AutomaticEnv()
+		if err := viper.ReadInConfig(); err == nil {
+			log.Infof("Using config file: %s", viper.ConfigFileUsed())
+		}
 	}
 
-	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err == nil {
-		log.Infof("Using config file: %s", viper.ConfigFileUsed())
-	}
 }

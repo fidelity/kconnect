@@ -23,12 +23,14 @@ import (
 )
 
 var (
+	ErrDuplicatePlugin = errors.New("plugin already registered with same name")
+	ErrPluginNotFound  = errors.New("plugin not found")
+)
+
+var (
 	pluginsLock     sync.Mutex
 	identityPlugins = make(map[string]IdentityProvider)
 	clusterPlugins  = make(map[string]ClusterProvider)
-
-	ErrDuplicatePlugin = errors.New("plugin already registered with same name")
-	ErrPluginNotFound  = errors.New("plugin not found")
 )
 
 func RegisterIdentityProviderPlugin(name string, plugin IdentityProvider) error {

@@ -18,8 +18,8 @@ package identity
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -48,7 +48,7 @@ func (p *emptyIdentityProvider) Name() string {
 }
 
 // Flags will return the flags for this plugin
-func (p *emptyIdentityProvider) Flags() *pflag.FlagSet {
+func (p *emptyIdentityProvider) ConfigurationItems() config.ConfigurationSet {
 	return nil
 }
 

@@ -24,7 +24,10 @@ import (
 )
 
 func main() {
-	rootCmd := commands.RootCmd()
+	rootCmd, err := commands.RootCmd()
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Fatal(err)
 	}

@@ -18,7 +18,11 @@ package flags
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
@@ -44,4 +48,65 @@ func ExistsWithValue(name string, flags *pflag.FlagSet) bool {
 	}
 
 	return true
+}
+
+// CreateFlagsFromConfig will create a FlagSet from a configuration set
+func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
+	fs := pflag.NewFlagSet("", pflag.ContinueOnError)
+
+	for _, configItem := range cs.GetAll() {
+		switch configItem.Type {
+		case config.ItemTypeString:
+			defVal := configItem.DefaultValue.(string)
+			fs.String(configItem.Name, defVal, configItem.Description)
+		case config.ItemTypeInt:
+			defVal := configItem.DefaultValue.(int)
+			fs.Int(configItem.Name, defVal, configItem.Description)
+		case config.ItemTypeBool:
+			defVal := configItem.DefaultValue.(bool)
+			fs.Bool(configItem.Name, defVal, configItem.Description)
+		default:
+			return nil, config.ErrUnknownItemType
+		}
+	}
+
+	return fs, nil
+}
+
+func PopulateConfigFromFlags(flags *pflag.FlagSet, cs config.ConfigurationSet) {
+	flags.VisitAll(func(f *pflag.Flag) {
+
+		switch f.Value.Type() {
+		case "bool":
+			val, _ := flags.GetBool(f.Name)
+			cs.SetValue(f.Name, val) //nolint: errcheck
+		case "string":
+			cs.SetValue(f.Name, f.Value.String()) //nolint: errcheck
+		case "int":
+			val, _ := flags.GetInt(f.Name)
+			cs.SetValue(f.Name, val) //nolint: errcheck
+		}
+	})
+}
+
+func PopulateConfigFromCommand(cmd *cobra.Command, cs config.ConfigurationSet) {
+	PopulateConfigFromFlags(cmd.Flags(), cs)
+	PopulateConfigFromFlags(cmd.PersistentFlags(), cs)
+}
+
+func AddCommonCommandConfig(cs config.ConfigurationSet) error {
+	if _, err := cs.String("config", "", "Configuration file (defaults to $HOME/.kconnect/config"); err != nil {
+		return fmt.Errorf("adding config item: %w", err)
+	}
+	if _, err := cs.String("log-level", logrus.DebugLevel.String(), "Log level for the CLI. Defaults to INFO"); err != nil {
+		return fmt.Errorf("adding log-level config: %w", err)
+	}
+	if _, err := cs.String("log-format", "TEXT", "Format of the log output. Defaults to text."); err != nil {
+		return fmt.Errorf("adding log-format config: %w", err)
+	}
+	if err := cs.SetShort("log-level", "l"); err != nil {
+		return fmt.Errorf("setting shorthand for log-level: %w", err)
+	}
+
+	return nil
 }

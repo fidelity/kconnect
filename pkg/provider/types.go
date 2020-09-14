@@ -17,7 +17,7 @@ limitations under the License.
 package provider
 
 import (
-	"github.com/spf13/pflag"
+	"github.com/fidelity/kconnect/pkg/config"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
@@ -35,24 +35,22 @@ type ClusterProvider interface {
 
 	GetClusterConfig(ctx *Context, cluster *Cluster, setCurrent bool) (*api.Config, error)
 
-	// FlagsResolver returns the resolver used to inetractively resolve flags
-	FlagsResolver() FlagsResolver
+	// ConfigurationResolver returns the resolver used to interactively resolve configuration
+	ConfigurationResolver() ConfigResolver
 }
 
-// FlagsResolver is used to resolve the values for flags interactively.
-// There will be a flags resolver for Azure, AWS and Rancher initially.
-type FlagsResolver interface {
+// ConfigResolver is used to resolve the values for config items interactively.
+type ConfigResolver interface {
 
-	// Validate is used to validate the flags and return any errors
-	Validate(ctx *Context, flags *pflag.FlagSet) error
+	// Validate is used to validate the config items and return any errors
+	Validate(config config.ConfigurationSet) error
 
-	// Resolve will resolve the values for the supplied context. It will interactively
-	// resolve the values by asking the user for selections. It will basically set the
-	// Value on each pflag.Flag
-	Resolve(ctx *Context, flags *pflag.FlagSet) error
+	// Resolve will resolve the values for the supplied config items. It will interactively
+	// resolve the values by asking the user for selections.
+	Resolve(config config.ConfigurationSet) error
 }
 
-type FlagResolveFunc func(name string, flags *pflag.FlagSet) error
+type ConfigResolveFunc func(name string, config *config.ConfigurationSet) error
 
 // IdentityProvider represents the interface used to implement an identity provider
 // plugin. It provides authentication and authorization functionality.
@@ -98,8 +96,8 @@ type Plugin interface {
 	// Name returns the name of the plugin
 	Name() string
 
-	// Flags will return the flags as part of a flagset for the plugin
-	Flags() *pflag.FlagSet
+	// ConfigurationItems will return the configuration items for the plugin
+	ConfigurationItems() config.ConfigurationSet
 
 	// Usage returns a string to display for help
 	Usage() string

@@ -17,21 +17,21 @@ limitations under the License.
 package sp
 
 import (
-	"github.com/spf13/pflag"
 	"github.com/versent/saml2aws/pkg/cfg"
 
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 type ProviderConfig struct {
 	provider.IdentityProviderConfig
-	IdpEndpoint string `flag:"idp-endpoint" validate:"required"`
-	IdpProvider string `flag:"idp-provider" validate:"required"`
+	IdpEndpoint string `flag:"idp-endpoint" validate:"required" json:"idp-endpoint"`
+	IdpProvider string `flag:"idp-provider" validate:"required" json:"idp-provider"`
 }
 
 type ServiceProvider interface {
-	Validate(ctx *provider.Context, flags *pflag.FlagSet) error
-	ResolveFlags(ctx *provider.Context, flags *pflag.FlagSet) error
-	PopulateAccount(account *cfg.IDPAccount, flags *pflag.FlagSet) error
+	Validate(configItems config.ConfigurationSet) error
+	ResolveConfiguration(configItems config.ConfigurationSet) error
+	PopulateAccount(account *cfg.IDPAccount, configItems config.ConfigurationSet) error
 	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error)
 }

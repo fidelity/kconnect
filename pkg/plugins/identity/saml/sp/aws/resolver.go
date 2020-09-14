@@ -22,39 +22,35 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/fidelity/kconnect/pkg/aws"
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
-	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *ServiceProvider) ResolveFlags(ctx *provider.Context, flagset *pflag.FlagSet) error {
-	p.logger.Debug("resolving AWS identity flags")
+func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) error {
+	p.logger.Debug("resolving AWS identity configuration items")
 
 	// TODO: handle in declarative mannor
 	// NOTE: resolution is only needed for required fields
-	if err := p.resolveIdpProvider("idp-provider", flagset); err != nil {
+	if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
 		return fmt.Errorf("resolving idp-provider: %w", err)
 	}
-	if err := p.resolveIdpEndpoint("idp-endpoint", flagset); err != nil {
+	if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
 		return fmt.Errorf("resolving idp-endpoint: %w", err)
 	}
-	if err := p.resolveProfile("profile", flagset); err != nil {
+	if err := p.resolveProfile("profile", cfg); err != nil {
 		return fmt.Errorf("resolving profile: %w", err)
 	}
-	if err := p.resolveRegion("region", flagset); err != nil {
+	if err := p.resolveRegion("region", cfg); err != nil {
 		return fmt.Errorf("resolving region: %w", err)
 	}
-	if err := p.resolveUsername("username", flagset); err != nil {
+	if err := p.resolveUsername("username", cfg); err != nil {
 		return fmt.Errorf("resolving username: %w", err)
 	}
-	if err := p.resolvePassword("password", flagset); err != nil {
+	if err := p.resolvePassword("password", cfg); err != nil {
 		return fmt.Errorf("resolving password: %w", err)
 	}
-
-	// if err := r.resolveRoleARN("role-arn", flagset); err != nil {
-	// 	return fmt.Errorf("resolving role-arn: %w", err)
-	// }
 
 	return nil
 }

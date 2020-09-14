@@ -17,6 +17,9 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
+
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -26,15 +29,15 @@ import (
 // ClusterProviderConfig represents the base configuration for
 // a cluster provider
 type ClusterProviderConfig struct {
-	ClusterName *string `flag:"cluster"`
+	ClusterName *string `flag:"cluster" json:"cluster"`
 }
 
 // IdentityProviderConfig represents the base configuration for an
 // identity provider.
 type IdentityProviderConfig struct {
-	Username string `flag:"username" validate:"required"`
-	Password string `flag:"password" validate:"required"`
-	Force    bool   `flag:"force"`
+	Username string `flag:"username" validate:"required" json:"username"`
+	Password string `flag:"password" validate:"required" json:"password"`
+	Force    bool   `flag:"force" json:"force"`
 }
 
 // AddCommonClusterProviderFlags will add flags that are common to
@@ -46,10 +49,39 @@ func AddCommonClusterProviderFlags(cmd *cobra.Command) {
 	cmd.Flags().AddFlagSet(fs)
 }
 
+func AddCommonClusterConfig(cs config.ConfigurationSet) error {
+	if _, err := cs.String("cluster", "", "Name of the cluster to use."); err != nil {
+		return fmt.Errorf("adding cluster setting: %w", err)
+	}
+	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution. Defaults to false"); err != nil {
+		return fmt.Errorf("adding non-interactive setting: %w", err)
+	}
+	if err := cs.SetShort("cluster", "c"); err != nil {
+		return fmt.Errorf("setting shorthand for cluster setting: %w", err)
+	}
+
+	return nil
+}
+
 // AddCommonIdentityFlags will add common identity related flags to a command
 func AddCommonIdentityFlags(cmd *cobra.Command) {
 	flagSet := CommonIdentityFlagSet()
 	cmd.Flags().AddFlagSet(flagSet)
+}
+
+// AddCommonIdentityFlags will add common identity related flags to a command
+func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
+	if _, err := cs.String("username", "", "the username used for authentication"); err != nil {
+		return fmt.Errorf("adding username config: %w", err)
+	}
+	if _, err := cs.String("password", "", "the password to use for authentication"); err != nil {
+		return fmt.Errorf("adding password config: %w", err)
+	}
+	if _, err := cs.Bool("force", false, "If true then we force authentication every invocation"); err != nil {
+		return fmt.Errorf("adding force config: %w", err)
+	}
+
+	return nil
 }
 
 // CommonIdentityFlagSet creates a flagset with the common identity flags
@@ -70,4 +102,16 @@ func AddKubeconfigFlag(cmd *cobra.Command) {
 	flagSet.StringP("kubeconfig", "k", pathOptions.GetDefaultFilename(), "location of the kubeconfig to use")
 
 	cmd.Flags().AddFlagSet(flagSet)
+}
+
+func AddKubeconfigConfig(cs config.ConfigurationSet) error {
+	pathOptions := clientcmd.NewDefaultPathOptions()
+	if _, err := cs.String("kubeconfig", pathOptions.GetDefaultFilename(), "location of the kubeconfig to use"); err != nil {
+		return fmt.Errorf("adding kubeconfig config: %w", err)
+	}
+	if err := cs.SetShort("kubeconfig", "k"); err != nil {
+		return fmt.Errorf("setting shorthand for kubeconfig config: %w", err)
+	}
+
+	return nil
 }
