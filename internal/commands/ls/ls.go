@@ -61,9 +61,7 @@ func Command() (*cobra.Command, error) {
 				provider.WithConfig(cfg),
 			)
 
-			a.QueryHistory(ctx, params)
-
-			return nil
+			return a.QueryHistory(ctx, params)
 		},
 	}
 

@@ -32,7 +32,6 @@ import (
 
 var (
 	ErrAliasIDRequired = errors.New("alias or id must be specified")
-	ErrAliasOrID       = errors.New("cannot specify id and alias at the same time")
 )
 
 func Command() (*cobra.Command, error) {
@@ -42,22 +41,28 @@ func Command() (*cobra.Command, error) {
 		Context: provider.NewContext(provider.WithLogger(logger)),
 	}
 
+	/// kconnect to 1234567
+	/// 123456 arg is checked against id and alias
+	/// If alias is supplied then that
+	// ls printers finish command
+
+	// Issue: with merging kubeconfig
+	// APP_PASSWORD=password kconnect to 123456
+
 	toCmd := &cobra.Command{
 		Use:   "to",
 		Short: "re-connect to a previously connected cluster using your history",
+		Args:  cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return ErrAliasIDRequired
+			}
+
 			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
-
-			if params.Alias == "" && params.EntryID == "" {
-				return ErrAliasIDRequired
-			}
-
-			if params.Alias != "" && params.EntryID != "" {
-				return ErrAliasOrID
-			}
+			params.AliasOrID = args[0]
 
 			params.Context = provider.NewContext(
 				provider.WithLogger(logger),

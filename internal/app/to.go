@@ -30,9 +30,8 @@ type ConnectToParams struct {
 	HistoryConfig
 	KubernetesConfig
 
-	Alias    string `json:"alias"`
-	EntryID  string `json:"id"`
-	Password string `json:"password"`
+	AliasOrID string
+	Password  string `json:"password"`
 
 	Context *provider.Context
 }
@@ -40,7 +39,7 @@ type ConnectToParams struct {
 func (a *App) ConnectTo(params *ConnectToParams) error {
 	a.logger.Debug("Running ConnectTo")
 
-	entry, err := a.getHistoryEntry(params.EntryID, params.Alias)
+	entry, err := a.getHistoryEntry(params.AliasOrID)
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
@@ -92,22 +91,21 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	return a.Use(useParams)
 }
 
-func (a *App) getHistoryEntry(id, alias string) (*historyv1alpha.HistoryEntry, error) {
-	if id != "" {
-		return a.historyStore.GetByID(id)
-	}
-
-	//TODO: should we only allow 1 alias
-	entries, err := a.historyStore.GetByAlias(alias)
+func (a *App) getHistoryEntry(idOrAlias string) (*historyv1alpha.HistoryEntry, error) {
+	entry, err := a.historyStore.GetByID(idOrAlias)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting history entry by id: %w", err)
+	}
+	if entry != nil {
+		return entry, nil
 	}
 
-	if len(entries) == 0 {
-		return nil, nil
+	entry, err = a.historyStore.GetByAlias(idOrAlias)
+	if err != nil {
+		return nil, fmt.Errorf("getting history entry by alias: %w", err)
 	}
 
-	return entries[0], nil
+	return entry, nil
 }
 
 func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {

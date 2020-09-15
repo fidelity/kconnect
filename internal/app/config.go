@@ -107,10 +107,10 @@ func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("adding history identifier config items: %w", err)
 	}
 
-	if _, err := cs.String("cluster-provider-id", "", "id of a cluster provider (i.e. eks)"); err != nil {
+	if _, err := cs.String("cluster-provider", "", "name of a cluster provider (i.e. eks)"); err != nil {
 		return fmt.Errorf("adding cluster-provider-id config: %w", err)
 	}
-	if _, err := cs.String("identity-provider-id", "", "id of a identity provider (i.e. saml)"); err != nil {
+	if _, err := cs.String("identity-provider", "", "name of a identity provider (i.e. saml)"); err != nil {
 		return fmt.Errorf("adding identity-provider-id config: %w", err)
 	}
 	if _, err := cs.String("provider-id", "", "provider specific for a cluster"); err != nil {

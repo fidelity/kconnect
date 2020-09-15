@@ -12,6 +12,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
+	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/imdario/mergo v0.3.10
 	github.com/kr/text v0.2.0 // indirect
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect
@@ -43,10 +44,13 @@ require (
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.17.8
-	k8s.io/apimachinery v0.17.8
-	k8s.io/client-go v0.17.8
-	k8s.io/utils v0.0.0-20200619165400-6e3d28b6ed19 // indirect
+	k8s.io/api v0.19.1
+	k8s.io/apimachinery v0.19.1
+	k8s.io/cli-runtime v0.19.1
+	k8s.io/client-go v0.19.1
+	k8s.io/klog v1.0.0 // indirect
+	k8s.io/kubectl v0.19.1
+	sigs.k8s.io/structured-merge-diff/v2 v2.0.1 // indirect
 
 )
 

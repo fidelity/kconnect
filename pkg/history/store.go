@@ -29,6 +29,7 @@ var (
 	ErrNoLoader          = errors.New("loader required for history store")
 	ErrStoreFileRequired = errors.New("history store must be a file")
 	ErrEntryNotFound     = errors.New("history entry not found")
+	ErrDuplicateAlias    = errors.New("duplicate alias detected")
 )
 
 func NewStore(maxHistoryItems int, loader loader.Loader) (Store, error) {
@@ -125,7 +126,7 @@ func (s *storeImpl) GetByProviderWithID(providerName, providerID string) ([]*his
 	return entries, nil
 }
 
-func (s *storeImpl) GetByAlias(alias string) ([]*historyv1alpha.HistoryEntry, error) {
+func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, error) {
 	entries, err := s.filterHistory(func(entry *historyv1alpha.HistoryEntry) bool {
 		return entry.Spec.Alias != nil && entry.Spec.Alias == &alias
 	})
@@ -133,7 +134,14 @@ func (s *storeImpl) GetByAlias(alias string) ([]*historyv1alpha.HistoryEntry, er
 		return nil, fmt.Errorf("filtering history by alias %s: %w", alias, err)
 	}
 
-	return entries, nil
+	if len(entries) > 1 {
+		return nil, ErrDuplicateAlias
+	}
+	if len(entries) == 0 {
+		return nil, nil
+	}
+
+	return entries[0], nil
 }
 
 func (s *storeImpl) trimHistory(historyList *historyv1alpha.HistoryEntryList) error {

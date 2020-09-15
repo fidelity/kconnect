@@ -54,6 +54,7 @@ type HistoryEntryStatus struct {
 // HistoryEntry represents a history entry
 type HistoryEntry struct {
 	metav1.TypeMeta `json:",inline"`
+	//metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec   HistoryEntrySpec   `json:"spec,omitempty"`
 	Status HistoryEntryStatus `json:"status,omitempty"`
