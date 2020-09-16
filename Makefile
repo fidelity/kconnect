@@ -11,7 +11,7 @@ TOOLS_BIN_DIR := $(TOOLS_DIR)/bin
 BIN_DIR := bin
 
 # Binaries
-GOLANGCI_LINT := $(abspath $(TOOLS_BIN_DIR)/golangci-lint)
+GOLANGCI_LINT := $(TOOLS_BIN_DIR)/golangci-lint
 CONTROLLER_GEN := $(TOOLS_BIN_DIR)/controller-gen
 DEFAULTER_GEN := $(TOOLS_BIN_DIR)/defaulter-gen
 CONVERSION_GEN := $(TOOLS_BIN_DIR)/conversion-gen
