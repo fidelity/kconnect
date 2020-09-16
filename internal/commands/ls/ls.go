@@ -40,6 +40,7 @@ func Command() (*cobra.Command, error) {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params := &app.HistoryQueryInput{}
 
+			flags.BindFlags(cmd)
 			flags.PopulateConfigFromFlags(cmd.Flags(), cfg)
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)

@@ -47,27 +47,31 @@ var (
 // handle values in the spec and what is deemed as empty or not specified
 type FilterFunc func(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool
 
-func FilterHistory(list *historyv1alpha.HistoryEntryList, filterSpec *FilterSpec) ([]*historyv1alpha.HistoryEntry, error) {
+func FilterHistory(list *historyv1alpha.HistoryEntryList, filterSpec *FilterSpec) error {
 	return FilterHistoryWithFuncs(list, filterSpec, DefaultFilterFuncs)
 }
 
-func FilterHistoryWithFuncs(list *historyv1alpha.HistoryEntryList, filterSpec *FilterSpec, filterFucs []FilterFunc) ([]*historyv1alpha.HistoryEntry, error) {
+func FilterHistoryWithFuncs(list *historyv1alpha.HistoryEntryList, filterSpec *FilterSpec, filterFucs []FilterFunc) error {
 	if list == nil {
-		return nil, ErrListNil
+		return ErrListNil
 	}
 	if filterSpec == nil {
-		return nil, ErrFilterSpecNil
+		return ErrFilterSpecNil
+	}
+	if len(list.Items) == 0 {
+		return nil
 	}
 
-	entries := []*historyv1alpha.HistoryEntry{}
+	entries := []historyv1alpha.HistoryEntry{}
 	for _, entry := range list.Items {
-		entryToFilter := &entry
-		if FilterEntry(entryToFilter, filterSpec, filterFucs) {
+		entryToFilter := entry
+		if FilterEntry(&entryToFilter, filterSpec, filterFucs) {
 			entries = append(entries, entryToFilter)
 		}
 	}
+	list.Items = entries
 
-	return entries, nil
+	return nil
 }
 
 func FilterEntry(entry *historyv1alpha.HistoryEntry, filterSpec *FilterSpec, filterFucs []FilterFunc) bool {

@@ -57,9 +57,7 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 	historyList.Items = append(historyList.Items, *entry)
 
 	if len(historyList.Items) > s.maxHistory {
-		if err := s.trimHistory(historyList); err != nil {
-			return fmt.Errorf("trimming history: %w", err)
-		}
+		s.trimHistory(historyList)
 	}
 
 	return s.loader.Save(historyList)
@@ -128,7 +126,7 @@ func (s *storeImpl) GetByProviderWithID(providerName, providerID string) ([]*his
 
 func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, error) {
 	entries, err := s.filterHistory(func(entry *historyv1alpha.HistoryEntry) bool {
-		return entry.Spec.Alias != nil && entry.Spec.Alias == &alias
+		return entry.Spec.Alias != nil && *entry.Spec.Alias == alias
 	})
 	if err != nil {
 		return nil, fmt.Errorf("filtering history by alias %s: %w", alias, err)
@@ -144,15 +142,13 @@ func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, erro
 	return entries[0], nil
 }
 
-func (s *storeImpl) trimHistory(historyList *historyv1alpha.HistoryEntryList) error {
+func (s *storeImpl) trimHistory(historyList *historyv1alpha.HistoryEntryList) {
 	diff := len(historyList.Items) - s.maxHistory
 	if diff < 1 {
-		return nil
+		return
 	}
 
 	historyList.Items = historyList.Items[diff:]
-
-	return nil
 }
 
 func (s *storeImpl) removeEntryFromHistory(historyList *historyv1alpha.HistoryEntryList, entryToRemove *historyv1alpha.HistoryEntry) error {
@@ -176,8 +172,9 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 
 	filteredEntries := []*historyv1alpha.HistoryEntry{}
 	for _, entry := range historyList.Items {
-		if filter(&entry) {
-			filteredEntries = append(filteredEntries, &entry)
+		filterEntry := entry
+		if filter(&filterEntry) {
+			filteredEntries = append(filteredEntries, &filterEntry)
 		}
 	}
 

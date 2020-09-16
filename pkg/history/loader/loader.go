@@ -40,18 +40,18 @@ func NewFileLoader(path string) (Loader, error) {
 	}
 
 	info, err := os.Stat(historyFile)
-	if err != nil && !os.IsNotExist(err) {
-		return nil, fmt.Errorf("getting details of file %s: %w", historyFile, err)
-	} else if err != nil && os.IsNotExist(err) {
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("getting details of file %s: %w", historyFile, err)
+		}
 		emptyHistoryFile, err := os.Create(historyFile)
 		if err != nil {
 			return nil, fmt.Errorf("creating empty history file %s: %w", historyFile, err)
 		}
 		emptyHistoryFile.Close()
-	} else {
-		if info.IsDir() {
-			return nil, fmt.Errorf("supplied path is a directory %s: %w", historyFile, err)
-		}
+
+	} else if info.IsDir() {
+		return nil, fmt.Errorf("supplied path is a directory %s: %w", historyFile, err)
 	}
 
 	return &fileLoader{

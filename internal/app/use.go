@@ -52,31 +52,21 @@ func (a *App) Use(params *UseParams) error {
 	var cluster *provider.Cluster
 	var err error
 
+	aliasInUse, err := a.aliasInUse(params.Alias)
+	if err != nil {
+		return err
+	}
+	if aliasInUse {
+		return ErrAliasAlreadyUsed
+	}
+
 	if params.ClusterID == nil || *params.ClusterID == "" {
-		a.logger.Infof("Discovering clusters using %s provider", clusterProvider.Name())
-		discoverOutput, err := clusterProvider.Discover(params.Context, params.Identity)
-		if err != nil {
-			return fmt.Errorf("discovering clusters using %s: %w", clusterProvider.Name(), err)
-		}
-
-		if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
-			a.logger.Info("no clusters discovered")
-			return nil
-		}
-
-		cluster, err = a.selectCluster(discoverOutput)
-		if err != nil {
-			return fmt.Errorf("selecting cluster: %w", err)
-		}
+		cluster, err = a.discoverCluster(params)
 	} else {
-		a.logger.Infof("Getting cluster %s using %s provider", *params.ClusterID, clusterProvider.Name())
-		cluster, err = clusterProvider.Get(params.Context, *params.ClusterID, params.Identity)
-		if err != nil {
-			return fmt.Errorf("getting cluster: %w", err)
-		}
-		if cluster == nil {
-			return fmt.Errorf("getting cluster with id %s: %w", *params.ClusterID, ErrClusterNotFound)
-		}
+		cluster, err = a.getCluster(params)
+	}
+	if err != nil {
+		return err
 	}
 
 	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
@@ -86,8 +76,7 @@ func (a *App) Use(params *UseParams) error {
 
 	if !params.NoHistory {
 		entry := historyv1alpha.NewHistoryEntry()
-		//TODO - move this to a function
-		//entry.Spec.Alias = ""
+		entry.Spec.Alias = params.Alias
 		entry.Spec.ConfigFile = params.Kubeconfig
 		entry.Spec.Flags = a.filterConfig(params)
 		entry.Spec.Identity = params.IdentityProvider.Name()
@@ -110,15 +99,52 @@ func (a *App) Use(params *UseParams) error {
 	return nil
 }
 
+func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
+	a.logger.Infof("Discovering clusters using %s provider", params.Provider.Name())
+
+	clusterProvider := params.Provider
+	discoverOutput, err := clusterProvider.Discover(params.Context, params.Identity)
+	if err != nil {
+		return nil, fmt.Errorf("discovering clusters using %s: %w", clusterProvider.Name(), err)
+	}
+
+	if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
+		a.logger.Info("no clusters discovered")
+		return nil, nil
+	}
+
+	cluster, err := a.selectCluster(discoverOutput)
+	if err != nil {
+		return nil, fmt.Errorf("selecting cluster: %w", err)
+	}
+
+	return cluster, nil
+}
+
+func (a *App) getCluster(params *UseParams) (*provider.Cluster, error) {
+	a.logger.Infof("Getting cluster %s using %s provider", *params.ClusterID, params.Provider.Name())
+
+	clusterProvider := params.Provider
+	cluster, err := clusterProvider.Get(params.Context, *params.ClusterID, params.Identity)
+	if err != nil {
+		return nil, fmt.Errorf("getting cluster: %w", err)
+	}
+	if cluster == nil {
+		return nil, fmt.Errorf("getting cluster with id %s: %w", *params.ClusterID, ErrClusterNotFound)
+	}
+
+	return cluster, nil
+}
+
 func (a *App) filterConfig(params *UseParams) map[string]string {
 	filteredConfig := make(map[string]string)
 
 	idConfigSet := params.IdentityProvider.ConfigurationItems()
 	discConfigSet := params.Provider.ConfigurationItems()
-	commonIdConfigSet := provider.CommonIdentityConfig()
+	commonIDConfigSet := provider.CommonIdentityConfig()
 
 	for _, configItem := range params.Context.ConfigurationItems().GetAll() {
-		cmnConfig := commonIdConfigSet.Get(configItem.Name)
+		cmnConfig := commonIDConfigSet.Get(configItem.Name)
 		idConfig := idConfigSet.Get(configItem.Name)
 		discConfig := discConfigSet.Get(configItem.Name)
 
@@ -131,12 +157,13 @@ func (a *App) filterConfig(params *UseParams) map[string]string {
 		}
 
 		val := ""
-		if configItem.Type == config.ItemTypeString {
+		switch configItem.Type {
+		case config.ItemTypeString:
 			val = configItem.Value.(string)
-		} else if configItem.Type == config.ItemTypeBool {
+		case config.ItemTypeBool:
 			boolVal := configItem.Value.(bool)
 			val = strconv.FormatBool(boolVal)
-		} else if configItem.Type == config.ItemTypeInt {
+		case config.ItemTypeInt:
 			intVal := configItem.Value.(int64)
 			val = strconv.FormatInt(intVal, 10)
 		}
@@ -145,4 +172,19 @@ func (a *App) filterConfig(params *UseParams) map[string]string {
 	}
 
 	return filteredConfig
+}
+
+func (a *App) aliasInUse(alias *string) (bool, error) {
+	if alias == nil || *alias == "" {
+		return false, nil
+	}
+
+	entry, err := a.historyStore.GetByAlias(*alias)
+	if err != nil {
+		return false, fmt.Errorf("getting history by alias: %w", err)
+	}
+
+	inUse := entry != nil
+
+	return inUse, nil
 }

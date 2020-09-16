@@ -133,21 +133,22 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 			continue
 		}
 
-		if configItem.Type == config.ItemTypeString {
+		switch configItem.Type {
+		case config.ItemTypeString:
 			configItem.Value = v
-		} else if configItem.Type == config.ItemTypeInt {
+		case config.ItemTypeInt:
 			intVal, err := strconv.Atoi(v)
 			if err != nil {
 				return nil, err
 			}
 			configItem.Value = intVal
-		} else if configItem.Type == config.ItemTypeBool {
+		case config.ItemTypeBool:
 			boolVal, err := strconv.ParseBool(v)
 			if err != nil {
 				return nil, err
 			}
 			configItem.Value = boolVal
-		} else {
+		default:
 			return nil, fmt.Errorf("trying to set config item %s of type %s: %w", configItem.Name, configItem.Type, ErrUnknownConfigItemType)
 		}
 	}

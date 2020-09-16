@@ -21,4 +21,5 @@ import "errors"
 var (
 	ErrUnknownConfigItemType = errors.New("unknown item type")
 	ErrClusterNotFound       = errors.New("cluster not found")
+	ErrAliasAlreadyUsed      = errors.New("alias already in use")
 )

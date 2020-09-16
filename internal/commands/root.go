@@ -86,7 +86,7 @@ func RootCmd() (*cobra.Command, error) {
 	flags.PopulateConfigFromCommand(rootCmd, cfg)
 	params := &app.CommonConfig{}
 	if err := config.Unmarshall(cfg, params); err != nil {
-		logrus.Fatalf("unmarshalling config into use params: %w", err)
+		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
 	}
 
 	cobra.OnInitialize(initConfig(params))
@@ -110,6 +110,7 @@ func initConfig(cfg *app.CommonConfig) func() {
 			viper.SetConfigName("config")
 		}
 
+		viper.SetEnvPrefix("KCONNECT")
 		viper.AutomaticEnv()
 		if err := viper.ReadInConfig(); err == nil {
 			logrus.Infof("Using config file: %s", viper.ConfigFileUsed())

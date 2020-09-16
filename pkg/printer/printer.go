@@ -18,6 +18,7 @@ package printer
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -60,33 +61,16 @@ type jsonObjectPrinter struct {
 }
 
 func (p *jsonObjectPrinter) Print(object runtime.Object, writer io.Writer) error {
-
-	jsonprinter := cliprint.JSONPrinter{}
-	scheme, _, _ := historyv1alpha.NewSchemeAndCodecs()
-	printer, err := cliprint.NewTypeSetter(scheme).WrapToPrinter(&jsonprinter, nil)
-	if err != nil {
-		return err
-	}
-
-	if meta.IsListType(object) {
-		//TODO: loop around
-	}
-
-	printer.PrintObj(object, writer)
-
-	return nil
+	jsonprinter := &cliprint.JSONPrinter{}
+	return printObject(jsonprinter, object, writer)
 }
 
 type yamlObjectPrinter struct {
 }
 
 func (p *yamlObjectPrinter) Print(object runtime.Object, writer io.Writer) error {
-	yamlPrinter := cliprint.YAMLPrinter{}
-	scheme, _, _ := historyv1alpha.NewSchemeAndCodecs()
-	printer, _ := cliprint.NewTypeSetter(scheme).WrapToPrinter(&yamlPrinter, nil)
-	printer.PrintObj(object, writer)
-
-	return nil
+	yamlPrinter := &cliprint.YAMLPrinter{}
+	return printObject(yamlPrinter, object, writer)
 }
 
 type tableObjectPrinter struct {
@@ -102,4 +86,28 @@ func (p *tableObjectPrinter) Print(object runtime.Object, writer io.Writer) erro
 	}
 
 	return printer.PrintObj(object, writer)
+}
+
+func printObject(resPrinter cliprint.ResourcePrinter, object runtime.Object, writer io.Writer) error {
+	scheme, _, _ := historyv1alpha.NewSchemeAndCodecs()
+	printer, err := cliprint.NewTypeSetter(scheme).WrapToPrinter(resPrinter, nil)
+	if err != nil {
+		return err
+	}
+
+	if !meta.IsListType(object) {
+		return printer.PrintObj(object, writer)
+	}
+
+	items, err := meta.ExtractList(object)
+	if err != nil {
+		return fmt.Errorf("extracting list: %w", err)
+	}
+	for _, item := range items {
+		if err := printer.PrintObj(item, writer); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

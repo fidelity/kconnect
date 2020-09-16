@@ -41,14 +41,6 @@ func Command() (*cobra.Command, error) {
 		Context: provider.NewContext(provider.WithLogger(logger)),
 	}
 
-	/// kconnect to 1234567
-	/// 123456 arg is checked against id and alias
-	/// If alias is supplied then that
-	// ls printers finish command
-
-	// Issue: with merging kubeconfig
-	// APP_PASSWORD=password kconnect to 123456
-
 	toCmd := &cobra.Command{
 		Use:   "to",
 		Short: "re-connect to a previously connected cluster using your history",
@@ -58,6 +50,7 @@ func Command() (*cobra.Command, error) {
 				return ErrAliasIDRequired
 			}
 
+			flags.BindFlags(cmd)
 			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)

@@ -25,6 +25,10 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
+const (
+	expectedNameParts = 2
+)
+
 // Get will get the details of a EKS cluster. The clusterID maps to a ARN
 func (p *eksClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
 	logger := ctx.Logger().WithField("provider", "eks")
@@ -49,7 +53,7 @@ func (p *eksClusterProvider) getClusterName(clusterID string) (string, error) {
 	}
 
 	parts := strings.Split(clusterARN.Resource, "/")
-	if len(parts) != 2 {
+	if len(parts) != expectedNameParts {
 		return "", ErrUnexpectedClusterFormat
 	}
 

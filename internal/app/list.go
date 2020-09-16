@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
+	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/printer"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -53,20 +54,19 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 		return fmt.Errorf("getting history entries: %w", err)
 	}
 
-	// filterSpec := &history.FilterSpec{
-	// 	Alias:            input.Alias,
-	// 	ClusterProvider:  input.ClusterProvider,
-	// 	Flags:            input.Flags,
-	// 	HistoryID:        input.HistoryID,
-	// 	IdentityProvider: input.IdentityProvider,
-	// 	Kubeconfig:       &input.Kubeconfig,
-	// 	ProviderID:       input.ProviderID,
-	// }
+	filterSpec := &history.FilterSpec{
+		Alias:            input.Alias,
+		ClusterProvider:  input.ClusterProvider,
+		Flags:            input.Flags,
+		HistoryID:        input.HistoryID,
+		IdentityProvider: input.IdentityProvider,
+		Kubeconfig:       &input.Kubeconfig,
+		ProviderID:       input.ProviderID,
+	}
 
-	// entries, err := history.FilterHistory(list, filterSpec)
-	// if err != nil {
-	// 	return fmt.Errorf("filtering history list: %w", err)
-	// }
+	if err := history.FilterHistory(list, filterSpec); err != nil {
+		return fmt.Errorf("filtering history list: %w", err)
+	}
 
 	objPrinter, err := printer.New(*input.Output)
 	if err != nil {
@@ -77,10 +77,9 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 		table := convertToTable(list)
 		return objPrinter.Print(table, os.Stdout)
 
-	} else {
-		return objPrinter.Print(list, os.Stdout)
 	}
 
+	return objPrinter.Print(list, os.Stdout)
 }
 
 func convertToTable(list *historyv1alpha.HistoryEntryList) *metav1.Table {
