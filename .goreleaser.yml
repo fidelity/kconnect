@@ -62,30 +62,30 @@ brews:
       - aws-iam-authenticator
     folder: Formula
 
-snapcrafts:
-  -
-    name: kconnect
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    replacements:
-      darwin: macos
-      amd64: 64-bit
-    publish: true
-    summary: "The Kubernetes Connection Manager CLI"
-    description: "kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments."
-    grade: devel # TODO: change to stable when we are ready to release
-    confinement: devmode
-    license:  Apache-2.0
-    base: bare
-    apps:
-      kconnect:
-        plugs: ["home", "network", "personal-files"]
-    plugs:
-      personal-files:
-        read:
-        - $HOME/.aws/credentials
-        - $HOME/.kube/config
-        write:
-        - $HOME/.aws/credentials
-        - $HOME/.kube/config
+# snapcrafts:
+#   -
+#     name: kconnect
+#     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+#     replacements:
+#       darwin: macos
+#       amd64: 64-bit
+#     publish: true
+#     summary: "The Kubernetes Connection Manager CLI"
+#     description: "kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments."
+#     grade: devel # TODO: change to stable when we are ready to release
+#     confinement: devmode
+#     license:  Apache-2.0
+#     base: bare
+#     apps:
+#       kconnect:
+#         plugs: ["home", "network", "personal-files"]
+#     plugs:
+#       personal-files:
+#         read:
+#         - $HOME/.aws/credentials
+#         - $HOME/.kube/config
+#         write:
+#         - $HOME/.aws/credentials
+#         - $HOME/.kube/config
 
 
