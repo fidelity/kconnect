@@ -21,20 +21,21 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
 
+	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/provider"
-)
-
-const (
-	// defaultPageSize specifies the default number of items to display to a user
-	defaultPageSize = 10
 )
 
 // App represents the kconnect application and contains the
 // implementation of the apps logic
 type App struct {
-	logger        *logrus.Entry
-	selectCluster SelectClusterFunc
+	logger          *logrus.Entry
+	historyStore    history.Store
+	configDirectory string
+	selectCluster   SelectClusterFunc
+	sensitiveFlags  map[string]*pflag.Flag
 }
 
 // Option represents an option to use with the kcinnect application
@@ -45,10 +46,11 @@ type SelectClusterFunc func(discoverOutput *provider.DiscoverOutput) (*provider.
 
 // New creates a new instance of the kconnect app with options
 func New(opts ...Option) *App {
-
 	app := &App{
-		logger:        logrus.StandardLogger().WithField("app", "kconnect"),
-		selectCluster: DefaultSelectCluster,
+		configDirectory: defaults.AppDirectory(),
+		logger:          logrus.StandardLogger().WithField("app", "kconnect"),
+		selectCluster:   DefaultSelectCluster,
+		sensitiveFlags:  make(map[string]*pflag.Flag),
 	}
 
 	for _, opt := range opts {
@@ -73,13 +75,19 @@ func WithSelectClusterFn(fn SelectClusterFunc) Option {
 	}
 }
 
+func WithHistoryStore(store history.Store) Option {
+	return func(a *App) {
+		a.historyStore = store
+	}
+}
+
 // DefaultSelectCluster is the default cluster selection function. If there is only
 // 1 cluster then it automatically selects it. If there are more than 1 cluster then
 // a selection is displayed and the user must choose one
 func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cluster, error) {
 	options := []string{}
 	for _, cluster := range discoverOutput.Clusters {
-		options = append(options, cluster.Name)
+		options = append(options, cluster.ID)
 	}
 
 	if len(options) == 1 {
@@ -90,7 +98,7 @@ func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cl
 	prompt := &survey.Select{
 		Message:  "Select the cluster",
 		Options:  options,
-		PageSize: defaultPageSize,
+		PageSize: defaults.DefaultUIPageSize,
 		Help:     "Select a cluster to connect to from the discovered clusters",
 	}
 	if err := survey.AskOne(prompt, &clusterName, survey.WithValidator(survey.Required)); err != nil {

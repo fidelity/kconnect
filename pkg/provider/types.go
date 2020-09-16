@@ -33,7 +33,12 @@ type ClusterProvider interface {
 	// Discover will discover what clusters the supplied identity has access to
 	Discover(ctx *Context, identity Identity) (*DiscoverOutput, error)
 
-	GetClusterConfig(ctx *Context, cluster *Cluster, setCurrent bool) (*api.Config, error)
+	// Get will get the details of a cluster with the provided provider
+	// specific cluster id
+	Get(ctx *Context, clusterID string, identity Identity) (*Cluster, error)
+
+	// GetClusterConfig will get the kubeconfig for a cluster
+	GetClusterConfig(ctx *Context, cluster *Cluster, setCurrent bool) (*api.Config, string, error)
 
 	// ConfigurationResolver returns the resolver used to interactively resolve configuration
 	ConfigurationResolver() ConfigResolver
