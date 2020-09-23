@@ -27,7 +27,7 @@ import (
 
 func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, setCurrent bool) (*api.Config, string, error) {
 	clusterName := fmt.Sprintf("kconnect-eks-%s", cluster.Name)
-	userName := fmt.Sprintf("kconnect-%s", p.identity.ProfileName)
+	userName := fmt.Sprintf("kconnect-%s-%s", p.identity.ProfileName, cluster.Name)
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
 
 	certData, err := base64.StdEncoding.DecodeString(*cluster.CertificateAuthorityData)
