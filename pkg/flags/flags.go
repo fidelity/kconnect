@@ -58,13 +58,25 @@ func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 		switch configItem.Type {
 		case config.ItemTypeString:
 			defVal := configItem.DefaultValue.(string)
-			fs.String(configItem.Name, defVal, configItem.Description)
+			if configItem.Shorthand != "" {
+				fs.StringP(configItem.Name, configItem.Shorthand, defVal, configItem.Description)
+			} else {
+				fs.String(configItem.Name, defVal, configItem.Description)
+			}
 		case config.ItemTypeInt:
 			defVal := configItem.DefaultValue.(int)
-			fs.Int(configItem.Name, defVal, configItem.Description)
+			if configItem.Shorthand != "" {
+				fs.IntP(configItem.Name, configItem.Shorthand, defVal, configItem.Description)
+			} else {
+				fs.Int(configItem.Name, defVal, configItem.Description)
+			}
 		case config.ItemTypeBool:
 			defVal := configItem.DefaultValue.(bool)
-			fs.Bool(configItem.Name, defVal, configItem.Description)
+			if configItem.Shorthand != "" {
+				fs.BoolP(configItem.Name, configItem.Shorthand, defVal, configItem.Description)
+			} else {
+				fs.Bool(configItem.Name, defVal, configItem.Description)
+			}
 		default:
 			return nil, config.ErrUnknownItemType
 		}

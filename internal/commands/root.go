@@ -21,13 +21,14 @@ import (
 	"fmt"
 
 	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/internal/commands/configure"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/logging"
 
 	"github.com/sirupsen/logrus"
 
@@ -81,6 +82,11 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating ls command: %w", err)
 	}
 	rootCmd.AddCommand(lsCmd)
+	cfgCmd, err := configure.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating configure command: %w", err)
+	}
+	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())
 
 	flags.PopulateConfigFromCommand(rootCmd, cfg)
@@ -91,25 +97,15 @@ func RootCmd() (*cobra.Command, error) {
 
 	cobra.OnInitialize(initConfig(params))
 
-	// err := logging.Configure(logLevel, logFormat)
-	// if err != nil {
-	// 	return fmt.Errorf("configuring logging: %w", err)
-	// }
+	if err := logging.Configure(params.LogLevel, params.LogFormat); err != nil {
+		return nil, fmt.Errorf("configuring logging: %w", err)
+	}
 
 	return rootCmd, nil
 }
 
 func initConfig(cfg *app.CommonConfig) func() {
 	return func() {
-		if cfg.ConfigFile != "" {
-			viper.SetConfigFile(cfg.ConfigFile)
-		} else {
-			home := defaults.AppDirectory()
-
-			viper.AddConfigPath(home)
-			viper.SetConfigName("config")
-		}
-
 		viper.SetEnvPrefix("KCONNECT")
 		viper.AutomaticEnv()
 		if err := viper.ReadInConfig(); err == nil {

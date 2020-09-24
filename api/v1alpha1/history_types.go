@@ -132,3 +132,39 @@ func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 
 	return reflect.DeepEqual(h.Spec, other.Spec)
 }
+
+func (l *HistoryEntryList) ToTable() *metav1.Table {
+	table := &metav1.Table{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: metav1.SchemeGroupVersion.String(),
+			Kind:       "Table",
+		},
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{
+				Name: "Id",
+				Type: "string",
+			},
+			{
+				Name: "Provider",
+				Type: "string",
+			},
+			{
+				Name: "ProviderID",
+				Type: "string",
+			},
+			{
+				Name: "Identity",
+				Type: "string",
+			},
+		},
+	}
+
+	for _, entry := range l.Items {
+		row := metav1.TableRow{
+			Cells: []interface{}{entry.Spec.ID, entry.Spec.Provider, entry.Spec.ProviderID, entry.Spec.Identity},
+		}
+		table.Rows = append(table.Rows, row)
+	}
+
+	return table
+}
