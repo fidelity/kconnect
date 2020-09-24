@@ -61,6 +61,9 @@ func Command() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
+			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), args[0]); err != nil {
+				return fmt.Errorf("applying app config: %w", err)
+			}
 
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
 				return fmt.Errorf("unmarshalling config into use params: %w", err)

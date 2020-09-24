@@ -1,0 +1,9 @@
+apiVersion: kconnect.fidelity.github.com/v1alpha1
+kind: Configuration
+spec:
+  global:
+    username: alice@test.com
+  providers:
+    eks:
+      region: eu-west-2
+      username: bob@test.com

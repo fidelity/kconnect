@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ls
+package configure
 
 import (
 	"fmt"
@@ -22,50 +22,36 @@ import (
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
-	"github.com/fidelity/kconnect/pkg/history"
-	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 func Command() (*cobra.Command, error) {
-	logger := logrus.New().WithField("command", "ls")
+	logger := logrus.New().WithField("command", "configure")
 
 	cfg := config.NewConfigurationSet()
 
-	lsCmd := &cobra.Command{
-		Use:   "ls",
-		Short: "query your connection history",
+	cfgCmd := &cobra.Command{
+		Use:   "configure",
+		Short: "set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			params := &app.HistoryQueryInput{}
+			params := &app.ConfigureInput{}
 
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromFlags(cmd.Flags(), cfg)
-			if err := config.ApplyToConfigSet(cfg); err != nil {
-				return fmt.Errorf("applying app config: %w", err)
-			}
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 
-			historyLoader, err := loader.NewFileLoader(params.HistoryLocation)
-			if err != nil {
-				return fmt.Errorf("getting history loader with path %s: %w", params.HistoryLocation, err)
-			}
-			store, err := history.NewStore(params.HistoryMaxItems, historyLoader)
-			if err != nil {
-				return fmt.Errorf("creating history store: %w", err)
-			}
-
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithLogger(logger))
 
 			ctx := provider.NewContext(
 				provider.WithLogger(logger),
 				provider.WithConfig(cfg),
 			)
 
-			return a.QueryHistory(ctx, params)
+			return a.Configuration(ctx, params)
 		},
 	}
 
@@ -77,24 +63,21 @@ func Command() (*cobra.Command, error) {
 	if err != nil {
 		return nil, fmt.Errorf("creating flags: %w", err)
 	}
-	lsCmd.Flags().AddFlagSet(flagsToAdd)
+	cfgCmd.Flags().AddFlagSet(flagsToAdd)
 
-	return lsCmd, nil
+	return cfgCmd, nil
 
 }
 
 func addConfig(cs config.ConfigurationSet) error {
-	if err := app.AddHistoryQueryConfig(cs); err != nil {
-		return fmt.Errorf("adding history query config items: %w", err)
+	if _, err := cs.String("source", "", "the file or remote location to use to set the default configuration"); err != nil {
+		return fmt.Errorf("adding source config item: %w", err)
 	}
-	if err := app.AddHistoryConfigItems(cs); err != nil {
-		return fmt.Errorf("adding history config items: %w", err)
-	}
-	if err := app.AddKubeconfigConfigItems(cs); err != nil {
-		return fmt.Errorf("adding kubeconfig config items: %w", err)
-	}
-	if _, err := cs.String("output", "table", "output format for the result (Defaults to table)"); err != nil {
+	if _, err := cs.String("output", "yaml", "output format for the result (Defaults to yaml)"); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
+	}
+	if err := cs.SetShort("source", "s"); err != nil {
+		return fmt.Errorf("setting shorthand for source config item: %w", err)
 	}
 
 	return nil

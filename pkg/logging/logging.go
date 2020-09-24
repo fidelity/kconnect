@@ -42,7 +42,7 @@ func Configure(logLevel, logFormat string) error {
 
 	switch strings.ToUpper(logFormat) {
 	case "TEXT":
-		logrus.SetFormatter(&logrus.TextFormatter{})
+		logrus.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true})
 	case "JSON":
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	default:

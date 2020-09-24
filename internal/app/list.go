@@ -20,9 +20,6 @@ import (
 	"fmt"
 	"os"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/printer"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -74,46 +71,8 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 	}
 
 	if *input.Output == printer.OutputPrinterTable {
-		table := convertToTable(list)
-		return objPrinter.Print(table, os.Stdout)
-
+		return objPrinter.Print(list.ToTable(), os.Stdout)
 	}
 
 	return objPrinter.Print(list, os.Stdout)
-}
-
-func convertToTable(list *historyv1alpha.HistoryEntryList) *metav1.Table {
-	table := &metav1.Table{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: metav1.SchemeGroupVersion.String(),
-			Kind:       "Table",
-		},
-		ColumnDefinitions: []metav1.TableColumnDefinition{
-			{
-				Name: "Id",
-				Type: "string",
-			},
-			{
-				Name: "Provider",
-				Type: "string",
-			},
-			{
-				Name: "ProviderID",
-				Type: "string",
-			},
-			{
-				Name: "Identity",
-				Type: "string",
-			},
-		},
-	}
-
-	for _, entry := range list.Items {
-		row := metav1.TableRow{
-			Cells: []interface{}{entry.Spec.ID, entry.Spec.Provider, entry.Spec.ProviderID, entry.Spec.Identity},
-		}
-		table.Rows = append(table.Rows, row)
-	}
-
-	return table
 }

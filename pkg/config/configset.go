@@ -37,6 +37,22 @@ type Item struct {
 	Required         bool
 }
 
+func (i *Item) HasValue() bool {
+	if i == nil {
+		return false
+	}
+
+	if i.Value == nil {
+		return false
+	}
+
+	if i.Type == ItemTypeString {
+		return i.Value.(string) != ""
+	}
+
+	return true
+}
+
 type ItemType string
 
 var (
@@ -82,15 +98,7 @@ func (s *configSet) ExistsWithValue(name string) bool {
 		return false
 	}
 
-	if item.Value == nil {
-		return false
-	}
-
-	if item.Type == ItemTypeString {
-		return item.Value.(string) != ""
-	}
-
-	return true
+	return item.HasValue()
 }
 
 func (s *configSet) Get(name string) *Item {
