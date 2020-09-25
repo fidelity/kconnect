@@ -62,6 +62,21 @@ brews:
       - aws-iam-authenticator
     folder: Formula
 
+dockers:
+  -
+    image_templates:
+    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .Tag }}"
+    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .Tag }}-{{ .ShortCommit }}"
+    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}"
+    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}.{{ .Minor }}"
+    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .ShortCommit }}"
+    build_flag_templates:
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+
+
 # snapcrafts:
 #   -
 #     name: kconnect
