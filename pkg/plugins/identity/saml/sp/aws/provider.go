@@ -22,10 +22,10 @@ import (
 	"fmt"
 
 	"github.com/beevik/etree"
+	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 
@@ -49,14 +49,17 @@ var (
 	ErrNoRolesFound           = errors.New("no aws roles found")
 	ErrNotAccounts            = errors.New("no accounts available")
 	ErrMissingResponseElement = errors.New("missing response element")
+	ErrNoPartitionSupplied    = errors.New("no AWS partition supplied")
+	ErrPartitionNotFound      = errors.New("AWS partition not found")
 )
 
-// type awsProviderConfig struct {
-// 	sp.ProviderConfig
+type awsProviderConfig struct {
+	sp.ProviderConfig
 
-// 	Region  string `flag:"region" validate:"required"`
-// 	Profile string `flag:"profile" validate:"required"`
-// }
+	Partition string `json:"partition" validate:"required"`
+	Region    string `json:"region" validate:"required"`
+	Profile   string `json:"profile" validate:"required"`
+}
 
 func NewServiceProvider(logger *log.Entry) sp.ServiceProvider {
 	return &ServiceProvider{
@@ -65,8 +68,7 @@ func NewServiceProvider(logger *log.Entry) sp.ServiceProvider {
 }
 
 type ServiceProvider struct {
-	logger  *log.Entry
-	session client.ConfigProvider
+	logger *log.Entry
 }
 
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
@@ -245,16 +247,16 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 
 func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
 	//TODO: handle this
-	// config := &awsProviderConfig{}
+	cfg := &awsProviderConfig{}
 
-	// if err := flags.Unmarshal(flagset, config); err != nil {
-	// 	return fmt.Errorf("unmarshlling flags to config: %w", err)
-	// }
+	if err := config.Unmarshall(configItems, cfg); err != nil {
+		return fmt.Errorf("unmarshlling config set: %w", err)
+	}
 
-	// validate := validator.New()
-	// if err := validate.Struct(config); err != nil {
-	// 	return fmt.Errorf("validating config struct: %w", err)
-	// }
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return fmt.Errorf("validating config struct: %w", err)
+	}
 
 	return nil
 }

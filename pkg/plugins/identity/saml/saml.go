@@ -93,6 +93,9 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	if err := p.bindAndValidateConfig(ctx.ConfigurationItems()); err != nil {
 		return nil, fmt.Errorf("binding and validation config: %w", err)
 	}
+	if err := p.serviceProvider.Validate(ctx.ConfigurationItems()); err != nil {
+		return nil, fmt.Errorf("validating service provider: %w", err)
+	}
 
 	if err := p.createStore(ctx, clusterProvider); err != nil {
 		return nil, fmt.Errorf("creating identity store: %w", err)

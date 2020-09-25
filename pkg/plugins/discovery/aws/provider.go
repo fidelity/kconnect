@@ -19,6 +19,7 @@ package aws
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 	"github.com/sirupsen/logrus"
 
@@ -67,13 +68,15 @@ func (p *eksClusterProvider) Name() string {
 // ConfigurationItems returns the configuration items for this provider
 func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String("region", "us-west-2", "AWS region to connect to. Defaults to us-west-2") //nolint: errcheck
-	cs.String("profile", "", "AWS profile to use")                                      //nolint: errcheck
-	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                      //nolint: errcheck
-	cs.String("role-filter", "*EKS*", "A filter to apply to the roles list")            //nolint: errcheck
+	cs.String("partition", endpoints.AwsPartition().ID(), "AWS partition to use. Defaults to 'aws'") //nolint: errcheck
+	cs.String("region", "", "AWS region to connect to")                                              //nolint: errcheck
+	cs.String("profile", "", "AWS profile to use")                                                   //nolint: errcheck
+	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                   //nolint: errcheck
+	cs.String("role-filter", "*EKS*", "A filter to apply to the roles list")                         //nolint: errcheck
 
-	cs.SetRequired("profile") //nolint: errcheck
-	cs.SetRequired("region")  //nolint: errcheck
+	cs.SetRequired("profile")   //nolint: errcheck
+	cs.SetRequired("region")    //nolint: errcheck
+	cs.SetRequired("partition") //nolint: errcheck
 
 	return cs
 }
