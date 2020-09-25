@@ -3,6 +3,9 @@ run:
     tests: false
     skip-dirs:
     - third_party/*
+    skip-files:
+    - "zz_generated.*\\.go$"
+    - ".*_mock\\.go"
 
 issues:
   max-same-issues: 0

@@ -70,7 +70,7 @@ func (c *Configuration) ToTable() *metav1.Table {
 				Type: "string",
 			},
 			{
-				Name: "App Defauls",
+				Name: "App Defaults",
 				Type: "string",
 			},
 		},
