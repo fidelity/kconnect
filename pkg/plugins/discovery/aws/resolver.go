@@ -67,7 +67,5 @@ func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
 func (r *awsConfigResolver) Resolve(config config.ConfigurationSet) error {
 	r.logger.Debug("resolving AWS flags")
 
-	//TODO: handle in declarative mannor
-
 	return nil
 }

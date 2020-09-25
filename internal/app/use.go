@@ -68,6 +68,9 @@ func (a *App) Use(params *UseParams) error {
 	if err != nil {
 		return err
 	}
+	if cluster == nil {
+		return nil
+	}
 
 	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
 	if err != nil {
