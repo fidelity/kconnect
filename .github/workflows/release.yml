@@ -18,6 +18,12 @@ jobs:
               uses: actions/setup-go@v2
               with:
                   go-version: 1.13
+            - name: Docker Login
+              run: |
+                echo "$DKR_TOKEN" | docker login ghcr.io -u $DKR_USER --password-stdin
+              env:
+                DKR_TOKEN: ${{secrets.GH_PAT}}
+                DKR_USER: ${{secrets.DKR_USER}}
             # - name: Setup snapcraft
             #   run: |
             #     sudo snap install snapcraft --classic
