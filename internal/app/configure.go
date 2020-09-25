@@ -38,12 +38,12 @@ type ConfigureInput struct {
 // Configuration implements the configure command
 func (a *App) Configuration(ctx *provider.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
-		return a.printConfiguration(os.Stdout, input.Output)
+		return a.printConfiguration(input.Output)
 	}
 	return a.importConfiguration(*input.SourceLocation)
 }
 
-func (a *App) printConfiguration(writer io.Writer, printerType *printer.OutputPrinter) error {
+func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 	a.logger.Debug("printing configuration")
 
 	appConfig, err := config.NewAppConfiguration()
@@ -87,14 +87,14 @@ func (a *App) importConfiguration(sourceLocation string) error {
 
 	cfg, err := appConfig.Parse(reader)
 	if err != nil {
-		return fmt.Errorf("Parsing config from reader: %w", err)
+		return fmt.Errorf("parsing config from reader: %w", err)
 	}
 
 	if err := appConfig.Save(cfg); err != nil {
-		return fmt.Errorf("Saving config: %w", err)
+		return fmt.Errorf("saving config: %w", err)
 	}
 
-	a.logger.Info("Sucessfully imported configuration")
+	a.logger.Info("Successfully imported configuration")
 
 	return nil
 }
@@ -106,9 +106,9 @@ func getReader(location string) (io.Reader, error) {
 	case strings.Index(location, "http://") == 0 || strings.Index(location, "https://") == 0:
 		url, err := url.Parse(location)
 		if err != nil {
-			return nil, fmt.Errorf("the URL passed to location %q is not valid: %v", location, err)
+			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
-		resp, err := http.Get(url.String())
+		resp, err := http.Get(url.String()) //nolint
 		if err != nil {
 			return nil, fmt.Errorf("getting configuration from %s: %w", location, err)
 		}
