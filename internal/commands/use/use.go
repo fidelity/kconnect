@@ -110,7 +110,7 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)"); err != nil {
 		return fmt.Errorf("adding idp-protocol config: %w", err)
 	}
-	if _, err := cs.Bool("set-current", false, "sets the current context in the kubeconfig to selected cluster"); err != nil {
+	if _, err := cs.Bool("set-current", true, "sets the current context in the kubeconfig to the selected cluster. Defaults to true"); err != nil {
 		return fmt.Errorf("adding set-current config: %w", err)
 	}
 	if err := provider.AddCommonIdentityConfig(cs); err != nil {

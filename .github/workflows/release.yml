@@ -22,7 +22,7 @@ jobs:
               run: |
                 echo "$DKR_TOKEN" | docker login ghcr.io -u $DKR_USER --password-stdin
               env:
-                DKR_TOKEN: ${{secrets.GH_PAT}}
+                DKR_TOKEN: ${{secrets.GITHUB_TOKEN}}
                 DKR_USER: ${{secrets.DKR_USER}}
             # - name: Setup snapcraft
             #   run: |
