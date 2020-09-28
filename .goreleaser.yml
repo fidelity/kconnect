@@ -76,6 +76,25 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
 
+nfpms:
+  -
+    package_name: kconnect
+    replacements:
+      darwin: macos
+      amd64: 64-bit
+    vendor: kconnect authors
+    homepage: https://github.com/fidelity/kconnect
+    description: "The Kubernetes Connection Manager CLI"
+    license: Apache 2.0
+    formats:
+      - apk
+      - deb
+      - rpm
+    dependencies:
+      - kubectl
+
+
+
 
 # snapcrafts:
 #   -
