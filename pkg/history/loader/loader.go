@@ -17,11 +17,12 @@ limitations under the License.
 package loader
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"sigs.k8s.io/yaml"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -87,7 +88,7 @@ func (f *fileLoader) Load() (*historyv1alpha.HistoryEntryList, error) {
 }
 
 func (f *fileLoader) Save(historyList *historyv1alpha.HistoryEntryList) error {
-	data, err := json.Marshal(historyList)
+	data, err := yaml.Marshal(historyList)
 	if err != nil {
 		return fmt.Errorf("marshalling history list: %w", err)
 	}

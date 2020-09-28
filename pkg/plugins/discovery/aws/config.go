@@ -25,7 +25,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, setCurrent bool) (*api.Config, string, error) {
+func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster) (*api.Config, string, error) {
 	clusterName := fmt.Sprintf("kconnect-eks-%s", cluster.Name)
 	userName := fmt.Sprintf("kconnect-%s-%s", p.identity.ProfileName, cluster.Name)
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
@@ -72,10 +72,7 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 		},
 	}
 
-	if setCurrent {
-		p.logger.Infof("setting current context to: %s", contextName)
-		cfg.CurrentContext = contextName
-	}
+	cfg.CurrentContext = contextName
 
 	return cfg, contextName, nil
 }

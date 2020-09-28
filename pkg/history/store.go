@@ -23,6 +23,7 @@ import (
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/history/loader"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -54,7 +55,12 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 		return fmt.Errorf("reading history file: %w", err)
 	}
 
-	historyList.Items = append(historyList.Items, *entry)
+	existingID, exists := s.connectionExists(entry, historyList)
+	if exists {
+		s.updateLastUsed(historyList, existingID)
+	} else {
+		historyList.Items = append(historyList.Items, *entry)
+	}
 
 	if len(historyList.Items) > s.maxHistory {
 		s.trimHistory(historyList)
@@ -71,7 +77,7 @@ func (s *storeImpl) Remove(entries []*historyv1alpha.HistoryEntry) error {
 
 	for _, entryToRemove := range entries {
 		if err := s.removeEntryFromHistory(historyList, entryToRemove); err != nil {
-			return fmt.Errorf("error removing history item %s: %w", entryToRemove.Spec.ID, err)
+			return fmt.Errorf("error removing history item %s: %w", entryToRemove.ObjectMeta.Name, err)
 		}
 	}
 
@@ -89,7 +95,7 @@ func (s *storeImpl) GetAll() (*historyv1alpha.HistoryEntryList, error) {
 
 func (s *storeImpl) GetByID(id string) (*historyv1alpha.HistoryEntry, error) {
 	entries, err := s.filterHistory(func(entry *historyv1alpha.HistoryEntry) bool {
-		return entry.Spec.ID == id
+		return entry.ObjectMeta.Name == id
 	})
 	if err != nil {
 		return nil, fmt.Errorf("filtering history to id %s: %w", id, err)
@@ -115,7 +121,7 @@ func (s *storeImpl) GetByProvider(providerName string) ([]*historyv1alpha.Histor
 
 func (s *storeImpl) GetByProviderWithID(providerName, providerID string) ([]*historyv1alpha.HistoryEntry, error) {
 	entries, err := s.filterHistory(func(entry *historyv1alpha.HistoryEntry) bool {
-		return entry.Spec.ProviderID == providerName && entry.Spec.ID == providerID
+		return entry.Spec.ProviderID == providerName && entry.ObjectMeta.Name == providerID
 	})
 	if err != nil {
 		return nil, fmt.Errorf("filtering history by provider %s and id %s: %w", providerName, providerID, err)
@@ -179,4 +185,24 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 	}
 
 	return filteredEntries, nil
+}
+
+func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (string, bool) {
+	for _, existingEntry := range historyList.Items {
+		if existingEntry.Equals(entry) {
+			return existingEntry.ObjectMeta.Name, true
+		}
+	}
+
+	return "", false
+}
+
+func (s *storeImpl) updateLastUsed(historyList *historyv1alpha.HistoryEntryList, id string) {
+	for i := range historyList.Items {
+		if historyList.Items[i].ObjectMeta.Name == id {
+			historyList.Items[i].Status.LastUpdated = v1.Now()
+			historyList.Items[i].ObjectMeta.Generation++
+			return
+		}
+	}
 }

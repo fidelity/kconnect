@@ -72,7 +72,7 @@ func (a *App) Use(params *UseParams) error {
 		return nil
 	}
 
-	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster, params.SetCurrent)
+	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster)
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
@@ -90,12 +90,12 @@ func (a *App) Use(params *UseParams) error {
 			return fmt.Errorf("adding connection to history: %w", err)
 		}
 
-		historyRef := historyv1alpha.NewHistoryReference(entry.Spec.ID)
+		historyRef := historyv1alpha.NewHistoryReference(entry.ObjectMeta.Name)
 		kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
 		kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
 	}
 
-	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig); err != nil {
+	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig, params.SetCurrent); err != nil {
 		return fmt.Errorf("writing cluster kubeconfig: %w", err)
 	}
 

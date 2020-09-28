@@ -51,6 +51,7 @@ require (
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kubectl v0.19.1
 	sigs.k8s.io/structured-merge-diff/v2 v2.0.1 // indirect
+	sigs.k8s.io/yaml v1.2.0
 
 )
 

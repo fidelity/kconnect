@@ -27,8 +27,6 @@ import (
 
 // HistoryEntrySpec represents a history item
 type HistoryEntrySpec struct {
-	// ID is the unique identifier for this history item
-	ID string `json:"id"`
 	// Provider is the name of the discovery provider
 	Provider string `json:"provider"`
 	// Identity is the name of the identity provider
@@ -53,7 +51,8 @@ type HistoryEntryStatus struct {
 
 // HistoryEntry represents a history entry
 type HistoryEntry struct {
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec   HistoryEntrySpec   `json:"spec,omitempty"`
 	Status HistoryEntryStatus `json:"status,omitempty"`
@@ -93,16 +92,21 @@ func NewHistoryEntry() *HistoryEntry {
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
 	id := ulid.MustNew(ulid.Timestamp(t), entropy)
 
+	created := metav1.Now()
+
 	entry := &HistoryEntry{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: SchemeGroupVersion.String(),
 			Kind:       "HistoryEntry",
 		},
-		Spec: HistoryEntrySpec{
-			ID: id.String(),
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id.String(),
+			CreationTimestamp: created,
+			Generation:        1,
 		},
+		Spec: HistoryEntrySpec{},
 		Status: HistoryEntryStatus{
-			LastUpdated: metav1.Now(),
+			LastUpdated: created,
 		},
 	}
 
@@ -161,7 +165,7 @@ func (l *HistoryEntryList) ToTable() *metav1.Table {
 
 	for _, entry := range l.Items {
 		row := metav1.TableRow{
-			Cells: []interface{}{entry.Spec.ID, entry.Spec.Provider, entry.Spec.ProviderID, entry.Spec.Identity},
+			Cells: []interface{}{entry.ObjectMeta.Name, entry.Spec.Provider, entry.Spec.ProviderID, entry.Spec.Identity},
 		}
 		table.Rows = append(table.Rows, row)
 	}

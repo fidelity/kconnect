@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,6 +24,7 @@ import (
 	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/yaml"
 
 	kconnectv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/internal/defaults"
@@ -95,7 +95,7 @@ func (a *appConfiguration) Get() (*kconnectv1alpha.Configuration, error) {
 }
 
 func (a *appConfiguration) Save(configuration *kconnectv1alpha.Configuration) error {
-	data, err := json.Marshal(configuration)
+	data, err := yaml.Marshal(configuration)
 	if err != nil {
 		return fmt.Errorf("marshalling configuration: %w", err)
 	}
