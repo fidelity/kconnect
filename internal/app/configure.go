@@ -94,7 +94,7 @@ func (a *App) importConfiguration(sourceLocation string) error {
 		return fmt.Errorf("saving config: %w", err)
 	}
 
-	a.logger.Info("Successfully imported configuration")
+	a.logger.Info("successfully imported configuration")
 
 	return nil
 }

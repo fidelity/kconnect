@@ -21,6 +21,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/configure"
 	"github.com/fidelity/kconnect/internal/commands/ls"
@@ -28,15 +34,10 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
 	"github.com/fidelity/kconnect/internal/defaults"
+	intver "github.com/fidelity/kconnect/internal/version"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/logging"
-
-	"github.com/sirupsen/logrus"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -57,6 +58,9 @@ func RootCmd() (*cobra.Command, error) {
 			return nil
 		},
 	}
+
+	v := intver.Get()
+	logrus.Infof("kconnect - the kubernetes cli (%s)", v.Version)
 
 	if err := ensureAppDirectory(); err != nil {
 		return nil, fmt.Errorf("ensuring app directory exists: %w", err)
