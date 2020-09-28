@@ -142,13 +142,19 @@ func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *
 		return err
 	}
 
-	idpProtocol := findIdpProtocolFromArgs(args)
+	idpProtocol, err := getIdpProtocol(args, params)
+	if err != nil {
+		return fmt.Errorf("getting idp-protocol: %w", err)
+	}
 	if idpProtocol == "" {
 		return ErrMissingIdpProtocol
 	}
 	idProvider, err := provider.GetIdentityProvider(idpProtocol)
 	if err != nil {
 		return fmt.Errorf("creating identity provider %s: %w", idpProtocol, err)
+	}
+	if err := params.Context.ConfigurationItems().SetValue("idp-protocol", idpProtocol); err != nil {
+		return fmt.Errorf("setting idp-protocol value: %w", err)
 	}
 	params.IdentityProvider = idProvider
 	logger.Infof("using identity provider %s", idProvider.Name())
@@ -186,19 +192,16 @@ func preRun(params *app.UseParams, logger *logrus.Entry) error {
 	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems())
 }
 
-func findIdpProtocolFromArgs(args []string) string {
-	index := -1
+func getIdpProtocol(args []string, params *app.UseParams) (string, error) {
+	// look for a flag first
 	for i, arg := range args {
 		if arg == "--idp-protocol" {
-			index = i
-			break
+			return args[i+1], nil
 		}
 	}
-	if index == -1 {
-		return ""
-	}
 
-	return args[index+1]
+	// look in app config
+	return config.GetValue("idp-protocol", params.Provider.Name())
 }
 
 func isInteractive(cs config.ConfigurationSet) bool {

@@ -66,6 +66,35 @@ func NewAppConfigurationWithPath(path string) (AppConfiguration, error) {
 	return &appConfiguration{path: configPath}, nil
 }
 
+func GetValue(name string, provider string) (string, error) {
+	appCfg, err := NewAppConfiguration()
+	if err != nil {
+		return "", fmt.Errorf("creating application configuration: %w", err)
+	}
+
+	cfg, err := appCfg.Get()
+	if err != nil {
+		return "", fmt.Errorf("getting application configuration: %w", err)
+	}
+
+	if provider != "" {
+		providerValues, hasProvider := cfg.Spec.Providers[provider]
+		if hasProvider {
+			providerVal, hasProviderVal := providerValues[name]
+			if hasProviderVal {
+				return providerVal, nil
+			}
+		}
+	}
+
+	globalVal, hasGlobalVal := cfg.Spec.Global[name]
+	if hasGlobalVal {
+		return globalVal, nil
+	}
+
+	return "", nil
+}
+
 type appConfiguration struct {
 	path string
 }
