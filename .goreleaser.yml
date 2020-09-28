@@ -67,7 +67,7 @@ dockers:
     image_templates:
     - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .Tag }}"
     - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .Tag }}-{{ .ShortCommit }}"
-    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}"
+    #- "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}"
     - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}.{{ .Minor }}"
     - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .ShortCommit }}"
     build_flag_templates:

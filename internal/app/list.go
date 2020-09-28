@@ -44,7 +44,7 @@ type HistoryQueryInput struct {
 }
 
 func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) error {
-	a.logger.Debug("Querying history")
+	a.logger.Debug("querying history")
 
 	list, err := a.historyStore.GetAll()
 	if err != nil {
