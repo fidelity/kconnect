@@ -43,7 +43,7 @@ func Command() (*cobra.Command, error) {
 
 	toCmd := &cobra.Command{
 		Use:   "to",
-		Short: "re-connect to a previously connected cluster using your history",
+		Short: "Re-connect to a previously connected cluster using your history",
 		Args:  cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -97,7 +97,7 @@ func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddHistoryIdentifierConfig(cs); err != nil {
 		return fmt.Errorf("adding history identifier config items: %w", err)
 	}
-	if _, err := cs.String("password", "", "the password to use"); err != nil {
+	if _, err := cs.String("password", "", "Password to use"); err != nil {
 		return fmt.Errorf("adding password config: %w", err)
 	}
 	if err := app.AddHistoryConfigItems(cs); err != nil {

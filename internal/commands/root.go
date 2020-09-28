@@ -19,6 +19,7 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/configure"
@@ -26,6 +27,7 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
+	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/logging"
@@ -54,6 +56,10 @@ func RootCmd() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
+	}
+
+	if err := ensureAppDirectory(); err != nil {
+		return nil, fmt.Errorf("ensuring app directory exists: %w", err)
 	}
 
 	cfg = config.NewConfigurationSet()
@@ -108,8 +114,24 @@ func initConfig(cfg *app.CommonConfig) func() {
 	return func() {
 		viper.SetEnvPrefix("KCONNECT")
 		viper.AutomaticEnv()
-		if err := viper.ReadInConfig(); err == nil {
-			logrus.Infof("Using config file: %s", viper.ConfigFileUsed())
-		}
 	}
+}
+
+func ensureAppDirectory() error {
+	appDir := defaults.AppDirectory()
+
+	_, err := os.Stat(appDir)
+	if err == nil {
+		return nil
+	}
+
+	if !os.IsNotExist(err) {
+		return fmt.Errorf("getting details of app directory %s: %w", appDir, err)
+	}
+
+	if err := os.Mkdir(appDir, os.ModePerm); err != nil {
+		return fmt.Errorf("making app folder directory %s: %w", appDir, err)
+	}
+
+	return nil
 }

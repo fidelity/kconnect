@@ -46,7 +46,7 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("cluster-id", "", "Id of the cluster to use."); err != nil {
 		return fmt.Errorf("adding cluster-id setting: %w", err)
 	}
-	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution. Defaults to false"); err != nil {
+	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution"); err != nil {
 		return fmt.Errorf("adding non-interactive setting: %w", err)
 	}
 	if _, err := cs.String("alias", "", "Friendly name to give to give the connection"); err != nil {

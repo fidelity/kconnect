@@ -46,7 +46,7 @@ type UseParams struct {
 }
 
 func (a *App) Use(params *UseParams) error {
-	a.logger.Debug("Use command")
+	a.logger.Debug("use command")
 	clusterProvider := params.Provider
 
 	var cluster *provider.Cluster
@@ -103,7 +103,7 @@ func (a *App) Use(params *UseParams) error {
 }
 
 func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
-	a.logger.Infof("Discovering clusters using %s provider", params.Provider.Name())
+	a.logger.Infof("discovering clusters using %s provider", params.Provider.Name())
 
 	clusterProvider := params.Provider
 	discoverOutput, err := clusterProvider.Discover(params.Context, params.Identity)
@@ -125,7 +125,7 @@ func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
 }
 
 func (a *App) getCluster(params *UseParams) (*provider.Cluster, error) {
-	a.logger.Infof("Getting cluster %s using %s provider", *params.ClusterID, params.Provider.Name())
+	a.logger.Infof("getting cluster %s using %s provider", *params.ClusterID, params.Provider.Name())
 
 	clusterProvider := params.Provider
 	cluster, err := clusterProvider.Get(params.Context, *params.ClusterID, params.Identity)

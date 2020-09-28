@@ -34,7 +34,7 @@ func Command() (*cobra.Command, error) {
 
 	cfgCmd := &cobra.Command{
 		Use:   "configure",
-		Short: "set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
+		Short: "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params := &app.ConfigureInput{}
 
@@ -70,10 +70,10 @@ func Command() (*cobra.Command, error) {
 }
 
 func addConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("source", "", "the file or remote location to use to set the default configuration"); err != nil {
+	if _, err := cs.String("source", "", "File or remote location to use to set the default configuration"); err != nil {
 		return fmt.Errorf("adding source config item: %w", err)
 	}
-	if _, err := cs.String("output", "yaml", "output format for the result (Defaults to yaml)"); err != nil {
+	if _, err := cs.String("output", "yaml", "Controls the output format for the result."); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
 	if err := cs.SetShort("source", "s"); err != nil {

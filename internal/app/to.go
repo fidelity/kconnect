@@ -37,7 +37,7 @@ type ConnectToParams struct {
 }
 
 func (a *App) ConnectTo(params *ConnectToParams) error {
-	a.logger.Debug("Running ConnectTo")
+	a.logger.Debug("running connectto")
 
 	entry, err := a.getHistoryEntry(params.AliasOrID)
 	if err != nil {

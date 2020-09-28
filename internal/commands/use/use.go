@@ -50,7 +50,7 @@ func Command() (*cobra.Command, error) {
 
 	useCmd := &cobra.Command{
 		Use:   "use",
-		Short: "connect to a target environment and use clusters",
+		Short: "Connect to a target environment and discover clusters for use",
 		Args:  cobra.ExactArgs(1),
 		AdditionalSetupE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -107,10 +107,10 @@ func Command() (*cobra.Command, error) {
 }
 
 func addConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)"); err != nil {
+	if _, err := cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml)"); err != nil {
 		return fmt.Errorf("adding idp-protocol config: %w", err)
 	}
-	if _, err := cs.Bool("set-current", true, "sets the current context in the kubeconfig to the selected cluster. Defaults to true"); err != nil {
+	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
 		return fmt.Errorf("adding set-current config: %w", err)
 	}
 	if err := provider.AddCommonIdentityConfig(cs); err != nil {

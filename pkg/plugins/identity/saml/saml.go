@@ -80,7 +80,7 @@ func (p *samlIdentityProvider) ConfigurationItems() config.ConfigurationSet {
 // Authenticate will authenticate a user and returns their identity
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
 	p.logger = ctx.Logger().WithField("provider", "saml")
-	p.logger.Info("Authenticating user")
+	p.logger.Info("authenticating user")
 
 	if err := p.createServiceProvider(clusterProvider); err != nil {
 		return nil, fmt.Errorf("setting up saml provider: %w", err)

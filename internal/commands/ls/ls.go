@@ -36,7 +36,7 @@ func Command() (*cobra.Command, error) {
 
 	lsCmd := &cobra.Command{
 		Use:   "ls",
-		Short: "query your connection history",
+		Short: "Query your connection history",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			params := &app.HistoryQueryInput{}
 
@@ -93,7 +93,7 @@ func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
-	if _, err := cs.String("output", "table", "output format for the result (Defaults to table)"); err != nil {
+	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
 
