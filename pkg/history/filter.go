@@ -89,7 +89,7 @@ func ByHistoryID(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 		return true
 	}
 
-	return entry.Spec.ID == *spec.HistoryID
+	return entry.ObjectMeta.Name == *spec.HistoryID
 }
 
 func ByProviderID(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {

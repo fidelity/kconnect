@@ -24,11 +24,11 @@ func AppDirectory() string {
 func HistoryPath() string {
 	appDir := AppDirectory()
 
-	return path.Join(appDir, "history")
+	return path.Join(appDir, "history.yaml")
 }
 
 func ConfigPath() string {
 	appDir := AppDirectory()
 
-	return path.Join(appDir, "config")
+	return path.Join(appDir, "config.yaml")
 }

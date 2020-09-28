@@ -64,7 +64,7 @@ func Test_FileStoreAdd(t *testing.T) {
 			errorExpected: false,
 		},
 		{
-			name:            "Existing history below max items, add entry",
+			name:            "Existing history below max items, add new entry",
 			input:           createEntry("2"),
 			existingHistory: createHistoryList(2),
 			maxItems:        3,
@@ -90,7 +90,32 @@ func Test_FileStoreAdd(t *testing.T) {
 			errorExpected: false,
 		},
 		{
-			name:            "Existing history at max items, add entry",
+			name:            "Existing history below max items, add entry for existing connection",
+			input:           createEntry("0"),
+			existingHistory: createHistoryList(1),
+			maxItems:        3,
+			expect: func(mockLoader *mock_loader.MockLoader, input *historyv1alpha.HistoryEntry, existing *historyv1alpha.HistoryEntryList) {
+				expectedList := historyv1alpha.NewHistoryEntryList()
+				expectedList.Items = existing.Items
+
+				mockLoader.
+					EXPECT().
+					Load().
+					DoAndReturn(func() (*historyv1alpha.HistoryEntryList, error) {
+						return existing, nil
+					}).Times(1)
+
+				mockLoader.
+					EXPECT().
+					Save(matchers.MatchHistoryList(expectedList)).
+					DoAndReturn(func(historyList *historyv1alpha.HistoryEntryList) error {
+						return nil
+					}).Times(1)
+			},
+			errorExpected: false,
+		},
+		{
+			name:            "Existing history at max items, add new entry",
 			input:           createEntry("2"),
 			existingHistory: createHistoryList(2),
 			maxItems:        2,
@@ -237,9 +262,15 @@ func createEntry(id string) *historyv1alpha.HistoryEntry {
 	created, _ := time.Parse(time.RFC3339, "2020-09-0109T11:00:00+00:00")
 
 	entry := historyv1alpha.NewHistoryEntry()
-	entry.Spec.ID = id
+	entry.ObjectMeta.Name = id
+	entry.ObjectMeta.CreationTimestamp = v1.Time{
+		Time: created,
+	}
 	entry.Status.LastUpdated = v1.Time{
 		Time: created,
+	}
+	entry.Spec = historyv1alpha.HistoryEntrySpec{
+		ProviderID: id,
 	}
 
 	return entry
