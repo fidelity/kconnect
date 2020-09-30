@@ -31,7 +31,7 @@ import (
 
 // ConfigureInput is the input type for the configure command
 type ConfigureInput struct {
-	SourceLocation *string                `json:"source,omitempty"`
+	SourceLocation *string                `json:"file,omitempty"`
 	Output         *printer.OutputPrinter `json:"output,omitempty"`
 }
 
