@@ -70,14 +70,14 @@ func Command() (*cobra.Command, error) {
 }
 
 func addConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("source", "", "File or remote location to use to set the default configuration"); err != nil {
-		return fmt.Errorf("adding source config item: %w", err)
+	if _, err := cs.String("file", "", "File or remote location to use to set the default configuration"); err != nil {
+		return fmt.Errorf("adding file config item: %w", err)
 	}
 	if _, err := cs.String("output", "yaml", "Controls the output format for the result."); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
-	if err := cs.SetShort("source", "s"); err != nil {
-		return fmt.Errorf("setting shorthand for source config item: %w", err)
+	if err := cs.SetShort("file", "f"); err != nil {
+		return fmt.Errorf("setting shorthand for file config item: %w", err)
 	}
 
 	return nil
