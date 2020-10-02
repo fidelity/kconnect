@@ -17,6 +17,12 @@ SHARE_DIR := share
 PATH := $(abspath $(TOOLS_BIN_DIR)):$(PATH)
 export PATH
 
+$(TOOLS_BIN_DIR):
+	mkdir -p $@
+
+$(TOOLS_SHARE_DIR):
+	mkdir -p $@
+
 # Docs
 MDBOOK_VERSION := v0.4.3
 BOOKS_DIR := docs/book
@@ -106,8 +112,6 @@ $(MOCKGEN): $(TOOLS_DIR)/go.mod # Get and build mockgen
 	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) github.com/golang/mock/mockgen
 
 ##@ Docs
-$(TOOLS_SHARE_DIR):
-	mkdir -p $@
 
 MDBOOK_SHARE := $(TOOLS_SHARE_DIR)/mdbook$(MDBOOK_ARCHIVE_EXT)
 $(MDBOOK_SHARE): $(TOOLS_SHARE_DIR)
