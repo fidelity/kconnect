@@ -1,14 +1,37 @@
+# Build information
 build_date := $(shell date +%Y-%m-%dT%H:%M:%SZ)
 git_commit := $(shell git rev-parse --short HEAD)
-
 version_pkg := github.com/fidelity/kconnect/internal/version
+OS := $(shell go env GOOS)
+ARCH := $(shell go env GOARCH)
+UNAME := $(shell uname -s)
 
 # Directories
 gopath := $(shell go env GOPATH)
 GOBIN ?= $(gopath)/bin
 TOOLS_DIR := hack/tools
 TOOLS_BIN_DIR := $(TOOLS_DIR)/bin
+TOOLS_SHARE_DIR := $(TOOLS_DIR)/share
 BIN_DIR := bin
+SHARE_DIR := share
+PATH := $(abspath $(TOOLS_BIN_DIR)):$(PATH)
+export PATH
+
+# Docs
+MDBOOK_VERSION := v0.4.3
+BOOKS_DIR := docs/book
+RUST_TARGET := unknown-$(OS)-gnu
+MDBOOK_EXTRACT_COMMAND := tar xfvz $(TOOLS_SHARE_DIR)/mdbook.tar.gz -C $(TOOLS_BIN_DIR)
+MDBOOK_ARCHIVE_EXT := .tar.gz
+ifeq ($(OS), windows)
+	RUST_TARGET := pc-windows-msvc
+	MDBOOK_ARCHIVE_EXT := .zip
+	MDBOOK_EXTRACT_COMMAND := unzip -d /tmp
+endif
+
+ifeq ($(OS), darwin)
+	RUST_TARGET := apple-darwin
+endif
 
 # Binaries
 GOLANGCI_LINT := $(TOOLS_BIN_DIR)/golangci-lint
@@ -16,6 +39,10 @@ CONTROLLER_GEN := $(TOOLS_BIN_DIR)/controller-gen
 DEFAULTER_GEN := $(TOOLS_BIN_DIR)/defaulter-gen
 CONVERSION_GEN := $(TOOLS_BIN_DIR)/conversion-gen
 MOCKGEN := $(TOOLS_BIN_DIR)/mockgen
+MDBOOK := $(TOOLS_BIN_DIR)/mdbook
+MDBOOK_EMBED := $(TOOLS_BIN_DIR)/mdbook-embed
+MDBOOK_RELEASELINK := $(TOOLS_BIN_DIR)/mdbook-releaselink
+MDBOOK_TABULATE := $(TOOLS_BIN_DIR)/mdbook-tabulate
 
 .DEFAULT_GOAL := help
 
@@ -77,6 +104,33 @@ $(CONVERSION_GEN): $(TOOLS_DIR)/go.mod # Get and build conversion-gen
 
 $(MOCKGEN): $(TOOLS_DIR)/go.mod # Get and build mockgen
 	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) github.com/golang/mock/mockgen
+
+##@ Docs
+$(TOOLS_SHARE_DIR):
+	mkdir -p $@
+
+MDBOOK_SHARE := $(TOOLS_SHARE_DIR)/mdbook$(MDBOOK_ARCHIVE_EXT)
+$(MDBOOK_SHARE): $(TOOLS_SHARE_DIR)
+	curl -sL -o $(MDBOOK_SHARE) "https://github.com/rust-lang/mdBook/releases/download/$(MDBOOK_VERSION)/mdBook-$(MDBOOK_VERSION)-x86_64-$(RUST_TARGET)$(MDBOOK_ARCHIVE_EXT)"
+
+MDBOOK := $(TOOLS_BIN_DIR)/mdbook
+$(MDBOOK): $(TOOLS_BIN_DIR) $(MDBOOK_SHARE)
+	$(MDBOOK_EXTRACT_COMMAND)
+	chmod +x $@
+	touch -m $@
+
+
+.PHONY: docs-build
+docs-build: $(MDBOOK) ## Build the kconnect book
+	$(MDBOOK) build $(BOOKS_DIR)
+
+.PHONY: docs-serve
+docs-serve: $(MDBOOK) ## Run a local webserver with the compiled book
+	$(MDBOOK) serve $(BOOKS_DIR)
+
+.PHONY: docs-clean
+docs-clean:
+	rm -rf $(BOOKS_DIR)/book
 
 
 .PHONY: help
