@@ -51,13 +51,14 @@ You can use the history id or alias as the argument.`,
 			if len(args) < 1 {
 				return ErrAliasIDRequired
 			}
+			params.AliasOrID = args[0]
 
 			flags.BindFlags(cmd)
-			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
+			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
+
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
-			params.AliasOrID = args[0]
 
 			params.Context = provider.NewContext(
 				provider.WithLogger(logger),
@@ -86,7 +87,7 @@ You can use the history id or alias as the argument.`,
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	if err := flags.CreateFlagsAndMarkRequired(toCmd, params.Context.ConfigurationItems()); err != nil {
+	if err := flags.CreateCommandFlags(toCmd, params.Context.ConfigurationItems()); err != nil {
 		return nil, err
 	}
 
@@ -94,6 +95,12 @@ You can use the history id or alias as the argument.`,
 }
 
 func addConfig(cs config.ConfigurationSet) error {
+	if err := app.AddCommonConfigItems(cs); err != nil {
+		return fmt.Errorf("adding common config: %w", err)
+	}
+	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
+		return fmt.Errorf("adding set-current config: %w", err)
+	}
 	if _, err := cs.String("password", "", "Password to use"); err != nil {
 		return fmt.Errorf("adding password config: %w", err)
 	}

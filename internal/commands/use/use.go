@@ -76,7 +76,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		Short: fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
-			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
+			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
 			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -119,7 +119,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		return nil, fmt.Errorf("additional command setup: %w", err)
 	}
 
-	if err := flags.CreateFlagsAndMarkRequired(providerCmd, params.Context.ConfigurationItems()); err != nil {
+	if err := flags.CreateCommandFlags(providerCmd, params.Context.ConfigurationItems()); err != nil {
 		return nil, err
 	}
 
@@ -127,6 +127,9 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 }
 
 func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvider) error {
+	if err := app.AddCommonConfigItems(cs); err != nil {
+		return fmt.Errorf("adding common config %s: %w", clusterProvider.Name(), err)
+	}
 	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
 		return fmt.Errorf("adding cluster provider config %s: %w", clusterProvider.Name(), err)
 	}
