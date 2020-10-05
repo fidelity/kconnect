@@ -42,9 +42,11 @@ func Command() (*cobra.Command, error) {
 	}
 
 	toCmd := &cobra.Command{
-		Use:   "to",
+		Use:   "to [historyid/alias]",
 		Short: "Re-connect to a previously connected cluster using your history",
-		Args:  cobra.ExactArgs(1),
+		Long: `use is for re-connecting to a previously connected cluster using your history.
+You can use the history id or alias as the argument.`,
+		Args: cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return ErrAliasIDRequired
@@ -65,11 +67,11 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			historyLoader, err := loader.NewFileLoader(params.HistoryLocation)
+			historyLoader, err := loader.NewFileLoader(params.Location)
 			if err != nil {
-				return fmt.Errorf("getting history loader with path %s: %w", params.HistoryLocation, err)
+				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
-			store, err := history.NewStore(params.HistoryMaxItems, historyLoader)
+			store, err := history.NewStore(params.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
 			}
@@ -84,24 +86,19 @@ func Command() (*cobra.Command, error) {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	flagsToAdd, err := flags.CreateFlagsFromConfig(params.Context.ConfigurationItems())
-	if err != nil {
-		return nil, fmt.Errorf("creating flags: %w", err)
+	if err := flags.CreateFlagsAndMarkRequired(toCmd, params.Context.ConfigurationItems()); err != nil {
+		return nil, err
 	}
-	toCmd.Flags().AddFlagSet(flagsToAdd)
 
 	return toCmd, nil
 }
 
 func addConfig(cs config.ConfigurationSet) error {
-	if err := app.AddHistoryIdentifierConfig(cs); err != nil {
-		return fmt.Errorf("adding history identifier config items: %w", err)
-	}
 	if _, err := cs.String("password", "", "Password to use"); err != nil {
 		return fmt.Errorf("adding password config: %w", err)
 	}
-	if err := app.AddHistoryConfigItems(cs); err != nil {
-		return fmt.Errorf("adding history config items: %w", err)
+	if err := app.AddHistoryLocationItems(cs); err != nil {
+		return fmt.Errorf("adding history location items: %w", err)
 	}
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)

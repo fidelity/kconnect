@@ -7,7 +7,7 @@ require (
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.34.31
+	github.com/aws/aws-sdk-go v1.35.2
 	github.com/beevik/etree v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
@@ -55,8 +55,4 @@ require (
 
 )
 
-replace (
-	github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
-	//github.com/versent/saml2aws => github.com/richardcase/saml2aws v1.8.5-0.20200812194235-9d04b17acf54
-	github.com/versent/saml2aws => ./third_party/saml2aws
-)
+replace github.com/versent/saml2aws => ./third_party/saml2aws
