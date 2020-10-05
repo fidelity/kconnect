@@ -59,11 +59,9 @@ func Command() (*cobra.Command, error) {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	flagsToAdd, err := flags.CreateFlagsFromConfig(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("creating flags: %w", err)
+	if err := flags.CreateFlagsAndMarkRequired(cfgCmd, cfg); err != nil {
+		return nil, err
 	}
-	cfgCmd.Flags().AddFlagSet(flagsToAdd)
 
 	return cfgCmd, nil
 

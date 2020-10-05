@@ -26,16 +26,29 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
-type HistoryConfig struct {
-	HistoryLocation string `json:"history-location"`
-	HistoryMaxItems int    `json:"max-history"`
-	NoHistory       bool   `json:"no-history"`
+type HistoryLocationConfig struct {
+	Location string `json:"history-location"`
 }
 
-func AddHistoryConfigItems(cs config.ConfigurationSet) error {
+type HistoryConfig struct {
+	HistoryLocationConfig
+	MaxItems  int  `json:"max-history"`
+	NoHistory bool `json:"no-history"`
+}
+
+func AddHistoryLocationItems(cs config.ConfigurationSet) error {
 	if _, err := cs.String("history-location", defaults.HistoryPath(), "Location of where the history is stored"); err != nil {
 		return fmt.Errorf("adding history-location config: %w", err)
 	}
+
+	return nil
+}
+
+func AddHistoryConfigItems(cs config.ConfigurationSet) error {
+	if err := AddHistoryLocationItems(cs); err != nil {
+		return err
+	}
+
 	if _, err := cs.Int("max-history", defaults.MaxHistoryItems, "Sets the maximum number of history items to keep"); err != nil {
 		return fmt.Errorf("adding max-history config: %w", err)
 	}

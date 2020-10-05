@@ -49,11 +49,11 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 
-			historyLoader, err := loader.NewFileLoader(params.HistoryLocation)
+			historyLoader, err := loader.NewFileLoader(params.Location)
 			if err != nil {
-				return fmt.Errorf("getting history loader with path %s: %w", params.HistoryLocation, err)
+				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
-			store, err := history.NewStore(params.HistoryMaxItems, historyLoader)
+			store, err := history.NewStore(params.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
 			}
@@ -73,11 +73,9 @@ func Command() (*cobra.Command, error) {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	flagsToAdd, err := flags.CreateFlagsFromConfig(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("creating flags: %w", err)
+	if err := flags.CreateFlagsAndMarkRequired(lsCmd, cfg); err != nil {
+		return nil, err
 	}
-	lsCmd.Flags().AddFlagSet(flagsToAdd)
 
 	return lsCmd, nil
 
