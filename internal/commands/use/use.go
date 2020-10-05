@@ -26,7 +26,6 @@ import (
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/defaults"
-	"github.com/fidelity/kconnect/internal/usage"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
@@ -42,31 +41,52 @@ var (
 
 // Command creates the use command
 func Command() (*cobra.Command, error) {
-	logger := logrus.WithField("command", "use")
-
-	params := &app.UseParams{
-		Context: provider.NewContext(provider.WithLogger(logger)),
-	}
-
 	useCmd := &cobra.Command{
 		Use:   "use",
 		Short: "Connect to a target environment and discover clusters for use",
-		Args:  cobra.ExactArgs(1),
-		AdditionalSetupE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return ErrMissingProvider
+		Run: func(c *cobra.Command, _ []string) {
+			if err := c.Help(); err != nil {
+				logrus.Debugf("ignoring cobra error %q", err.Error())
 			}
-			return cmdSetup(cmd, args, params, logger)
 		},
+	}
+
+	// Add the provider subcommands
+	for _, provider := range provider.ListClusterProviders() {
+		providerCmd, err := createProviderCmd(provider)
+		if err != nil {
+			return nil, fmt.Errorf("creating provider command for %s: %w", provider.Name(), err)
+		}
+		useCmd.AddCommand(providerCmd)
+	}
+
+	return useCmd, nil
+}
+
+func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command, error) {
+	logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
+
+	params := &app.UseParams{
+		Context:  provider.NewContext(provider.WithLogger(logger)),
+		Provider: clusterProvider,
+	}
+
+	providerCmd := &cobra.Command{
+		Use:   clusterProvider.Name(),
+		Short: fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromFlags(cmd.Flags(), params.Context.ConfigurationItems())
-			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), args[0]); err != nil {
+			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
 
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
 				return fmt.Errorf("unmarshalling config into use params: %w", err)
+			}
+
+			if params.IdentityProvider == nil {
+				return ErrMissingIdpProtocol
 			}
 
 			return preRun(params, logger)
@@ -76,11 +96,11 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
 			}
 
-			historyLoader, err := loader.NewFileLoader(params.HistoryLocation)
+			historyLoader, err := loader.NewFileLoader(params.Location)
 			if err != nil {
-				return fmt.Errorf("getting history loader with path %s: %w", params.HistoryLocation, err)
+				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
-			store, err := history.NewStore(params.HistoryMaxItems, historyLoader)
+			store, err := history.NewStore(params.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
 			}
@@ -91,22 +111,25 @@ func Command() (*cobra.Command, error) {
 		},
 	}
 
-	if err := addConfig(params.Context.ConfigurationItems()); err != nil {
+	if err := addConfig(params.Context.ConfigurationItems(), params.Provider); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	flagsToAdd, err := flags.CreateFlagsFromConfig(params.Context.ConfigurationItems())
-	if err != nil {
-		return nil, fmt.Errorf("creating flags: %w", err)
+	if err := setupIdpProtocol(os.Args, params, logger); err != nil {
+		return nil, fmt.Errorf("additional command setup: %w", err)
 	}
-	useCmd.Flags().AddFlagSet(flagsToAdd)
 
-	useCmd.SetUsageFunc(usage.Get)
+	if err := flags.CreateFlagsAndMarkRequired(providerCmd, params.Context.ConfigurationItems()); err != nil {
+		return nil, err
+	}
 
-	return useCmd, nil
+	return providerCmd, nil
 }
 
-func addConfig(cs config.ConfigurationSet) error {
+func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvider) error {
+	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
+		return fmt.Errorf("adding cluster provider config %s: %w", clusterProvider.Name(), err)
+	}
 	if _, err := cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml)"); err != nil {
 		return fmt.Errorf("adding idp-protocol config: %w", err)
 	}
@@ -129,26 +152,15 @@ func addConfig(cs config.ConfigurationSet) error {
 	return nil
 }
 
-func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *logrus.Entry) error {
-	selectedProvider, err := provider.GetClusterProvider(args[0])
-	if err != nil {
-		return fmt.Errorf("creating cluster provider %s: %w", args[0], err)
-	}
-	params.Provider = selectedProvider
-
-	logger.Infof("using cluster provider %s", params.Provider.Name())
-	providerCfg := selectedProvider.ConfigurationItems()
-	if err := params.Context.ConfigurationItems().AddSet(providerCfg); err != nil {
-		return err
-	}
-
+func setupIdpProtocol(args []string, params *app.UseParams, logger *logrus.Entry) error {
 	idpProtocol, err := getIdpProtocol(args, params)
 	if err != nil {
 		return fmt.Errorf("getting idp-protocol: %w", err)
 	}
 	if idpProtocol == "" {
-		return ErrMissingIdpProtocol
+		return nil
 	}
+
 	idProvider, err := provider.GetIdentityProvider(idpProtocol)
 	if err != nil {
 		return fmt.Errorf("creating identity provider %s: %w", idpProtocol, err)
@@ -157,18 +169,12 @@ func cmdSetup(cmd *cobra.Command, args []string, params *app.UseParams, logger *
 		return fmt.Errorf("setting idp-protocol value: %w", err)
 	}
 	params.IdentityProvider = idProvider
+
 	logger.Infof("using identity provider %s", idProvider.Name())
 	idProviderCfg := idProvider.ConfigurationItems()
 	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
 		return err
 	}
-
-	providerFlags, err := flags.CreateFlagsFromConfig(params.Context.ConfigurationItems())
-	if err != nil {
-		return fmt.Errorf("converting provider config to flags: %w", err)
-	}
-
-	cmd.Flags().AddFlagSet(providerFlags)
 
 	return nil
 }

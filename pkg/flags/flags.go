@@ -50,6 +50,20 @@ func ExistsWithValue(name string, flags *pflag.FlagSet) bool {
 	return true
 }
 
+func CreateFlagsAndMarkRequired(cmd *cobra.Command, cs config.ConfigurationSet) error {
+	flags, err := CreateFlagsFromConfig(cs)
+	if err != nil {
+		return fmt.Errorf("creating flags from config set: %w", err)
+	}
+	cmd.Flags().AddFlagSet(flags)
+
+	if err := MarkRequired(cmd, cs); err != nil {
+		return fmt.Errorf("marking flags required: %w", err)
+	}
+
+	return nil
+}
+
 // CreateFlagsFromConfig will create a FlagSet from a configuration set
 func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ContinueOnError)
@@ -83,6 +97,18 @@ func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 	}
 
 	return fs, nil
+}
+
+func MarkRequired(cmd *cobra.Command, cs config.ConfigurationSet) error {
+	for _, configItem := range cs.GetAll() {
+		if configItem.Required {
+			if err := cmd.MarkFlagRequired(configItem.Name); err != nil {
+				return fmt.Errorf("marking flag required %s: %w", configItem.Name, err)
+			}
+		}
+	}
+
+	return nil
 }
 
 func PopulateConfigFromFlags(flags *pflag.FlagSet, cs config.ConfigurationSet) {
