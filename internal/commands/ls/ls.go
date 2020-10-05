@@ -41,7 +41,7 @@ func Command() (*cobra.Command, error) {
 			params := &app.HistoryQueryInput{}
 
 			flags.BindFlags(cmd)
-			flags.PopulateConfigFromFlags(cmd.Flags(), cfg)
+			flags.PopulateConfigFromCommand(cmd, cfg)
 			if err := config.ApplyToConfigSet(cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -73,7 +73,7 @@ func Command() (*cobra.Command, error) {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	if err := flags.CreateFlagsAndMarkRequired(lsCmd, cfg); err != nil {
+	if err := flags.CreateCommandFlags(lsCmd, cfg); err != nil {
 		return nil, err
 	}
 
@@ -82,6 +82,9 @@ func Command() (*cobra.Command, error) {
 }
 
 func addConfig(cs config.ConfigurationSet) error {
+	if err := app.AddCommonConfigItems(cs); err != nil {
+		return fmt.Errorf("adding common config: %w", err)
+	}
 	if err := app.AddHistoryQueryConfig(cs); err != nil {
 		return fmt.Errorf("adding history query config items: %w", err)
 	}
