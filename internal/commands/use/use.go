@@ -64,10 +64,8 @@ func Command() (*cobra.Command, error) {
 }
 
 func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command, error) {
-	logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
-
 	params := &app.UseParams{
-		Context:  provider.NewContext(provider.WithLogger(logger)),
+		Context:  provider.NewContext(),
 		Provider: clusterProvider,
 	}
 
@@ -75,6 +73,8 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		Use:   clusterProvider.Name(),
 		Short: fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
+
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
 			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
@@ -92,6 +92,8 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 			return preRun(params, logger)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
+
 			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
 			}
@@ -115,7 +117,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	if err := setupIdpProtocol(os.Args, params, logger); err != nil {
+	if err := setupIdpProtocol(os.Args, params); err != nil {
 		return nil, fmt.Errorf("additional command setup: %w", err)
 	}
 
@@ -155,7 +157,7 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	return nil
 }
 
-func setupIdpProtocol(args []string, params *app.UseParams, logger *logrus.Entry) error {
+func setupIdpProtocol(args []string, params *app.UseParams) error {
 	idpProtocol, err := getIdpProtocol(args, params)
 	if err != nil {
 		return fmt.Errorf("getting idp-protocol: %w", err)
@@ -173,7 +175,7 @@ func setupIdpProtocol(args []string, params *app.UseParams, logger *logrus.Entry
 	}
 	params.IdentityProvider = idProvider
 
-	logger.Infof("using identity provider %s", idProvider.Name())
+	logrus.Infof("using identity provider %s", idProvider.Name())
 	idProviderCfg := idProvider.ConfigurationItems()
 	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
 		return err
