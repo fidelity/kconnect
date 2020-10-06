@@ -90,22 +90,21 @@ func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 		default:
 			return nil, config.ErrUnknownItemType
 		}
+
+		if configItem.Deprecated {
+			if err := fs.MarkDeprecated(configItem.Name, configItem.DeprecatedMessage); err != nil {
+				return nil, fmt.Errorf("marking flag deprecated %s: %w", configItem.Name, err)
+			}
+		}
+		if configItem.Hidden {
+			if err := fs.MarkHidden(configItem.Name); err != nil {
+				return nil, fmt.Errorf("marking flag hidden %s: %w", configItem.Name, err)
+			}
+		}
 	}
 
 	return fs, nil
 }
-
-// func MarkRequired(cmd *cobra.Command, cs config.ConfigurationSet) error {
-// 	for _, configItem := range cs.GetAll() {
-// 		if configItem.Required {
-// 			if err := cmd.MarkFlagRequired(configItem.Name); err != nil {
-// 				return fmt.Errorf("marking flag required %s: %w", configItem.Name, err)
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 func PopulateConfigFromFlags(flags *pflag.FlagSet, cs config.ConfigurationSet) {
 	flags.VisitAll(func(f *pflag.Flag) {

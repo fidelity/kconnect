@@ -44,6 +44,7 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
+	historyID := entry.ObjectMeta.Name
 
 	idProvider, err := provider.GetIdentityProvider(entry.Spec.Identity)
 	if err != nil {
@@ -81,6 +82,7 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	}
 
 	useParams.NoHistory = true
+	useParams.EntryID = historyID
 	useParams.ClusterID = &entry.Spec.ProviderID
 	useParams.SetCurrent = params.SetCurrent
 
