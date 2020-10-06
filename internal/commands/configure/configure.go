@@ -28,18 +28,26 @@ import (
 )
 
 func Command() (*cobra.Command, error) {
-	logger := logrus.New().WithField("command", "configure")
-
 	cfg := config.NewConfigurationSet()
 
 	cfgCmd := &cobra.Command{
 		Use:   "configure",
 		Short: "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			params := &app.ConfigureInput{}
-
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
+			if err := config.ApplyToConfigSet(cfg); err != nil {
+				return fmt.Errorf("applying app config: %w", err)
+			}
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			logger := logrus.New().WithField("command", "configure")
+
+			params := &app.ConfigureInput{}
+
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
