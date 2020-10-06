@@ -89,5 +89,8 @@ func addConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("setting shorthand for file config item: %w", err)
 	}
 
+	cs.SetHistoryIgnore("file")   //nolint
+	cs.SetHistoryIgnore("output") //nolint
+
 	return nil
 }

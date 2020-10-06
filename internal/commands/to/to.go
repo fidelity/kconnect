@@ -108,5 +108,8 @@ func addConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
 
+	cs.SetHistoryIgnore("password") //nolint
+	cs.SetSensitive("password")     //nolint
+
 	return nil
 }

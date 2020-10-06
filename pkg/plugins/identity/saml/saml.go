@@ -106,22 +106,6 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, ErrCreatingAccount
 	}
 
-	exist, err := p.store.CredsExists()
-	if err != nil {
-		return nil, fmt.Errorf("checking if creds exist: %w", err)
-	}
-	if exist {
-		if !p.store.Expired() && !p.config.Force {
-			p.logger.Info("using cached creds")
-			id, err := p.store.Load()
-			if err != nil {
-				return nil, fmt.Errorf("loading identity: %w", err)
-			}
-			return id, nil
-		}
-		p.logger.Info("cached creds expired or force enabled, renewing")
-	}
-
 	err = account.Validate()
 	if err != nil {
 		return nil, fmt.Errorf("validating saml: %w", err)
@@ -147,7 +131,7 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, ErrNoSAMLAssertions
 	}
 
-	userID, err := p.serviceProvider.ProcessAssertions(account, samlAssertion)
+	userID, err := p.serviceProvider.ProcessAssertions(account, samlAssertion, ctx.ConfigurationItems())
 	if err != nil {
 		return nil, fmt.Errorf("processing assertions for: %s: %w", clusterProvider, err)
 	}
@@ -204,11 +188,9 @@ func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.I
 func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	sp := p.serviceProvider
 
-	if ctx.IsInteractive() {
-		p.logger.Debug("running interactively, resolving SAML provider flags")
-		if err := sp.ResolveConfiguration(ctx.ConfigurationItems()); err != nil {
-			return fmt.Errorf("resolving flags: %w", err)
-		}
+	p.logger.Debug("resolving SAML provider flags")
+	if err := sp.ResolveConfiguration(ctx.ConfigurationItems(), ctx.IsInteractive()); err != nil {
+		return fmt.Errorf("resolving flags: %w", err)
 	}
 
 	return nil

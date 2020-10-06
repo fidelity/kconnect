@@ -94,7 +94,7 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 	return nil
 }
 
-func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error) {
+func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (provider.Identity, error) {
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -119,7 +119,10 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("resolving aws role: %w", err)
 	}
 
-	log.Printf("selected role: %s", role.RoleARN)
+	if err := cfg.SetValue("role-arn", role.RoleARN); err != nil {
+		return nil, fmt.Errorf("setting role-arn config value: %w", err)
+	}
+	p.logger.Debugf("selected role: %s", role.RoleARN)
 
 	awsCreds, err := p.loginToStsUsingRole(account, role, samlAssertions)
 	if err != nil {

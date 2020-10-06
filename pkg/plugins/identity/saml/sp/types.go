@@ -31,7 +31,7 @@ type ProviderConfig struct {
 
 type ServiceProvider interface {
 	Validate(configItems config.ConfigurationSet) error
-	ResolveConfiguration(configItems config.ConfigurationSet) error
+	ResolveConfiguration(configItems config.ConfigurationSet, interactive bool) error
 	PopulateAccount(account *cfg.IDPAccount, configItems config.ConfigurationSet) error
-	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string) (provider.Identity, error)
+	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, configItems config.ConfigurationSet) (provider.Identity, error)
 }

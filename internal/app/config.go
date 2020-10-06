@@ -42,6 +42,8 @@ func AddHistoryLocationItems(cs config.ConfigurationSet) error {
 		return fmt.Errorf("adding history-location config: %w", err)
 	}
 
+	cs.SetHistoryIgnore("history-location") //nolint
+
 	return nil
 }
 
@@ -63,6 +65,10 @@ func AddHistoryConfigItems(cs config.ConfigurationSet) error {
 	if err := cs.SetHidden("entry-id"); err != nil {
 		return fmt.Errorf("setting entry-id hidden: %w", err)
 	}
+
+	cs.SetHistoryIgnore("max-history") //nolint
+	cs.SetHistoryIgnore("no-history")  //nolint
+	cs.SetHistoryIgnore("entry-id")    //nolint
 
 	return nil
 }
@@ -111,6 +117,11 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 		return fmt.Errorf("setting shorthand for log-level: %w", err)
 	}
 
+	cs.SetHistoryIgnore("config")          //nolint
+	cs.SetHistoryIgnore("log-level")       //nolint
+	cs.SetHistoryIgnore("log-format")      //nolint
+	cs.SetHistoryIgnore("non-interactive") //nolint
+
 	return nil
 }
 
@@ -121,6 +132,9 @@ func AddHistoryIdentifierConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("id", "", "Id for a history entry"); err != nil {
 		return fmt.Errorf("adding id config: %w", err)
 	}
+
+	cs.SetHistoryIgnore("alias") //nolint
+	cs.SetHistoryIgnore("id")    //nolint
 
 	return nil
 }
@@ -139,6 +153,10 @@ func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("provider-id", "", "Provider specific for a cluster"); err != nil {
 		return fmt.Errorf("adding provider-id config: %w", err)
 	}
+
+	cs.SetHistoryIgnore("cluster-provider")  //nolint
+	cs.SetHistoryIgnore("identity-provider") //nolint
+	cs.SetHistoryIgnore("provider-id")       //nolint
 
 	return nil
 
