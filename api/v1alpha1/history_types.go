@@ -149,6 +149,10 @@ func (l *HistoryEntryList) ToTable() *metav1.Table {
 				Type: "string",
 			},
 			{
+				Name: "Alias",
+				Type: "string",
+			},
+			{
 				Name: "Provider",
 				Type: "string",
 			},
@@ -160,12 +164,24 @@ func (l *HistoryEntryList) ToTable() *metav1.Table {
 				Name: "Identity",
 				Type: "string",
 			},
+			{
+				Name: "User",
+				Type: "string",
+			},
 		},
 	}
 
 	for _, entry := range l.Items {
+		username := entry.Spec.Flags["username"]
+
 		row := metav1.TableRow{
-			Cells: []interface{}{entry.ObjectMeta.Name, entry.Spec.Provider, entry.Spec.ProviderID, entry.Spec.Identity},
+			Cells: []interface{}{
+				entry.ObjectMeta.Name,
+				*entry.Spec.Alias,
+				entry.Spec.Provider,
+				entry.Spec.ProviderID,
+				entry.Spec.Identity,
+				username},
 		}
 		table.Rows = append(table.Rows, row)
 	}
