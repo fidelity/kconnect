@@ -41,10 +41,19 @@ func Command() (*cobra.Command, error) {
 		Use:   "renew",
 		Short: "Reconnect to last cluster",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+
+			flags.BindFlags(cmd)
+			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
+
+			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
+				return fmt.Errorf("unmarshalling config into to params: %w", err)
+			}
+			
 			params.Context = provider.NewContext(
 				provider.WithLogger(logger),
 				provider.WithConfig(params.Context.ConfigurationItems()),
 			)
+	
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -73,7 +82,7 @@ func Command() (*cobra.Command, error) {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	if err := flags.CreateFlagsAndMarkRequired(renewCmd, params.Context.ConfigurationItems()); err != nil {
+	if err := flags.CreateCommandFlags(renewCmd, params.Context.ConfigurationItems()); err != nil {
 		return nil, err
 	}
 
@@ -82,6 +91,12 @@ func Command() (*cobra.Command, error) {
 }
 
 func addConfig(cs config.ConfigurationSet) error {
+	if err := app.AddCommonConfigItems(cs); err != nil {
+		return fmt.Errorf("adding common config: %w", err)
+	}
+	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
+		return fmt.Errorf("adding set-current config: %w", err)
+	}
 	if _, err := cs.String("password", "", "Password to use"); err != nil {
 		return fmt.Errorf("adding password config: %w", err)
 	}

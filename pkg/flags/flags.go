@@ -50,16 +50,12 @@ func ExistsWithValue(name string, flags *pflag.FlagSet) bool {
 	return true
 }
 
-func CreateFlagsAndMarkRequired(cmd *cobra.Command, cs config.ConfigurationSet) error {
+func CreateCommandFlags(cmd *cobra.Command, cs config.ConfigurationSet) error {
 	flags, err := CreateFlagsFromConfig(cs)
 	if err != nil {
 		return fmt.Errorf("creating flags from config set: %w", err)
 	}
 	cmd.Flags().AddFlagSet(flags)
-
-	if err := MarkRequired(cmd, cs); err != nil {
-		return fmt.Errorf("marking flags required: %w", err)
-	}
 
 	return nil
 }
@@ -94,21 +90,20 @@ func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 		default:
 			return nil, config.ErrUnknownItemType
 		}
-	}
 
-	return fs, nil
-}
-
-func MarkRequired(cmd *cobra.Command, cs config.ConfigurationSet) error {
-	for _, configItem := range cs.GetAll() {
-		if configItem.Required {
-			if err := cmd.MarkFlagRequired(configItem.Name); err != nil {
-				return fmt.Errorf("marking flag required %s: %w", configItem.Name, err)
+		if configItem.Deprecated {
+			if err := fs.MarkDeprecated(configItem.Name, configItem.DeprecatedMessage); err != nil {
+				return nil, fmt.Errorf("marking flag deprecated %s: %w", configItem.Name, err)
+			}
+		}
+		if configItem.Hidden {
+			if err := fs.MarkHidden(configItem.Name); err != nil {
+				return nil, fmt.Errorf("marking flag hidden %s: %w", configItem.Name, err)
 			}
 		}
 	}
 
-	return nil
+	return fs, nil
 }
 
 func PopulateConfigFromFlags(flags *pflag.FlagSet, cs config.ConfigurationSet) {

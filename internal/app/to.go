@@ -30,8 +30,9 @@ type ConnectToParams struct {
 	HistoryConfig
 	KubernetesConfig
 
-	AliasOrID string
-	Password  string `json:"password"`
+	AliasOrID  string
+	Password   string `json:"password"`
+	SetCurrent bool   `json:"set-current,omitempty"`
 
 	Context *provider.Context
 }
@@ -43,6 +44,7 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
+	historyID := entry.ObjectMeta.Name
 
 	idProvider, err := provider.GetIdentityProvider(entry.Spec.Identity)
 	if err != nil {
@@ -80,7 +82,9 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	}
 
 	useParams.NoHistory = true
+	useParams.EntryID = historyID
 	useParams.ClusterID = &entry.Spec.ProviderID
+	useParams.SetCurrent = params.SetCurrent
 
 	identity, err := useParams.IdentityProvider.Authenticate(useParams.Context, useParams.Provider.Name())
 	if err != nil {
@@ -125,6 +129,9 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 	if err := AddKubeconfigConfigItems(cs); err != nil {
 		return nil, fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
+	if err := AddCommonConfigItems(cs); err != nil {
+		return nil, fmt.Errorf("adding common config items: %w", err)
+	}
 
 	for k, v := range historyEntry.Spec.Flags {
 		configItem := cs.Get(k)
@@ -150,6 +157,12 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 			configItem.Value = boolVal
 		default:
 			return nil, fmt.Errorf("trying to set config item %s of type %s: %w", configItem.Name, configItem.Type, ErrUnknownConfigItemType)
+		}
+	}
+
+	for _, configItem := range cs.GetAll() {
+		if !configItem.HasValue() {
+			configItem.Value = configItem.DefaultValue
 		}
 	}
 

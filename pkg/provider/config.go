@@ -46,9 +46,6 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("cluster-id", "", "Id of the cluster to use."); err != nil {
 		return fmt.Errorf("adding cluster-id setting: %w", err)
 	}
-	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution"); err != nil {
-		return fmt.Errorf("adding non-interactive setting: %w", err)
-	}
 	if _, err := cs.String("alias", "", "Friendly name to give to give the connection"); err != nil {
 		return fmt.Errorf("adding alias setting: %w", err)
 	}
@@ -58,6 +55,9 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 	}
 	if err := cs.SetShort("alias", "a"); err != nil {
 		return fmt.Errorf("setting shorthand for alias setting: %w", err)
+	}
+	if err := cs.SetSensitive("alias"); err != nil {
+		return fmt.Errorf("setting alias as sensitive: %w", err)
 	}
 
 	return nil
