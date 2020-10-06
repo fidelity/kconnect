@@ -29,8 +29,8 @@ type Item struct {
 	Name              string
 	Shorthand         string
 	Type              ItemType
-	Sensitive         bool
 	Description       string
+	Sensitive         bool
 	ResolutionPrompt  string
 	Value             interface{}
 	DefaultValue      interface{}
@@ -38,6 +38,7 @@ type Item struct {
 	Hidden            bool
 	Deprecated        bool
 	DeprecatedMessage string
+	HistoryIgnore     bool
 }
 
 func (i *Item) HasValue() bool {
@@ -72,6 +73,7 @@ type ConfigurationSet interface {
 	Add(item *Item) error
 	AddSet(set ConfigurationSet) error
 	SetSensitive(name string) error
+	SetHistoryIgnore(name string) error
 	SetRequired(name string) error
 	SetHidden(name string) error
 	SetDeprecated(name string, message string) error
@@ -152,6 +154,17 @@ func (s *configSet) SetSensitive(name string) error {
 	}
 
 	item.Sensitive = true
+
+	return nil
+}
+
+func (s *configSet) SetHistoryIgnore(name string) error {
+	item := s.Get(name)
+	if item == nil {
+		return ErrConfigNotFound
+	}
+
+	item.HistoryIgnore = true
 
 	return nil
 }

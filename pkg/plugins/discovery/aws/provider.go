@@ -78,6 +78,8 @@ func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs.SetRequired("region")    //nolint: errcheck
 	cs.SetRequired("partition") //nolint: errcheck
 
+	cs.SetHidden("profile") //nolint: errcheck
+
 	return cs
 }
 

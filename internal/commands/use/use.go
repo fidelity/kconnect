@@ -154,6 +154,8 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
 
+	cs.SetHistoryIgnore("set-current") //nolint
+
 	return nil
 }
 
