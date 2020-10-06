@@ -38,7 +38,7 @@ type ClusterProvider interface {
 	Get(ctx *Context, clusterID string, identity Identity) (*Cluster, error)
 
 	// GetClusterConfig will get the kubeconfig for a cluster
-	GetClusterConfig(ctx *Context, cluster *Cluster) (*api.Config, string, error)
+	GetClusterConfig(ctx *Context, cluster *Cluster, namespace string) (*api.Config, string, error)
 
 	// ConfigurationResolver returns the resolver used to interactively resolve configuration
 	ConfigurationResolver() ConfigResolver
