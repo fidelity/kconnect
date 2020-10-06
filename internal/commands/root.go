@@ -99,13 +99,19 @@ func RootCmd() (*cobra.Command, error) {
 	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())
 
+	cobra.OnInitialize(initConfig)
+
+	// Forge initial parsing of flags
+	rootCmd.FParseErrWhitelist = cobra.FParseErrWhitelist{
+		UnknownFlags: true,
+	}
+	rootCmd.ParseFlags(os.Args) //nolint: errcheck
+
 	flags.PopulateConfigFromCommand(rootCmd, cfg)
 	params := &app.CommonConfig{}
 	if err := config.Unmarshall(cfg, params); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
 	}
-
-	cobra.OnInitialize(initConfig(params))
 
 	if err := logging.Configure(params.LogLevel, params.LogFormat); err != nil {
 		return nil, fmt.Errorf("configuring logging: %w", err)
@@ -114,11 +120,9 @@ func RootCmd() (*cobra.Command, error) {
 	return rootCmd, nil
 }
 
-func initConfig(cfg *app.CommonConfig) func() {
-	return func() {
-		viper.SetEnvPrefix("KCONNECT")
-		viper.AutomaticEnv()
-	}
+func initConfig() {
+	viper.SetEnvPrefix("KCONNECT")
+	viper.AutomaticEnv()
 }
 
 func ensureAppDirectory() error {

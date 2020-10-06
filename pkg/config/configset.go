@@ -26,15 +26,18 @@ var (
 
 // Item represents a configuration item
 type Item struct {
-	Name             string
-	Shorthand        string
-	Type             ItemType
-	Sensitive        bool
-	Description      string
-	ResolutionPrompt string
-	Value            interface{}
-	DefaultValue     interface{}
-	Required         bool
+	Name              string
+	Shorthand         string
+	Type              ItemType
+	Sensitive         bool
+	Description       string
+	ResolutionPrompt  string
+	Value             interface{}
+	DefaultValue      interface{}
+	Required          bool
+	Hidden            bool
+	Deprecated        bool
+	DeprecatedMessage string
 }
 
 func (i *Item) HasValue() bool {
@@ -70,6 +73,8 @@ type ConfigurationSet interface {
 	AddSet(set ConfigurationSet) error
 	SetSensitive(name string) error
 	SetRequired(name string) error
+	SetHidden(name string) error
+	SetDeprecated(name string, message string) error
 	SetValue(name string, value interface{}) error
 	SetShort(name string, shorthand string) error
 
@@ -158,6 +163,29 @@ func (s *configSet) SetRequired(name string) error {
 	}
 
 	item.Required = true
+
+	return nil
+}
+
+func (s *configSet) SetHidden(name string) error {
+	item := s.Get(name)
+	if item == nil {
+		return ErrConfigNotFound
+	}
+
+	item.Hidden = true
+
+	return nil
+}
+
+func (s *configSet) SetDeprecated(name string, message string) error {
+	item := s.Get(name)
+	if item == nil {
+		return ErrConfigNotFound
+	}
+
+	item.Deprecated = true
+	item.DeprecatedMessage = message
 
 	return nil
 }

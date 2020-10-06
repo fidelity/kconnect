@@ -32,8 +32,9 @@ type HistoryLocationConfig struct {
 
 type HistoryConfig struct {
 	HistoryLocationConfig
-	MaxItems  int  `json:"max-history"`
-	NoHistory bool `json:"no-history"`
+	MaxItems  int    `json:"max-history"`
+	NoHistory bool   `json:"no-history"`
+	EntryID   string `json:"entry-id"`
 }
 
 func AddHistoryLocationItems(cs config.ConfigurationSet) error {
@@ -54,6 +55,13 @@ func AddHistoryConfigItems(cs config.ConfigurationSet) error {
 	}
 	if _, err := cs.Bool("no-history", false, "If set to true then no history entry will be written"); err != nil {
 		return fmt.Errorf("adding no-history config: %w", err)
+	}
+	if _, err := cs.String("entry-id", "", "existing entry id."); err != nil {
+		return fmt.Errorf("adding entry-id config: %w", err)
+	}
+
+	if err := cs.SetHidden("entry-id"); err != nil {
+		return fmt.Errorf("setting entry-id hidden: %w", err)
 	}
 
 	return nil

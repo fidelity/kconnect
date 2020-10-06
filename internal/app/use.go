@@ -77,6 +77,7 @@ func (a *App) Use(params *UseParams) error {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
 
+	historyID := params.EntryID
 	if !params.NoHistory {
 		entry := historyv1alpha.NewHistoryEntry()
 		entry.Spec.Alias = params.Alias
@@ -90,7 +91,11 @@ func (a *App) Use(params *UseParams) error {
 			return fmt.Errorf("adding connection to history: %w", err)
 		}
 
-		historyRef := historyv1alpha.NewHistoryReference(entry.ObjectMeta.Name)
+		historyID = entry.ObjectMeta.Name
+	}
+
+	if historyID != "" {
+		historyRef := historyv1alpha.NewHistoryReference(historyID)
 		kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
 		kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
 	}
