@@ -258,6 +258,95 @@ func Test_FileStoreRemove(t *testing.T) {
 	}
 }
 
+func Test_GetLastModified(t *testing.T) {
+	testCases := []struct {
+		name              string
+		input             *historyv1alpha.HistoryEntryList
+		expectedEntryName string
+		errorExpected     bool
+	}{
+		{
+			name:  "Single item",
+			input: &historyv1alpha.HistoryEntryList{
+				Items: []historyv1alpha.HistoryEntry {
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test1",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+				},
+			},
+			expectedEntryName: "test1",
+			errorExpected: false,
+		},
+		{
+			name:  "No items (error)",
+			input: &historyv1alpha.HistoryEntryList{
+				Items: []historyv1alpha.HistoryEntry {},
+			},
+			expectedEntryName: "",
+			errorExpected: true,
+		},
+		{
+			name:  "Multiple items",
+			input: &historyv1alpha.HistoryEntryList{
+				Items: []historyv1alpha.HistoryEntry {
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test1",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test2",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2020, 3, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test3",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2020, 2, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+				},
+			},
+			expectedEntryName: "test2",
+			errorExpected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockLoader, err := createStore(ctrl, tc.input)
+			if err != nil {
+
+			}
+			actualLastModified, err := mockLoader.GetLastModified()
+			if tc.errorExpected && err == nil {
+				t.Fatal("expected error on getting last modified item but not no error")
+			}
+			if !tc.errorExpected && err != nil {
+				t.Fatalf("got an unexpected error: %v", err)
+			}
+			if  !tc.errorExpected && tc.expectedEntryName != actualLastModified.GetName(){
+				t.Fatalf("expected entry %v, but got %v", tc.expectedEntryName, actualLastModified.GetName())
+			}
+		})
+	}
+}
+
 func createEntry(id string) *historyv1alpha.HistoryEntry {
 	created, _ := time.Parse(time.RFC3339, "2020-09-0109T11:00:00+00:00")
 
@@ -285,4 +374,21 @@ func createHistoryList(numEntries int) *historyv1alpha.HistoryEntryList {
 	}
 
 	return list
+}
+
+func createStore(ctrl *gomock.Controller, entriesList *historyv1alpha.HistoryEntryList) (Store, error) {
+	mockLoader := mock_loader.NewMockLoader(ctrl)
+	store, err := NewStore(10, mockLoader)
+	if err != nil {
+		return nil, err
+	}
+
+	mockLoader.
+	    EXPECT().
+		Load().
+		DoAndReturn(func() (*historyv1alpha.HistoryEntryList, error) {
+			return entriesList, nil
+		}).Times(1)
+	
+	return store, err
 }

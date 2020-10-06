@@ -31,6 +31,7 @@ var (
 	ErrStoreFileRequired = errors.New("history store must be a file")
 	ErrEntryNotFound     = errors.New("history entry not found")
 	ErrDuplicateAlias    = errors.New("duplicate alias detected")
+	ErrNoEntries         = errors.New("no history entries found")
 )
 
 func NewStore(maxHistoryItems int, loader loader.Loader) (Store, error) {
@@ -146,6 +147,29 @@ func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, erro
 	}
 
 	return entries[0], nil
+}
+
+func (s *storeImpl) GetLastModified() (*historyv1alpha.HistoryEntry, error) {
+
+	historyList, err := s.loader.Load()
+	if err != nil {
+		return nil, fmt.Errorf("reading history file: %w", err)
+	}
+
+	if len(historyList.Items) == 0 {
+		return nil, ErrNoEntries
+	}
+
+	var lastModifiedEntry historyv1alpha.HistoryEntry
+	for _, entry := range historyList.Items {
+		if lastModifiedEntry.GetName() == "" {
+			lastModifiedEntry = entry
+		} else if entry.Status.LastUpdated.Time.After(lastModifiedEntry.Status.LastUpdated.Time) {
+			lastModifiedEntry = entry
+		}
+	}
+	
+	return &lastModifiedEntry, nil
 }
 
 func (s *storeImpl) trimHistory(historyList *historyv1alpha.HistoryEntryList) {
