@@ -20,6 +20,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/beevik/etree"
 	"github.com/go-playground/validator/v10"
@@ -114,7 +115,13 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("parsing aws roles: %w", err)
 	}
 
-	role, err := p.resolveRole(awsRoles, samlAssertions, account)
+	roleFilter := ""
+	if cfg.ExistsWithValue("role-filter") {
+		item := cfg.Get("role-filter")
+		roleFilter = item.Value.(string)
+	}
+
+	role, err := p.resolveRole(awsRoles, samlAssertions, account, roleFilter)
 	if err != nil {
 		return nil, fmt.Errorf("resolving aws role: %w", err)
 	}
@@ -133,7 +140,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	return awsIdentity, nil
 }
 
-func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
+func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount, roleFilter string) (*saml2aws.AWSRole, error) {
 	var role = new(saml2aws.AWSRole)
 
 	if len(awsRoles) == 1 {
@@ -169,6 +176,8 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 
 	saml2aws.AssignPrincipals(awsRoles, awsAccounts)
 
+	awsAccounts = p.filterAccounts(awsAccounts, roleFilter)
+
 	if account.RoleARN != "" {
 		return saml2aws.LocateRole(awsRoles, account.RoleARN)
 	}
@@ -182,6 +191,24 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	}
 
 	return role, nil
+}
+
+func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFilter string) []*saml2aws.AWSAccount {
+	if roleFilter == "" {
+		return accounts
+	}
+
+	filtered := []*saml2aws.AWSAccount{}
+	for _, account := range accounts {
+		for _, awsRole := range account.Roles {
+			if strings.Contains(awsRole.RoleARN, roleFilter) {
+				filtered = append(filtered, account)
+				break
+			}
+		}
+	}
+
+	return filtered
 }
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
