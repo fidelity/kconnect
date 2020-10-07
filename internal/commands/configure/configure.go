@@ -19,12 +19,12 @@ package configure
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 func Command() (*cobra.Command, error) {
@@ -44,18 +44,15 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.New().WithField("command", "configure")
-
 			params := &app.ConfigureInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger))
+			a := app.New()
 
 			ctx := provider.NewContext(
-				provider.WithLogger(logger),
 				provider.WithConfig(cfg),
 			)
 

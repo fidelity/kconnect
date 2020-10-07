@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
@@ -48,7 +49,7 @@ type UseParams struct {
 }
 
 func (a *App) Use(params *UseParams) error {
-	a.logger.Debug("use command")
+	zap.S().Debug("use command")
 	clusterProvider := params.Provider
 
 	var cluster *provider.Cluster
@@ -110,7 +111,7 @@ func (a *App) Use(params *UseParams) error {
 }
 
 func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
-	a.logger.Infof("discovering clusters using %s provider", params.Provider.Name())
+	zap.S().Infow("discovering clusters", "provider", params.Provider.Name())
 
 	clusterProvider := params.Provider
 	discoverOutput, err := clusterProvider.Discover(params.Context, params.Identity)
@@ -119,7 +120,7 @@ func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
 	}
 
 	if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
-		a.logger.Info("no clusters discovered")
+		zap.S().Warn("no clusters discovered")
 		return nil, nil
 	}
 
@@ -132,7 +133,7 @@ func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
 }
 
 func (a *App) getCluster(params *UseParams) (*provider.Cluster, error) {
-	a.logger.Infof("getting cluster %s using %s provider", *params.ClusterID, params.Provider.Name())
+	zap.S().Infow("getting cluster details", "id", *params.ClusterID, "provider", params.Provider.Name())
 
 	clusterProvider := params.Provider
 	cluster, err := clusterProvider.Get(params.Context, *params.ClusterID, params.Identity)

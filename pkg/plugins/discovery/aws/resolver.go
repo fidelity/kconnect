@@ -21,29 +21,25 @@ import (
 
 	awsclient "github.com/aws/aws-sdk-go/aws/client"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // NewConfigResolver creates a new config resolver for AWS
-func NewConfigResolver(session awsclient.ConfigProvider, logger *logrus.Entry) (provider.ConfigResolver, error) {
+func NewConfigResolver(session awsclient.ConfigProvider) (provider.ConfigResolver, error) {
 	if session == nil {
 		return nil, ErrNoSession
 	}
 
 	return &awsConfigResolver{
 		session: session,
-		logger:  logger,
 	}, nil
 }
 
 // awsConfigResolver is used to resolve the config values for AWS interactively.
 type awsConfigResolver struct {
 	session awsclient.ConfigProvider
-	logger  *logrus.Entry
 }
 
 func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
@@ -65,7 +61,5 @@ func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
 func (r *awsConfigResolver) Resolve(config config.ConfigurationSet) error {
-	r.logger.Debug("resolving AWS flags")
-
 	return nil
 }

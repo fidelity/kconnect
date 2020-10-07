@@ -24,6 +24,8 @@ import (
 	"os"
 	"strings"
 
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/printer"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -44,7 +46,7 @@ func (a *App) Configuration(ctx *provider.Context, input *ConfigureInput) error 
 }
 
 func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
-	a.logger.Debug("printing configuration")
+	zap.S().Debug("printing configuration")
 
 	appConfig, err := config.NewAppConfiguration()
 	if err != nil {
@@ -69,7 +71,7 @@ func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 }
 
 func (a *App) importConfiguration(sourceLocation string) error {
-	a.logger.Infof("importing configuration from %s", sourceLocation)
+	zap.S().Infow("importing configuration", "file", sourceLocation)
 
 	if sourceLocation == "" {
 		return ErrSourceLocationRequired
@@ -94,7 +96,7 @@ func (a *App) importConfiguration(sourceLocation string) error {
 		return fmt.Errorf("saving config: %w", err)
 	}
 
-	a.logger.Info("successfully imported configuration")
+	zap.S().Info("successfully imported configuration")
 
 	return nil
 }

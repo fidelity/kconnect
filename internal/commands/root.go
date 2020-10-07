@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -35,10 +35,8 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
 	"github.com/fidelity/kconnect/internal/defaults"
-	intver "github.com/fidelity/kconnect/internal/version"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
-	"github.com/fidelity/kconnect/pkg/logging"
 )
 
 var (
@@ -52,16 +50,15 @@ func RootCmd() (*cobra.Command, error) {
 		Short: "The Kubernetes Connection Manager CLI",
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
-				logrus.Debugf("ignoring cobra error %q", err.Error())
+				zap.S().Debugw("ingoring cobra error",
+					"error",
+					err.Error())
 			}
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
 	}
-
-	v := intver.Get()
-	logrus.Infof("kconnect - the kubernetes cli (%s)", v.Version)
 
 	if err := ensureAppDirectory(); err != nil {
 		return nil, fmt.Errorf("ensuring app directory exists: %w", err)
@@ -118,10 +115,6 @@ func RootCmd() (*cobra.Command, error) {
 	params := &app.CommonConfig{}
 	if err := config.Unmarshall(cfg, params); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
-	}
-
-	if err := logging.Configure(params.LogLevel, params.LogFormat); err != nil {
-		return nil, fmt.Errorf("configuring logging: %w", err)
 	}
 
 	return rootCmd, nil

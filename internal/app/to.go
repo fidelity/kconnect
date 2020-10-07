@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -38,7 +40,7 @@ type ConnectToParams struct {
 }
 
 func (a *App) ConnectTo(params *ConnectToParams) error {
-	a.logger.Debug("running connectto")
+	zap.S().Debug("running connectto")
 
 	entry, err := a.getHistoryEntry(params.AliasOrID)
 	if err != nil {
@@ -68,7 +70,6 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 
 	ctx := provider.NewContext(
 		provider.WithConfig(cs),
-		provider.WithLogger(a.logger),
 	)
 
 	useParams := &UseParams{
@@ -136,7 +137,7 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 	for k, v := range historyEntry.Spec.Flags {
 		configItem := cs.Get(k)
 		if configItem == nil {
-			a.logger.Debugf("no config item called %s found", k)
+			zap.S().Debugw("no config item found", "name", k)
 			continue
 		}
 

@@ -21,37 +21,65 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
+
+const (
+	thirdPartyVerboseLevel = 9
 )
 
 var (
-	errInvalidFomat = errors.New("invalid log format")
+	ErrInvalidFomat = errors.New("invalid log format")
 )
 
-// Configure will configure the logging
-func Configure(logLevel, logFormat string) error {
-	if logLevel != "" {
-		level, err := logrus.ParseLevel(strings.ToUpper(logLevel))
-		if err != nil {
-			return fmt.Errorf("setting log level to %s: %w", logLevel, err)
-		}
-		logrus.SetLevel(level)
+// Configure will configure the logging for kconnect and the dependent saml2aws package
+func Configure(verbosity int) error {
+
+	configureLogrus(verbosity)
+
+	if err := configureZap(verbosity); err != nil {
+		return fmt.Errorf("configuring zap logging: %w", err)
 	}
 
-	switch strings.ToUpper(logFormat) {
-	case "TEXT":
-		logrus.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true})
-	case "JSON":
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-	default:
-		return fmt.Errorf("setting log output to %s: %w", logFormat, errInvalidFomat)
-	}
-
-	logrus.SetOutput(os.Stderr)
 	log.SetOutput(os.Stderr)
 	log.SetFlags(0)
 
 	return nil
+}
+
+// configureLogrus will configure logrus which is used by saml2aws
+func configureLogrus(verbosity int) {
+	logrus.SetFormatter(&logrus.TextFormatter{DisableTimestamp: true})
+	logrus.SetOutput(os.Stderr)
+
+	if verbosity >= thirdPartyVerboseLevel {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
+}
+
+func configureZap(verbosity int) error {
+	logConfig := zap.NewProductionConfig()
+
+	logConfig.Encoding = "console"
+	logConfig.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	logConfig.EncoderConfig.TimeKey = ""
+	logConfig.EncoderConfig.CallerKey = ""
+	logConfig.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	if verbosity > 0 {
+		logConfig.Level.SetLevel(zap.DebugLevel)
+	} else {
+		logConfig.Level.SetLevel(zap.InfoLevel)
+	}
+
+	loggerMgr, err := logConfig.Build()
+	if err != nil {
+		return fmt.Errorf("building zap logger: %w", err)
+	}
+	zap.ReplaceGlobals(loggerMgr)
+
+	return loggerMgr.Sync()
 }

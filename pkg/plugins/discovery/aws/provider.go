@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -32,14 +32,13 @@ import (
 func init() {
 	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
 		// TODO: handle fatal error
-		logrus.Fatalf("Failed to register EKS cluster provider plugin: %v", err)
+		zap.S().Fatalw("Failed to register EKS cluster provider plugin", "error", err)
 	}
 }
 
 func newEKSProvider() *eksClusterProvider {
-	logger := logrus.WithField("disovery-provider", "eks")
 	return &eksClusterProvider{
-		logger: logger,
+		logger: zap.S().With("provider", "eks"),
 	}
 }
 
@@ -56,8 +55,9 @@ type eksClusteProviderConfig struct {
 type eksClusterProvider struct {
 	config    *eksClusteProviderConfig
 	identity  *awssp.Identity
-	logger    *logrus.Entry
 	eksClient eksiface.EKSAPI
+
+	logger *zap.SugaredLogger
 }
 
 // Name returns the name of the provider
@@ -86,9 +86,7 @@ func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 
 // ConfigurationResolver returns the resolver to use for config with this provider
 func (p *eksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return &awsConfigResolver{
-		logger: p.logger,
-	}
+	return &awsConfigResolver{}
 }
 
 // Usage returns a description for use in the help/usage
@@ -96,7 +94,7 @@ func (p *eksClusterProvider) Usage() string {
 	return "discover and connect to AWS EKS clusters"
 }
 
-func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity, logger *logrus.Entry) error {
+func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
 	cfg := &eksClusteProviderConfig{}
 	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
@@ -109,13 +107,12 @@ func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Iden
 	}
 	p.identity = awsID
 
-	logger.Debugf("creating AWS session with region %s and profile %s", *p.config.Region, awsID.ProfileName)
+	p.logger.Debugw("creating AWS session", "region", *p.config.Region, "profile", awsID.ProfileName)
 	session, err := aws.NewSession(*p.config.Region, awsID.ProfileName)
 	if err != nil {
 		return fmt.Errorf("getting aws session: %w", err)
 	}
 	p.eksClient = aws.NewEKSClient(session)
 
-	p.logger = logger
 	return nil
 }

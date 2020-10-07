@@ -24,7 +24,7 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/go-playground/validator/v10"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -62,14 +62,14 @@ type awsProviderConfig struct {
 	Profile   string `json:"profile" validate:"required"`
 }
 
-func NewServiceProvider(logger *log.Entry) sp.ServiceProvider {
+func NewServiceProvider() sp.ServiceProvider {
 	return &ServiceProvider{
-		logger: logger.WithField("serviceprovider", "aws"),
+		logger: zap.S().With("provider", "saml", "sp", "aws"),
 	}
 }
 
 type ServiceProvider struct {
-	logger *log.Entry
+	logger *zap.SugaredLogger
 }
 
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
@@ -129,7 +129,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	if err := cfg.SetValue("role-arn", role.RoleARN); err != nil {
 		return nil, fmt.Errorf("setting role-arn config value: %w", err)
 	}
-	p.logger.Debugf("selected role: %s", role.RoleARN)
+	p.logger.Debugw("role selected", "role", role.RoleARN)
 
 	awsCreds, err := p.loginToStsUsingRole(account, role, samlAssertions)
 	if err != nil {
@@ -187,7 +187,7 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 		if err == nil {
 			break
 		}
-		log.Println("Error selecting role, try again")
+		p.logger.Info("Error selecting role, try again")
 	}
 
 	return role, nil
@@ -228,7 +228,7 @@ func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *sam
 		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
 	}
 
-	log.Println("Requesting AWS credentials using SAML")
+	p.logger.Info("requesting AWS credentials using SAML")
 
 	resp, err := svc.AssumeRoleWithSAML(params)
 	if err != nil {
