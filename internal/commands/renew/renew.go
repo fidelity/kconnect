@@ -19,22 +19,22 @@ package renew
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 //Command creates the renew cobra command
 func Command() (*cobra.Command, error) {
-	logger := logrus.New().WithField("command", "to")
 
 	params := &app.ConnectToParams{
-		Context: provider.NewContext(provider.WithLogger(logger)),
+		Context: provider.NewContext(),
 	}
 
 	renewCmd := &cobra.Command{
@@ -49,12 +49,12 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 			params.Context = provider.NewContext(
-				provider.WithLogger(logger),
 				provider.WithConfig(params.Context.ConfigurationItems()),
 			)
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			zap.S().Info("running `renew` command")
 			historyLoader, err := loader.NewFileLoader(params.Location)
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
@@ -68,7 +68,7 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("getting last modified history entry: %w", err)
 			}
 			params.AliasOrID = lastModifiedEntry.Name
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 			return a.ConnectTo(params)
 		},
 	}
