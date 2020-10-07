@@ -30,6 +30,7 @@ import (
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/configure"
 	"github.com/fidelity/kconnect/internal/commands/ls"
+	"github.com/fidelity/kconnect/internal/commands/renew"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
@@ -98,6 +99,12 @@ func RootCmd() (*cobra.Command, error) {
 	}
 	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())
+
+	renewCmd, err := renew.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating renew command: %w", err)
+	}
+	rootCmd.AddCommand(renewCmd)
 
 	cobra.OnInitialize(initConfig)
 
