@@ -20,7 +20,6 @@ import (
 	"context"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/sirupsen/logrus"
 )
 
 type ContextOption func(*Context)
@@ -29,7 +28,6 @@ type ContextOption func(*Context)
 type Context struct {
 	context.Context
 
-	logger      *logrus.Entry
 	interactive bool
 	cfgItems    config.ConfigurationSet
 }
@@ -40,7 +38,6 @@ func NewContext(opts ...ContextOption) *Context {
 
 	c := &Context{
 		Context:     defaultContext,
-		logger:      logrus.StandardLogger().WithContext(defaultContext),
 		interactive: true,
 		cfgItems:    config.NewConfigurationSet(),
 	}
@@ -58,12 +55,6 @@ func WithContext(ctx context.Context) ContextOption {
 	}
 }
 
-func WithLogger(logger *logrus.Entry) ContextOption {
-	return func(c *Context) {
-		c.logger = logger
-	}
-}
-
 func WithInteractive(interactive bool) ContextOption {
 	return func(c *Context) {
 		c.interactive = interactive
@@ -74,10 +65,6 @@ func WithConfig(cs config.ConfigurationSet) ContextOption {
 	return func(c *Context) {
 		c.cfgItems = cs
 	}
-}
-
-func (c *Context) Logger() *logrus.Entry {
-	return c.logger
 }
 
 func (c *Context) IsInteractive() bool {

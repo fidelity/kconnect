@@ -20,14 +20,15 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -54,10 +55,10 @@ You can use the history id or alias as the argument.`,
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.New().WithField("command", "to")
+			zap.S().Info("running `to` command")
 
 			params := &app.ConnectToParams{
-				Context:   provider.NewContext(provider.WithConfig(cfg), provider.WithLogger(logger)),
+				Context:   provider.NewContext(provider.WithConfig(cfg)),
 				AliasOrID: args[0],
 			}
 
@@ -74,7 +75,7 @@ You can use the history id or alias as the argument.`,
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 
 			return a.ConnectTo(params)
 		},

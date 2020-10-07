@@ -44,9 +44,8 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 		},
 		Contexts: map[string]*api.Context{
 			contextName: {
-				Namespace: namespace,
-				Cluster:   clusterName,
-				AuthInfo:  userName,
+				Cluster:  clusterName,
+				AuthInfo: userName,
 			},
 		},
 	}
@@ -74,6 +73,11 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 	}
 
 	cfg.CurrentContext = contextName
+
+	if namespace != "" {
+		p.logger.Debugw("setting kubernetes namespace", "namespace", namespace)
+		cfg.Contexts[contextName].Namespace = namespace
+	}
 
 	return cfg, contextName, nil
 }

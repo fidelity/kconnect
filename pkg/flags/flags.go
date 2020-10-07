@@ -147,3 +147,21 @@ func BindFlags(cmd *cobra.Command) {
 		}
 	})
 }
+
+// GetFlagValueDirect will get a flag value directly from args or config.
+// Note: this should only be used in exceptional circumstances
+func GetFlagValueDirect(args []string, longName, shortName string) (string, error) {
+	flagLongName := fmt.Sprintf("--%s", longName)
+	flagShortname := ""
+	if shortName != "" {
+		flagShortname = fmt.Sprintf("-%s", shortName)
+	}
+	for i, arg := range args {
+		if arg == flagLongName || (flagShortname != "" && arg == flagShortname) {
+			return args[i+1], nil
+		}
+	}
+
+	// look in app config
+	return config.GetValue(longName, "")
+}

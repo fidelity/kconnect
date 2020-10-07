@@ -19,14 +19,15 @@ package ls
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 func Command() (*cobra.Command, error) {
@@ -46,7 +47,7 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.New().WithField("command", "ls")
+			zap.S().Info("running `ls` command")
 			params := &app.HistoryQueryInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
@@ -62,10 +63,9 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 
 			ctx := provider.NewContext(
-				provider.WithLogger(logger),
 				provider.WithConfig(cfg),
 			)
 

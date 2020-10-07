@@ -19,20 +19,16 @@ package kubeconfig
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
-var (
-	logger = logrus.WithField("package", "kubeconfig")
-)
-
 // Write will write the kubeconfig to the specified file. If there
 // is an existing kubeconfig it will be merged
 func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
-	logger.Debugf("writing kubeconfig: %s", path)
+	zap.S().Debugw("writing kubeconfig", "path", path)
 
 	pathOptions := clientcmd.NewDefaultPathOptions()
 	if path != "" {
@@ -44,7 +40,7 @@ func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
 		return fmt.Errorf("getting existing kubeconfig: %w", err)
 	}
 
-	logger.Debug("merging kubeconfig files")
+	zap.S().Debug("merging kubeconfig files")
 	for k, v := range clusterConfig.Clusters {
 		existingConfig.Clusters[k] = v
 	}
@@ -56,14 +52,14 @@ func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
 	}
 
 	if setCurrent {
-		logger.Infof("setting current context to: %s", clusterConfig.CurrentContext)
+		zap.S().Infow("setting current context", "context", clusterConfig.CurrentContext)
 		existingConfig.CurrentContext = clusterConfig.CurrentContext
 	}
 
 	if err := clientcmd.ModifyConfig(pathOptions, *existingConfig, true); err != nil {
 		return fmt.Errorf("writing kubeconfig: %w", err)
 	}
-	logger.Infof("kubeconfig updated: %s", path)
+	zap.S().Infow("kubeconfig updated", "path", path)
 
 	return nil
 }

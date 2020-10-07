@@ -21,10 +21,10 @@ import (
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/sirupsen/logrus"
 	"github.com/versent/saml2aws"
 	"github.com/versent/saml2aws/pkg/cfg"
 	"github.com/versent/saml2aws/pkg/creds"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
@@ -46,19 +46,22 @@ const (
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
 		// TODO: handle fatal error
-		logrus.Fatalf("Failed to register SAML identity provider plugin: %v", err)
+		zap.S().Fatalw("failed to register SAML identity provider plugin", "error", err)
 	}
 }
 
 func newSAMLProvider() *samlIdentityProvider {
-	return &samlIdentityProvider{}
+	return &samlIdentityProvider{
+		logger: zap.S().With("provider", "saml"),
+	}
 }
 
 type samlIdentityProvider struct {
 	config          *sp.ProviderConfig
-	logger          *logrus.Entry
 	serviceProvider sp.ServiceProvider
 	store           provider.IdentityStore
+
+	logger *zap.SugaredLogger
 }
 
 // Name returns the name of the plugin
@@ -79,7 +82,6 @@ func (p *samlIdentityProvider) ConfigurationItems() config.ConfigurationSet {
 
 // Authenticate will authenticate a user and returns their identity
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.logger = ctx.Logger().WithField("provider", "saml")
 	p.logger.Info("authenticating user")
 
 	if err := p.createServiceProvider(clusterProvider); err != nil {
@@ -199,7 +201,7 @@ func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 func (p *samlIdentityProvider) createServiceProvider(providerName string) error {
 	switch providerName {
 	case "eks":
-		p.serviceProvider = aws.NewServiceProvider(p.logger)
+		p.serviceProvider = aws.NewServiceProvider()
 	default:
 		return ErrUnsuportedProvider
 	}

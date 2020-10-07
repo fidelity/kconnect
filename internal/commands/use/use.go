@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/defaults"
@@ -46,7 +46,7 @@ func Command() (*cobra.Command, error) {
 		Short: "Connect to a target environment and discover clusters for use",
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
-				logrus.Debugf("ignoring cobra error %q", err.Error())
+				zap.S().Debugw("ignoring cobra error", "error", err.Error())
 			}
 		},
 	}
@@ -73,8 +73,6 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		Use:   clusterProvider.Name(),
 		Short: fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
-
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
 			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
@@ -89,10 +87,10 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 				return ErrMissingIdpProtocol
 			}
 
-			return preRun(params, logger)
+			return preRun(params)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
+			zap.S().Infow("running `use` command", "provider", clusterProvider.Name())
 
 			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
@@ -107,7 +105,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 
 			return a.Use(params)
 		},
@@ -153,7 +151,7 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
-	if _, err := cs.String("namespace", "default", "Sets namespace for context in kubeconfig"); err != nil {
+	if _, err := cs.String("namespace", "", "Sets namespace for context in kubeconfig"); err != nil {
 		return fmt.Errorf("setting namespace in kubeconfig: %w", err)
 	}
 
@@ -180,7 +178,6 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 	}
 	params.IdentityProvider = idProvider
 
-	logrus.Infof("using identity provider %s", idProvider.Name())
 	idProviderCfg := idProvider.ConfigurationItems()
 	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
 		return err
@@ -189,12 +186,11 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 	return nil
 }
 
-func preRun(params *app.UseParams, logger *logrus.Entry) error {
+func preRun(params *app.UseParams) error {
 	// Update the context now the flags have been parsed
 	interactive := isInteractive(params.Context.ConfigurationItems())
 
 	params.Context = provider.NewContext(
-		provider.WithLogger(logger),
 		provider.WithInteractive(interactive),
 		provider.WithConfig(params.Context.ConfigurationItems()),
 	)

@@ -17,7 +17,7 @@ limitations under the License.
 package identity
 
 import (
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -26,7 +26,7 @@ import (
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("empty", newEmptyProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register Empty identity provider plugin: %v", err)
+		zap.S().Fatalw("failed to register Empty identity provider plugin", "error", err)
 	}
 }
 

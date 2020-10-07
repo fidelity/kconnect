@@ -17,18 +17,55 @@ limitations under the License.
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/internal/commands"
+	intver "github.com/fidelity/kconnect/internal/version"
+	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/logging"
 	_ "github.com/fidelity/kconnect/pkg/plugins" // Import all the plugins
 )
 
 func main() {
+	if err := setupLogging(); err != nil {
+		log.Fatalf("failed to configure logging %v", err)
+	}
+
+	v := intver.Get()
+	zap.S().Infow("kconnect - the kubernetes cli", "version", v.Version)
+	zap.S().Debugw("build information", "date", v.BuildDate, "commit", v.CommitHash, "gover", v.GoVersion)
+
 	rootCmd, err := commands.RootCmd()
 	if err != nil {
-		logrus.Fatal(err)
+		zap.S().Fatalw("failed getting root command", "error", err.Error())
 	}
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
+		zap.S().Fatalw("failed executing root command", "error", err.Error())
 	}
+}
+
+func setupLogging() error {
+	verbosity, err := flags.GetFlagValueDirect(os.Args, "verbosity", "v")
+	if err != nil {
+		return fmt.Errorf("getting verbosity flag: %w", err)
+	}
+
+	logVerbosity := 0
+	if verbosity != "" {
+		logVerbosity, err = strconv.Atoi(verbosity)
+		if err != nil {
+			return fmt.Errorf("parsing verbosity level: %w", err)
+		}
+	}
+
+	if err := logging.Configure(logVerbosity); err != nil {
+		log.Fatalf("failed to configure logging %v", err)
+	}
+
+	return nil
 }

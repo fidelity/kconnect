@@ -26,12 +26,11 @@ import (
 )
 
 func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
-	logger := ctx.Logger().WithField("provider", "eks")
-	logger.Info("discovering EKS clusters AWS")
-
-	if err := p.setup(ctx, identity, logger); err != nil {
+	if err := p.setup(ctx, identity); err != nil {
 		return nil, fmt.Errorf("setting up eks provider: %w", err)
 	}
+
+	p.logger.Info("discovering EKS clusters")
 
 	clusters, err := p.listClusters()
 	if err != nil {
@@ -45,7 +44,7 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 	}
 
 	if len(clusters) == 0 {
-		logger.Info("no EKS clusters discovered")
+		p.logger.Info("no EKS clusters discovered")
 		return discoverOutput, nil
 	}
 
