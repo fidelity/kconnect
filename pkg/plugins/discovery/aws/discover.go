@@ -26,11 +26,11 @@ import (
 )
 
 func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
-	p.logger.Info("discovering EKS clusters")
-
 	if err := p.setup(ctx, identity); err != nil {
 		return nil, fmt.Errorf("setting up eks provider: %w", err)
 	}
+
+	p.logger.Info("discovering EKS clusters")
 
 	clusters, err := p.listClusters()
 	if err != nil {

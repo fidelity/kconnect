@@ -151,7 +151,7 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
-	if _, err := cs.String("namespace", "default", "Sets namespace for context in kubeconfig"); err != nil {
+	if _, err := cs.String("namespace", "", "Sets namespace for context in kubeconfig"); err != nil {
 		return fmt.Errorf("setting namespace in kubeconfig: %w", err)
 	}
 

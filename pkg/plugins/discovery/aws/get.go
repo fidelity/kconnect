@@ -31,12 +31,11 @@ const (
 
 // Get will get the details of a EKS cluster. The clusterID maps to a ARN
 func (p *eksClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
-	p.logger.Infow("getting EKS cluster", "id", clusterID)
-
 	if err := p.setup(ctx, identity); err != nil {
 		return nil, fmt.Errorf("setting up eks provider: %w", err)
 	}
 
+	p.logger.Infow("getting EKS cluster", "id", clusterID)
 	clusterName, err := p.getClusterName(clusterID)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster name for cluster id %s: %w", clusterID, err)

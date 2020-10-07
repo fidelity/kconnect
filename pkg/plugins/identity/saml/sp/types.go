@@ -25,8 +25,8 @@ import (
 
 type ProviderConfig struct {
 	provider.IdentityProviderConfig
-	IdpEndpoint string `flag:"idp-endpoint" validate:"required" json:"idp-endpoint"`
-	IdpProvider string `flag:"idp-provider" validate:"required" json:"idp-provider"`
+	IdpEndpoint string `json:"idp-endpoint" validate:"required"`
+	IdpProvider string `json:"idp-provider" validate:"required"`
 }
 
 type ServiceProvider interface {

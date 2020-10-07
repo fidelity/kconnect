@@ -81,5 +81,5 @@ func configureZap(verbosity int) error {
 	}
 	zap.ReplaceGlobals(loggerMgr)
 
-	return loggerMgr.Sync()
+	return nil
 }

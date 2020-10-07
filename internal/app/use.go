@@ -168,8 +168,8 @@ func (a *App) filterConfig(params *UseParams) map[string]string {
 			boolVal := configItem.Value.(bool)
 			val = strconv.FormatBool(boolVal)
 		case config.ItemTypeInt:
-			intVal := configItem.Value.(int64)
-			val = strconv.FormatInt(intVal, 10)
+			intVal := configItem.Value.(int)
+			val = strconv.Itoa(intVal)
 		}
 
 		filteredConfig[configItem.Name] = val

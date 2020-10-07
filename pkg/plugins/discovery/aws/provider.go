@@ -37,18 +37,16 @@ func init() {
 }
 
 func newEKSProvider() *eksClusterProvider {
-	return &eksClusterProvider{
-		logger: zap.S().With("provider", "eks"),
-	}
+	return &eksClusterProvider{}
 }
 
 type eksClusteProviderConfig struct {
 	provider.ClusterProviderConfig
-	Region       *string `flag:"region" json:"region"`
-	RegionFilter *string `flag:"region-filter" json:"region-filter"`
-	Profile      *string `flag:"profile" json:"profile"`
-	RoleArn      *string `flag:"role-arn" json:"role-arn"`
-	RoleFilter   *string `flag:"role-filter" json:"role-filter"`
+	Region       *string `json:"region"`
+	RegionFilter *string `json:"region-filter"`
+	Profile      *string `json:"profile"`
+	RoleArn      *string `json:"role-arn"`
+	RoleFilter   *string `json:"role-filter"`
 }
 
 // EKSClusterProvider will discover EKS clusters in AWS
@@ -95,6 +93,7 @@ func (p *eksClusterProvider) Usage() string {
 }
 
 func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
+	p.ensureLogger()
 	cfg := &eksClusteProviderConfig{}
 	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
@@ -115,4 +114,10 @@ func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Iden
 	p.eksClient = aws.NewEKSClient(session)
 
 	return nil
+}
+
+func (p *eksClusterProvider) ensureLogger() {
+	if p.logger == nil {
+		p.logger = zap.S().With("provider", "eks")
+	}
 }
