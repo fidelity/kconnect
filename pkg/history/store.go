@@ -168,7 +168,6 @@ func (s *storeImpl) GetLastModified() (*historyv1alpha.HistoryEntry, error) {
 			lastModifiedEntry = entry
 		}
 	}
-	
 	return &lastModifiedEntry, nil
 }
 

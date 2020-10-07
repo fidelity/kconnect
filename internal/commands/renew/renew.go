@@ -48,16 +48,13 @@ func Command() (*cobra.Command, error) {
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
-			
 			params.Context = provider.NewContext(
 				provider.WithLogger(logger),
 				provider.WithConfig(params.Context.ConfigurationItems()),
 			)
-	
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			
 			historyLoader, err := loader.NewFileLoader(params.Location)
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
@@ -71,9 +68,7 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("getting last modified history entry: %w", err)
 			}
 			params.AliasOrID = lastModifiedEntry.Name
-
 			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
-
 			return a.ConnectTo(params)
 		},
 	}
@@ -85,7 +80,6 @@ func Command() (*cobra.Command, error) {
 	if err := flags.CreateCommandFlags(renewCmd, params.Context.ConfigurationItems()); err != nil {
 		return nil, err
 	}
-
 
 	return renewCmd, nil
 }
