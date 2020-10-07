@@ -35,11 +35,7 @@ var (
 )
 
 func Command() (*cobra.Command, error) {
-	logger := logrus.New().WithField("command", "to")
-
-	params := &app.ConnectToParams{
-		Context: provider.NewContext(provider.WithLogger(logger)),
-	}
+	cfg := config.NewConfigurationSet()
 
 	toCmd := &cobra.Command{
 		Use:   "to [historyid/alias]",
@@ -51,23 +47,24 @@ You can use the history id or alias as the argument.`,
 			if len(args) < 1 {
 				return ErrAliasIDRequired
 			}
-			params.AliasOrID = args[0]
 
 			flags.BindFlags(cmd)
-			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
-
-			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
-				return fmt.Errorf("unmarshalling config into to params: %w", err)
-			}
-
-			params.Context = provider.NewContext(
-				provider.WithLogger(logger),
-				provider.WithConfig(params.Context.ConfigurationItems()),
-			)
+			flags.PopulateConfigFromCommand(cmd, cfg)
 
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			logger := logrus.New().WithField("command", "to")
+
+			params := &app.ConnectToParams{
+				Context:   provider.NewContext(provider.WithConfig(cfg), provider.WithLogger(logger)),
+				AliasOrID: args[0],
+			}
+
+			if err := config.Unmarshall(cfg, params); err != nil {
+				return fmt.Errorf("unmarshalling config into to params: %w", err)
+			}
+
 			historyLoader, err := loader.NewFileLoader(params.Location)
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
@@ -83,11 +80,11 @@ You can use the history id or alias as the argument.`,
 		},
 	}
 
-	if err := addConfig(params.Context.ConfigurationItems()); err != nil {
+	if err := addConfig(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	if err := flags.CreateCommandFlags(toCmd, params.Context.ConfigurationItems()); err != nil {
+	if err := flags.CreateCommandFlags(toCmd, cfg); err != nil {
 		return nil, err
 	}
 
@@ -110,6 +107,9 @@ func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
+
+	cs.SetHistoryIgnore("password") //nolint
+	cs.SetSensitive("password")     //nolint
 
 	return nil
 }

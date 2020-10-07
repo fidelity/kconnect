@@ -30,21 +30,25 @@ import (
 )
 
 func Command() (*cobra.Command, error) {
-	logger := logrus.New().WithField("command", "ls")
-
 	cfg := config.NewConfigurationSet()
 
 	lsCmd := &cobra.Command{
 		Use:   "ls",
 		Short: "Query your connection history",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			params := &app.HistoryQueryInput{}
-
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
 			if err := config.ApplyToConfigSet(cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			logger := logrus.New().WithField("command", "ls")
+			params := &app.HistoryQueryInput{}
+
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
@@ -97,6 +101,8 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
+
+	cs.SetHistoryIgnore("output") //nolint
 
 	return nil
 }

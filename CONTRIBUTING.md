@@ -30,7 +30,7 @@ Code contributions to kconnect are very welcome.
 
 If you need a pointer on where to start you can look at the **good first issue** and **help wanted** issues:
 
-* [good first issue](https://github.com/fidelity/kconnect/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) - small changes that are suitable for a begineer
+* [good first issue](https://github.com/fidelity/kconnect/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) - small changes that are suitable for a beginner
 * [help wanted](https://github.com/fidelity/kconnect/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) - more involved changes
 
 You can also choose your own issue to work on from this list of available issues.

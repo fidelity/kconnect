@@ -10,8 +10,12 @@ coverage.out
 # GoReleaser dist folder
 dist/
 
-# Tools bin folder
+# Bin
 bin/
+
+# Tools
+hack/tools/bin
+hack/tools/share
 
 # direnv files:
 .envrc

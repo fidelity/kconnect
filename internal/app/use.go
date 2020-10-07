@@ -147,20 +147,13 @@ func (a *App) getCluster(params *UseParams) (*provider.Cluster, error) {
 func (a *App) filterConfig(params *UseParams) map[string]string {
 	filteredConfig := make(map[string]string)
 
-	idConfigSet := params.IdentityProvider.ConfigurationItems()
-	discConfigSet := params.Provider.ConfigurationItems()
-	commonIDConfigSet := provider.CommonIdentityConfig()
-
 	for _, configItem := range params.Context.ConfigurationItems().GetAll() {
-		cmnConfig := commonIDConfigSet.Get(configItem.Name)
-		idConfig := idConfigSet.Get(configItem.Name)
-		discConfig := discConfigSet.Get(configItem.Name)
 
-		if cmnConfig == nil && idConfig == nil && discConfig == nil {
+		if configItem.Sensitive {
 			continue
 		}
 
-		if configItem.Sensitive {
+		if configItem.HistoryIgnore {
 			continue
 		}
 

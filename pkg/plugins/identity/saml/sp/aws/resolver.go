@@ -19,6 +19,7 @@ package aws
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -26,10 +27,22 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
+const (
+	profilePrefix = "kconnect-"
+)
+
 // ResolveConfiguration will resolve the values for the AWS specific config items that have no value.
 // It will query AWS and interactively ask the user for selections.
-func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) error {
+func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet, interactive bool) error {
 	p.logger.Debug("resolving AWS identity configuration items")
+
+	if err := p.resolveProfile("profile", cfg); err != nil {
+		return fmt.Errorf("resolving profile: %w", err)
+	}
+
+	if !interactive {
+		return nil
+	}
 
 	// NOTE: resolution is only needed for required fields
 	if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
@@ -38,9 +51,7 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 	if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
 		return fmt.Errorf("resolving idp-endpoint: %w", err)
 	}
-	if err := p.resolveProfile("profile", cfg); err != nil {
-		return fmt.Errorf("resolving profile: %w", err)
-	}
+
 	if err := p.resolvePartition("partition", cfg); err != nil {
 		return fmt.Errorf("resolving partition: %w", err)
 	}
@@ -62,18 +73,14 @@ func (p *ServiceProvider) resolveProfile(name string, cfg config.ConfigurationSe
 		return nil
 	}
 
-	profile := ""
-	prompt := &survey.Input{
-		Message: "Enter the name of AWS profile",
-	}
-	if err := survey.AskOne(prompt, &profile, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for profile name: %w", err)
-	}
+	now := time.Now().UTC()
+	profileName := fmt.Sprintf("%s%s", profilePrefix, now.Format("20060102150405"))
 
-	if err := cfg.SetValue(name, profile); err != nil {
-		p.logger.Errorf("failed setting profile config to %s: %s", profile, err.Error())
+	if err := cfg.SetValue(name, profileName); err != nil {
+		p.logger.Errorf("failed setting profile config to %s: %s", profileName, err.Error())
 		return fmt.Errorf("setting profile config: %w", err)
 	}
+	p.logger.Debugf("created AWS profile name: %s", profileName)
 
 	return nil
 }

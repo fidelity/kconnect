@@ -38,7 +38,6 @@ type ClusterProviderConfig struct {
 type IdentityProviderConfig struct {
 	Username    string `json:"username" validate:"required"`
 	Password    string `json:"password" validate:"required"`
-	Force       bool   `json:"force"`
 	IdpProtocol string `json:"idp-protocol" validate:"required"`
 }
 
@@ -60,6 +59,8 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("setting alias as sensitive: %w", err)
 	}
 
+	cs.SetHistoryIgnore("alias") //nolint
+
 	return nil
 }
 
@@ -77,11 +78,10 @@ func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
 // CommonIdentityConfig creates a configset with the common identity config items
 func CommonIdentityConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String("username", "", "the username used for authentication")                //nolint: errcheck
-	cs.String("password", "", "the password to use for authentication")              //nolint: errcheck
-	cs.Bool("force", false, "If true then we force authentication every invocation") //nolint: errcheck
-	cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)")             //nolint: errcheck
-	cs.SetSensitive("password")                                                      //nolint: errcheck
+	cs.String("username", "", "the username used for authentication")    //nolint: errcheck
+	cs.String("password", "", "the password to use for authentication")  //nolint: errcheck
+	cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)") //nolint: errcheck
+	cs.SetSensitive("password")                                          //nolint: errcheck
 
 	return cs
 }
