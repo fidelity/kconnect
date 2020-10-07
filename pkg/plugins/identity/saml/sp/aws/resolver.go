@@ -19,6 +19,7 @@ package aws
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	survey "github.com/AlecAivazis/survey/v2"
@@ -141,15 +142,23 @@ func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet
 		return fmt.Errorf("finding partition with id %s: %w", partitionID, ErrPartitionNotFound)
 	}
 
+	regionFilter := ""
+	regionFilterCfg := cfg.Get("region-filter")
+	if regionFilterCfg != nil {
+		regionFilter = regionFilterCfg.Value.(string)
+	}
+
 	options := []string{}
 	for _, region := range partition.Regions() {
-		options = append(options, region.ID())
+		if regionFilter == "" || strings.Contains(region.ID(), regionFilter) {
+			options = append(options, region.ID())
+		}
 	}
 	sort.Slice(options, func(i, j int) bool { return options[i] < options[j] })
 
 	region := ""
 	prompt := &survey.Select{
-		Message: "Select a AWS region",
+		Message: "Select an AWS region",
 		Options: options,
 	}
 	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
