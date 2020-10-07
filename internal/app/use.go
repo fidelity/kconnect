@@ -43,6 +43,8 @@ type UseParams struct {
 	Identity         provider.Identity
 
 	Context *provider.Context
+
+	Namespace string `json:"namespace,omitempty"`
 }
 
 func (a *App) Use(params *UseParams) error {
@@ -72,7 +74,7 @@ func (a *App) Use(params *UseParams) error {
 		return nil
 	}
 
-	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster)
+	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster, params.Namespace)
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
