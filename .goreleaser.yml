@@ -65,11 +65,11 @@ brews:
 dockers:
   -
     image_templates:
-    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .Tag }}"
-    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .Tag }}-{{ .ShortCommit }}"
-    #- "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}"
-    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:v{{ .Major }}.{{ .Minor }}"
-    - "docker.pkg.github.com/fidelity/kconnect/kconnect-cli:{{ .ShortCommit }}"
+    - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
+    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-{{ .ShortCommit }}"
+    #- "docker.io/kconnectcli/kconnect-cli:v{{ .Major }}"
+    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
+    - "docker.io/kconnectcli/kconnect:{{ .ShortCommit }}"
     build_flag_templates:
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"

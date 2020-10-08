@@ -18,12 +18,11 @@ jobs:
               uses: actions/setup-go@v2
               with:
                   go-version: 1.13
-            - name: Docker Login
-              run: |
-                echo "$DKR_TOKEN" | docker login https://docker.pkg.github.com -u $DKR_USER --password-stdin
-              env:
-                DKR_TOKEN: ${{secrets.GITHUB_TOKEN}}
-                DKR_USER: ${{secrets.DKR_USER}}
+            - name: Login to DockerHub
+              uses: docker/login-action@v1
+              with:
+                password: ${{secrets.DKR_TOKEN}}
+                username: ${{secrets.DKR_USER}}
             - name: Setup snapcraft
               run: |
                 sudo snap install snapcraft --classic
