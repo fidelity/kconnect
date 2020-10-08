@@ -105,18 +105,6 @@ func RootCmd() (*cobra.Command, error) {
 
 	cobra.OnInitialize(initConfig)
 
-	// Force initial parsing of flags
-	rootCmd.FParseErrWhitelist = cobra.FParseErrWhitelist{
-		UnknownFlags: true,
-	}
-	rootCmd.ParseFlags(os.Args) //nolint: errcheck
-
-	flags.PopulateConfigFromCommand(rootCmd, cfg)
-	params := &app.CommonConfig{}
-	if err := config.Unmarshall(cfg, params); err != nil {
-		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
-	}
-
 	return rootCmd, nil
 }
 
