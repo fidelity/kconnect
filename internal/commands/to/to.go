@@ -33,6 +33,19 @@ import (
 
 var (
 	ErrAliasIDRequired = errors.New("alias or id must be specified")
+
+	examples = `  # Re-connect based on an alias
+  kconnect to uat-bu1
+
+  # # Re-connect based on an history id - history id can be found using kconnect ls
+  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Re-connect based on an alias supplying a password
+  kconnect to uat-bu1 --password supersecret
+
+  # Re-connect based on an alias supplying a password via env var
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu1
+`
 )
 
 func Command() (*cobra.Command, error) {
@@ -43,7 +56,8 @@ func Command() (*cobra.Command, error) {
 		Short: "Re-connect to a previously connected cluster using your history",
 		Long: `use is for re-connecting to a previously connected cluster using your history.
 You can use the history id or alias as the argument.`,
-		Args: cobra.ExactArgs(1),
+		Example: examples,
+		Args:    cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return ErrAliasIDRequired
