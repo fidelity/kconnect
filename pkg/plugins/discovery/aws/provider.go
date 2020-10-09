@@ -19,7 +19,6 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
 	"go.uber.org/zap"
 
@@ -65,19 +64,11 @@ func (p *eksClusterProvider) Name() string {
 
 // ConfigurationItems returns the configuration items for this provider
 func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
-	cs := config.NewConfigurationSet()
-	cs.String("partition", endpoints.AwsPartition().ID(), "AWS partition to use")                                                     //nolint: errcheck
-	cs.String("region", "", "AWS region to connect to")                                                                               //nolint: errcheck
+	cs := aws.SharedConfig()
+
 	cs.String("region-filter", "", "A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions")                 //nolint: errcheck
-	cs.String("profile", "", "AWS profile to use")                                                                                    //nolint: errcheck
 	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                    //nolint: errcheck
 	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name") //nolint: errcheck
-
-	cs.SetRequired("profile")   //nolint: errcheck
-	cs.SetRequired("region")    //nolint: errcheck
-	cs.SetRequired("partition") //nolint: errcheck
-
-	cs.SetHidden("profile") //nolint: errcheck
 
 	return cs
 }
@@ -85,11 +76,6 @@ func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 // ConfigurationResolver returns the resolver to use for config with this provider
 func (p *eksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
 	return &awsConfigResolver{}
-}
-
-// Usage returns a description for use in the help/usage
-func (p *eksClusterProvider) Usage() string {
-	return "discover and connect to AWS EKS clusters"
 }
 
 func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
@@ -120,4 +106,14 @@ func (p *eksClusterProvider) ensureLogger() {
 	if p.logger == nil {
 		p.logger = zap.S().With("provider", "eks")
 	}
+}
+
+// UsageExample will provide an example of the usage of this provider
+func (p *eksClusterProvider) UsageExample() string {
+	return `  # Discover EKS clusters using SAML
+  kconnect use eks --idp-protocol saml
+
+  # Discover EKS clusters using SAML with a specific role
+  kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
+`
 }

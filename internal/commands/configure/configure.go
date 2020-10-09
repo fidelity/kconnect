@@ -27,12 +27,31 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
+var (
+	examples = `  # Display the current configuration
+  kconnect configure
+
+  # Display the configuration as json
+  kconnect configure --output json
+
+  # Set the configuration from a local file
+  kconnect configure -f ./defaults.yaml
+
+  # Set the configuration from a remote location via HTTP
+  kconnect configure -f https://mycompany.com/config.yaml
+
+  # Set the congigiration from stdin
+  cat ./config.yaml | kconnect configure -f -
+`
+)
+
 func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	cfgCmd := &cobra.Command{
-		Use:   "configure",
-		Short: "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
+		Use:     "configure",
+		Short:   "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
+		Example: examples,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)

@@ -42,6 +42,9 @@ type ClusterProvider interface {
 
 	// ConfigurationResolver returns the resolver used to interactively resolve configuration
 	ConfigurationResolver() ConfigResolver
+
+	// UsageExample will provide an example of the usage of this provider
+	UsageExample() string
 }
 
 // ConfigResolver is used to resolve the values for config items interactively.
@@ -65,6 +68,9 @@ type IdentityProvider interface {
 	// Authenticate will authenticate a user and return details of
 	// their identity.
 	Authenticate(ctx *Context, clusterProvider string) (Identity, error)
+
+	// Usage returns a string to display for help
+	Usage(clusterProvider string) (string, error)
 }
 
 // IdentityStore represents an way to store and retrieve credentials
@@ -103,7 +109,4 @@ type Plugin interface {
 
 	// ConfigurationItems will return the configuration items for the plugin
 	ConfigurationItems() config.ConfigurationSet
-
-	// Usage returns a string to display for help
-	Usage() string
 }

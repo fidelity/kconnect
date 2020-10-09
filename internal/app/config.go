@@ -101,7 +101,7 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.String("config", configLocation, "Configuration file for application defaults"); err != nil {
 		return fmt.Errorf("adding config item: %w", err)
 	}
-	if _, err := cs.Int("verbosity", 0, "sets the logging verbosity"); err != nil {
+	if _, err := cs.Int("verbosity", 0, "Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace."); err != nil {
 		return fmt.Errorf("adding verbosity config: %w", err)
 	}
 	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution"); err != nil {

@@ -30,6 +30,8 @@ type ProviderConfig struct {
 }
 
 type ServiceProvider interface {
+	ConfigurationItems() config.ConfigurationSet
+
 	Validate(configItems config.ConfigurationSet) error
 	ResolveConfiguration(configItems config.ConfigurationSet, interactive bool) error
 	PopulateAccount(account *cfg.IDPAccount, configItems config.ConfigurationSet) error

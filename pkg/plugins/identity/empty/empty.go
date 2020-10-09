@@ -58,6 +58,6 @@ func (p *emptyIdentityProvider) Authenticate(ctx *provider.Context, clusterProvi
 }
 
 // Usage returns a description for use in the help/usage
-func (p *emptyIdentityProvider) Usage() string {
-	return "an identity provider that does nothing"
+func (p *emptyIdentityProvider) Usage(clusterProvider string) (string, error) {
+	return "", nil
 }

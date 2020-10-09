@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -70,8 +71,9 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 	}
 
 	providerCmd := &cobra.Command{
-		Use:   clusterProvider.Name(),
-		Short: fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
+		Use:     clusterProvider.Name(),
+		Short:   fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
+		Example: clusterProvider.UsageExample(),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
@@ -122,6 +124,8 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 	if err := flags.CreateCommandFlags(providerCmd, params.Context.ConfigurationItems()); err != nil {
 		return nil, err
 	}
+
+	providerCmd.SetUsageFunc(providerUsage(clusterProvider.Name()))
 
 	return providerCmd, nil
 }
@@ -245,4 +249,32 @@ func ensureConfigFolder(path string) error {
 	}
 
 	return nil
+}
+
+func providerUsage(providerName string) func(cmd *cobra.Command) error {
+	return func(cmd *cobra.Command) error {
+		usage := []string{fmt.Sprintf("Usage: %s", cmd.UseLine())}
+
+		if cmd.Example != "" {
+			usage = append(usage, "\nExamples:")
+			usage = append(usage, cmd.Example)
+		}
+
+		usage = append(usage, "\nFlags:")
+		usage = append(usage, cmd.LocalFlags().FlagUsages())
+
+		usage = append(usage, "\nGlobal Flags:")
+		usage = append(usage, cmd.InheritedFlags().FlagUsages())
+
+		for _, provider := range provider.ListIdentityProviders() {
+			providerUsage, err := provider.Usage(providerName)
+			if err != nil {
+				return err
+			}
+			usage = append(usage, providerUsage)
+		}
+
+		cmd.Println(strings.Join(usage, "\n"))
+		return nil
+	}
 }

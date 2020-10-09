@@ -78,10 +78,10 @@ func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
 // CommonIdentityConfig creates a configset with the common identity config items
 func CommonIdentityConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String("username", "", "the username used for authentication")    //nolint: errcheck
-	cs.String("password", "", "the password to use for authentication")  //nolint: errcheck
-	cs.String("idp-protocol", "", "the idp protocol to use (e.g. saml)") //nolint: errcheck
-	cs.SetSensitive("password")                                          //nolint: errcheck
+	cs.String("username", "", "The username used for authentication")                                      //nolint: errcheck
+	cs.String("password", "", "The password to use for authentication")                                    //nolint: errcheck
+	cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml). Each protocol has its own flags.") //nolint: errcheck
+	cs.SetSensitive("password")                                                                            //nolint: errcheck
 
 	return cs
 }

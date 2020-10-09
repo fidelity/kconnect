@@ -34,6 +34,7 @@ import (
 	"github.com/versent/saml2aws/pkg/awsconfig"
 	"github.com/versent/saml2aws/pkg/cfg"
 
+	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -289,6 +290,12 @@ func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
 	}
 
 	return nil
+}
+
+func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
+	cs := kaws.SharedConfig()
+
+	return cs
 }
 
 func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {

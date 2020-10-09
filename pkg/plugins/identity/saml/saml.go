@@ -19,6 +19,7 @@ package saml
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/versent/saml2aws"
@@ -27,6 +28,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -37,6 +39,10 @@ var (
 	ErrUnsuportedProvider = errors.New("cluster provider not supported")
 	ErrNoSAMLAssertions   = errors.New("no SAML assertions")
 	ErrCreatingAccount    = errors.New("creating account")
+
+	serviceProviders = map[string]sp.ServiceProvider{
+		"eks": aws.NewServiceProvider(),
+	}
 )
 
 const (
@@ -84,9 +90,11 @@ func (p *samlIdentityProvider) ConfigurationItems() config.ConfigurationSet {
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
 	p.logger.Info("authenticating user")
 
-	if err := p.createServiceProvider(clusterProvider); err != nil {
-		return nil, fmt.Errorf("setting up saml provider: %w", err)
+	sp, ok := serviceProviders[clusterProvider]
+	if !ok {
+		return nil, ErrUnsuportedProvider
 	}
+	p.serviceProvider = sp
 
 	if err := p.resolveConfig(ctx); err != nil {
 		return nil, err
@@ -198,17 +206,6 @@ func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	return nil
 }
 
-func (p *samlIdentityProvider) createServiceProvider(providerName string) error {
-	switch providerName {
-	case "eks":
-		p.serviceProvider = aws.NewServiceProvider()
-	default:
-		return ErrUnsuportedProvider
-	}
-
-	return nil
-}
-
 func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
 	var store provider.IdentityStore
 	var err error
@@ -226,7 +223,31 @@ func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, provid
 	return store, nil
 }
 
-// Usage returns a description for use in the help/usage
-func (p *samlIdentityProvider) Usage() string {
-	return "SAML Idp authentication"
+// Usage returns the usage for the provider
+func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
+	usage := []string{"SAML idp-protocol Flags:"}
+
+	cfg := p.ConfigurationItems()
+
+	// get the service provider flags
+	if clusterProvider != "" {
+		sp, ok := serviceProviders[clusterProvider]
+		if !ok {
+			return "", ErrUnsuportedProvider
+		}
+
+		spConfig := sp.ConfigurationItems()
+		if err := cfg.AddSet(spConfig); err != nil {
+			return "", fmt.Errorf("adding service provider config: %w", err)
+		}
+	}
+
+	fs, err := flags.CreateFlagsFromConfig(cfg)
+	if err != nil {
+		return "", err
+	}
+
+	usage = append(usage, fs.FlagUsages())
+
+	return strings.Join(usage, "\n"), nil
 }
