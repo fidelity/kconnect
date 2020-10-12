@@ -43,6 +43,9 @@ type ClusterProvider interface {
 	// ConfigurationResolver returns the resolver used to interactively resolve configuration
 	ConfigurationResolver() ConfigResolver
 
+	// ConfigurationItems will return the configuration items for the plugin
+	ConfigurationItems() config.ConfigurationSet
+
 	// UsageExample will provide an example of the usage of this provider
 	UsageExample() string
 }
@@ -68,6 +71,10 @@ type IdentityProvider interface {
 	// Authenticate will authenticate a user and return details of
 	// their identity.
 	Authenticate(ctx *Context, clusterProvider string) (Identity, error)
+
+	// ConfigurationItems will return the configuration items for the intentity plugin based
+	// of the cluster provider that its being used in conjunction with
+	ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error)
 
 	// Usage returns a string to display for help
 	Usage(clusterProvider string) (string, error)
@@ -106,7 +113,4 @@ type Identity interface {
 type Plugin interface {
 	// Name returns the name of the plugin
 	Name() string
-
-	// ConfigurationItems will return the configuration items for the plugin
-	ConfigurationItems() config.ConfigurationSet
 }

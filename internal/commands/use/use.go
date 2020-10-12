@@ -182,7 +182,7 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 	}
 	params.IdentityProvider = idProvider
 
-	idProviderCfg := idProvider.ConfigurationItems()
+	idProviderCfg, _ := idProvider.ConfigurationItems(params.Provider.Name())
 	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
 		return err
 	}

@@ -115,7 +115,13 @@ func (a *App) getHistoryEntry(idOrAlias string) (*historyv1alpha.HistoryEntry, e
 
 func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
-	if err := cs.AddSet(idProvider.ConfigurationItems()); err != nil {
+
+	idCfg, err := idProvider.ConfigurationItems(clusterProvider.Name())
+	if err != nil {
+		return nil, fmt.Errorf("getting identity provider config: %w", err)
+	}
+
+	if err := cs.AddSet(idCfg); err != nil {
 		return nil, fmt.Errorf("adding identity provider config items: %w", err)
 	}
 	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {

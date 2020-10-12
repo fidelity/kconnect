@@ -48,8 +48,8 @@ func (p *emptyIdentityProvider) Name() string {
 }
 
 // Flags will return the flags for this plugin
-func (p *emptyIdentityProvider) ConfigurationItems() config.ConfigurationSet {
-	return nil
+func (p *emptyIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
+	return nil, nil
 }
 
 // Authenticate will authenticate a user and returns their identity
