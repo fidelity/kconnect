@@ -18,6 +18,7 @@ package app
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
@@ -30,17 +31,17 @@ type ConnectToParams struct {
 	HistoryConfig
 	KubernetesConfig
 
-	AliasOrID  string
-	Password   string `json:"password"`
-	SetCurrent bool   `json:"set-current,omitempty"`
-
+	AliasOrIDORPosition  string
+	Password             string `json:"password"`
+	SetCurrent           bool   `json:"set-current,omitempty"`
+          
 	Context *provider.Context
 }
 
 func (a *App) ConnectTo(params *ConnectToParams) error {
 	a.logger.Debug("running connectto")
 
-	entry, err := a.getHistoryEntry(params.AliasOrID)
+	entry, err := a.getHistoryEntry(params.AliasOrIDORPosition)
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
@@ -95,8 +96,31 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	return a.Use(useParams)
 }
 
-func (a *App) getHistoryEntry(idOrAlias string) (*historyv1alpha.HistoryEntry, error) {
-	entry, err := a.historyStore.GetByID(idOrAlias)
+func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.HistoryEntry, error) {
+
+	fmt.Println(("HELLO WORLD"))
+	lastPositionRegex := regexp.MustCompile("LAST~[0-9]+")
+	getPositionRegex := regexp.MustCompile("[0-9]+")
+	if idOrAliasORPosition == "-" || idOrAliasORPosition == "LAST" {
+		entry, err := a.historyStore.GetLastModified(0)
+		if err != nil {
+			return nil, fmt.Errorf("getting history by last modified index: %w", err)
+		}
+		return entry, nil
+	}
+	if lastPositionRegex.MatchString(idOrAliasORPosition) {
+		n, err := strconv.Atoi(getPositionRegex.FindString(idOrAliasORPosition))
+		if err != nil {
+			return nil, err
+		}
+		entry, err := a.historyStore.GetLastModified(n)
+		if err != nil {
+			return nil, fmt.Errorf("getting history by last modified index: %w", err)
+		}
+		return entry, nil
+	}
+
+	entry, err := a.historyStore.GetByID(idOrAliasORPosition)
 	if err != nil {
 		return nil, fmt.Errorf("getting history entry by id: %w", err)
 	}
@@ -104,7 +128,7 @@ func (a *App) getHistoryEntry(idOrAlias string) (*historyv1alpha.HistoryEntry, e
 		return entry, nil
 	}
 
-	entry, err = a.historyStore.GetByAlias(idOrAlias)
+	entry, err = a.historyStore.GetByAlias(idOrAliasORPosition)
 	if err != nil {
 		return nil, fmt.Errorf("getting history entry by alias: %w", err)
 	}

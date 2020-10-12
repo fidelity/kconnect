@@ -38,10 +38,11 @@ func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	toCmd := &cobra.Command{
-		Use:   "to [historyid/alias]",
+		Use:   "to [historyid/alias/-/LAST/LAST~N]",
 		Short: "Re-connect to a previously connected cluster using your history",
 		Long: `use is for re-connecting to a previously connected cluster using your history.
-You can use the history id or alias as the argument.`,
+You can use the history id or alias as the argument.
+You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters (e.g. LAST~N)`,
 		Args: cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -57,8 +58,8 @@ You can use the history id or alias as the argument.`,
 			logger := logrus.New().WithField("command", "to")
 
 			params := &app.ConnectToParams{
-				Context:   provider.NewContext(provider.WithConfig(cfg), provider.WithLogger(logger)),
-				AliasOrID: args[0],
+				Context:             provider.NewContext(provider.WithConfig(cfg), provider.WithLogger(logger)),
+				AliasOrIDORPosition: args[0],
 			}
 
 			if err := config.Unmarshall(cfg, params); err != nil {

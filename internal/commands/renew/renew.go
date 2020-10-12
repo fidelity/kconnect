@@ -63,11 +63,11 @@ func Command() (*cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
 			}
-			lastModifiedEntry, err := store.GetLastModified()
+			lastModifiedEntry, err := store.GetLastModified(0)
 			if err != nil {
 				return fmt.Errorf("getting last modified history entry: %w", err)
 			}
-			params.AliasOrID = lastModifiedEntry.Name
+			params.AliasOrIDORPosition = lastModifiedEntry.Name
 			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
 			return a.ConnectTo(params)
 		},
