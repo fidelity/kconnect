@@ -75,7 +75,7 @@ func (p *samlIdentityProvider) Name() string {
 	return "saml"
 }
 
-func (p *samlIdentityProvider) ConfigurationItems() config.ConfigurationSet {
+func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 
 	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
@@ -83,7 +83,20 @@ func (p *samlIdentityProvider) ConfigurationItems() config.ConfigurationSet {
 	cs.SetRequired("idp-endpoint")                                                       //nolint: errcheck
 	cs.SetRequired("idp-provider")                                                       //nolint: errcheck
 
-	return cs
+	// get the service provider flags
+	if clusterProviderName != "" {
+		sp, ok := serviceProviders[clusterProviderName]
+		if !ok {
+			return nil, ErrUnsuportedProvider
+		}
+
+		spConfig := sp.ConfigurationItems()
+		if err := cs.AddSet(spConfig); err != nil {
+			return nil, fmt.Errorf("adding service provider config: %w", err)
+		}
+	}
+
+	return cs, nil
 }
 
 // Authenticate will authenticate a user and returns their identity
@@ -227,19 +240,9 @@ func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, provid
 func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
 	usage := []string{"SAML idp-protocol Flags:"}
 
-	cfg := p.ConfigurationItems()
-
-	// get the service provider flags
-	if clusterProvider != "" {
-		sp, ok := serviceProviders[clusterProvider]
-		if !ok {
-			return "", ErrUnsuportedProvider
-		}
-
-		spConfig := sp.ConfigurationItems()
-		if err := cfg.AddSet(spConfig); err != nil {
-			return "", fmt.Errorf("adding service provider config: %w", err)
-		}
+	cfg, err := p.ConfigurationItems(clusterProvider)
+	if err != nil {
+		return "", fmt.Errorf("getting provider configuration: %w", err)
 	}
 
 	fs, err := flags.CreateFlagsFromConfig(cfg)
