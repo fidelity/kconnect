@@ -24,12 +24,7 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.0 // indirect
-<<<<<<< HEAD
-	github.com/sirupsen/logrus v1.6.0
-=======
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.7.0
->>>>>>> ee052b0517e21ddc97bf5209635e4b56f551a9af
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.3.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
