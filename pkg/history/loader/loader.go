@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
+	"github.com/fidelity/kconnect/internal/defaults"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -35,6 +36,9 @@ type Loader interface {
 }
 
 func NewFileLoader(path string) (Loader, error) {
+	if path == "" {
+		path = defaults.HistoryPath()
+	}
 	historyFile, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("getting absolute file path for %s: %w", path, err)

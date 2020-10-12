@@ -19,7 +19,7 @@ kconnect use [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string     Configuration file for application defaults (default "/home/richard/.kconnect/config.yaml")
+      --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 ```

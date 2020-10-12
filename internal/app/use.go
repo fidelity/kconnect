@@ -22,6 +22,7 @@ import (
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/clientcmd"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -101,6 +102,12 @@ func (a *App) Use(params *UseParams) error {
 		historyRef := historyv1alpha.NewHistoryReference(historyID)
 		kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
 		kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
+	}
+
+	if params.Kubeconfig == "" {
+		zap.S().Debug("no kubeconfig supplied, setting default")
+		pathOptions := clientcmd.NewDefaultPathOptions()
+		params.Kubeconfig = pathOptions.GetDefaultFilename()
 	}
 
 	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig, params.SetCurrent); err != nil {

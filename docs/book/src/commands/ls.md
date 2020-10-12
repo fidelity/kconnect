@@ -33,10 +33,10 @@ kconnect ls [flags]
       --alias string               Alias name for a history entry
       --cluster-provider string    Name of a cluster provider (i.e. eks)
   -h, --help                       help for ls
-      --history-location string    Location of where the history is stored (default "/home/richard/.kconnect/history.yaml")
+      --history-location string    Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --id string                  Id for a history entry
       --identity-provider string   Name of a identity provider (i.e. saml)
-  -k, --kubeconfig string          Location of the kubeconfig to use (default "/home/richard/.kube/config")
+  -k, --kubeconfig string          Location of the kubeconfig to use. (default "$HOME/.kube/config")
       --max-history int            Sets the maximum number of history items to keep (default 100)
       --no-history                 If set to true then no history entry will be written
       --output string              Output format for the results (default "table")
@@ -46,7 +46,7 @@ kconnect ls [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string     Configuration file for application defaults (default "/home/richard/.kconnect/config.yaml")
+      --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 ```

@@ -19,8 +19,6 @@ package app
 import (
 	"fmt"
 
-	"k8s.io/client-go/tools/clientcmd"
-
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
 )
@@ -37,7 +35,7 @@ type HistoryConfig struct {
 }
 
 func AddHistoryLocationItems(cs config.ConfigurationSet) error {
-	if _, err := cs.String("history-location", defaults.HistoryPath(), "Location of where the history is stored"); err != nil {
+	if _, err := cs.String("history-location", "", "Location of where the history is stored. (default \"$HOME/.kconnect/history.yaml\")"); err != nil {
 		return fmt.Errorf("adding history-location config: %w", err)
 	}
 
@@ -78,8 +76,8 @@ type KubernetesConfig struct {
 
 // AddKubeconfigConfigItems will add the kubeconfig related config items
 func AddKubeconfigConfigItems(cs config.ConfigurationSet) error {
-	pathOptions := clientcmd.NewDefaultPathOptions()
-	if _, err := cs.String("kubeconfig", pathOptions.GetDefaultFilename(), "Location of the kubeconfig to use"); err != nil {
+
+	if _, err := cs.String("kubeconfig", "", "Location of the kubeconfig to use. (default \"$HOME/.kube/config\")"); err != nil {
 		return fmt.Errorf("adding kubeconfig config: %w", err)
 	}
 	if err := cs.SetShort("kubeconfig", "k"); err != nil {
@@ -96,9 +94,7 @@ type CommonConfig struct {
 }
 
 func AddCommonConfigItems(cs config.ConfigurationSet) error {
-	configLocation := defaults.ConfigPath()
-
-	if _, err := cs.String("config", configLocation, "Configuration file for application defaults"); err != nil {
+	if _, err := cs.String("config", "", "Configuration file for application wide defaults. (default \"$HOME/.kconnect/config.yaml\")"); err != nil {
 		return fmt.Errorf("adding config item: %w", err)
 	}
 	if _, err := cs.Int("verbosity", 0, "Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace."); err != nil {
