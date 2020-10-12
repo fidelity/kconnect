@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Verify Docs
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+        submodules: true
     - name: Verify Docs
       run: make docs-verify
     - name: Build Docs
