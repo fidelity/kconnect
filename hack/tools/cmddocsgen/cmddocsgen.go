@@ -62,6 +62,8 @@ func genMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	cmd.InitDefaultHelpCmd()
 	cmd.InitDefaultHelpFlag()
 
+	isUseSubCmd := (cmd.Parent() != nil && cmd.Parent().Name() == "use")
+
 	buf := new(bytes.Buffer)
 	name := cmd.CommandPath()
 
@@ -88,6 +90,12 @@ func genMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	if err := printOptions(buf, cmd, name); err != nil {
 		return err
 	}
+	if isUseSubCmd {
+		if err := printSAMLProtocolOptions(buf, cmd, name); err != nil {
+			return err
+		}
+	}
+
 	if hasSeeAlso(cmd) {
 		buf.WriteString("### SEE ALSO\n\n")
 		if cmd.HasParent() {
@@ -138,6 +146,10 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 		parentFlags.PrintDefaults()
 		buf.WriteString("```\n\n")
 	}
+	return nil
+}
+
+func printSAMLProtocolOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 	return nil
 }
 
