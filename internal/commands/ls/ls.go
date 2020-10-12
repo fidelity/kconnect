@@ -19,22 +19,39 @@ package ls
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
+)
+
+var (
+	examples = `  # Display all the history as a table
+  kconnect ls
+
+  # Display the history as yaml
+  kconnect ls --output yaml
+
+  # Get the history for a specific entry id
+  kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Get the history entries for eks
+  kconnect ls --cluster-provider eks
+`
 )
 
 func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	lsCmd := &cobra.Command{
-		Use:   "ls",
-		Short: "Query your connection history",
+		Use:     "ls",
+		Short:   "Query your connection history",
+		Example: examples,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
@@ -46,7 +63,7 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.New().WithField("command", "ls")
+			zap.S().Info("running `ls` command")
 			params := &app.HistoryQueryInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
@@ -62,10 +79,9 @@ func Command() (*cobra.Command, error) {
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 
 			ctx := provider.NewContext(
-				provider.WithLogger(logger),
 				provider.WithConfig(cfg),
 			)
 

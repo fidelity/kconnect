@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"os"
 
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/printer"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -44,7 +46,7 @@ type HistoryQueryInput struct {
 }
 
 func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) error {
-	a.logger.Debug("querying history")
+	zap.S().Debug("querying history")
 
 	list, err := a.historyStore.GetAll()
 	if err != nil {

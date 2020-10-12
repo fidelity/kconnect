@@ -20,18 +20,32 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 var (
 	ErrAliasIDRequired = errors.New("alias or id must be specified")
+
+	examples = `  # Re-connect based on an alias
+  kconnect to uat-bu1
+
+  # # Re-connect based on an history id - history id can be found using kconnect ls
+  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Re-connect based on an alias supplying a password
+  kconnect to uat-bu1 --password supersecret
+
+  # Re-connect based on an alias supplying a password via env var
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu1
+`
 )
 
 func Command() (*cobra.Command, error) {
@@ -55,7 +69,7 @@ You can also supply - or LAST to connect to last cluster in history (current clu
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.New().WithField("command", "to")
+			zap.S().Info("running `to` command")
 
 			params := &app.ConnectToParams{
 				Context:             provider.NewContext(provider.WithConfig(cfg), provider.WithLogger(logger)),
@@ -75,7 +89,7 @@ You can also supply - or LAST to connect to last cluster in history (current clu
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 
 			return a.ConnectTo(params)
 		},

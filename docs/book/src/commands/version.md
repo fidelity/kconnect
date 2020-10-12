@@ -1,19 +1,19 @@
-## kconnect use
+## kconnect version
 
-Connect to a target environment and discover clusters for use
+Display version & build information
 
 ### Synopsis
 
-Connect to a target environment and discover clusters for use
+Display version & build information
 
 ```
-kconnect use [flags]
+kconnect version [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for use
+  -h, --help   help for version
 ```
 
 ### Options inherited from parent commands
@@ -27,5 +27,4 @@ kconnect use [flags]
 ### SEE ALSO
 
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
-* [kconnect use eks](use_eks.md)	 - Connect to eks and discover clusters for use
 

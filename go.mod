@@ -3,7 +3,7 @@ module github.com/fidelity/kconnect
 go 1.13
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.8
+	github.com/AlecAivazis/survey/v2 v2.1.1
 	github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c // indirect
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
@@ -24,7 +24,12 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.0 // indirect
+<<<<<<< HEAD
 	github.com/sirupsen/logrus v1.6.0
+=======
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sirupsen/logrus v1.7.0
+>>>>>>> ee052b0517e21ddc97bf5209635e4b56f551a9af
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.3.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
@@ -36,6 +41,8 @@ require (
 	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/versent/saml2aws v1.8.5-0.20200622110128-d94772688a70
 	github.com/worr/saml2aws v2.15.0+incompatible
+	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899 // indirect
 	golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
@@ -46,6 +53,7 @@ require (
 	k8s.io/client-go v0.19.1
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/kubectl v0.19.1
+	sigs.k8s.io/kubebuilder/docs/book/utils v0.0.0-20201009223647-5031c94d9175
 	sigs.k8s.io/structured-merge-diff/v2 v2.0.1 // indirect
 	sigs.k8s.io/yaml v1.2.0
 

@@ -23,6 +23,9 @@ $(TOOLS_BIN_DIR):
 $(TOOLS_SHARE_DIR):
 	mkdir -p $@
 
+$(BIN_DIR):
+	mkdir -p $@
+
 # Docs
 MDBOOK_VERSION := v0.4.3
 BOOKS_DIR := docs/book
@@ -111,6 +114,11 @@ $(CONVERSION_GEN): $(TOOLS_DIR)/go.mod # Get and build conversion-gen
 $(MOCKGEN): $(TOOLS_DIR)/go.mod # Get and build mockgen
 	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) github.com/golang/mock/mockgen
 
+CMDDOCSGEN:= $(TOOLS_BIN_DIR)/cmddocsgen
+$(CMDDOCSGEN):
+	go build -tags=tools  -o $(TOOLS_BIN_DIR)/cmddocsgen ./tools/cmddocsgen
+
+
 ##@ Docs
 
 MDBOOK_SHARE := $(TOOLS_SHARE_DIR)/mdbook$(MDBOOK_ARCHIVE_EXT)
@@ -125,8 +133,20 @@ $(MDBOOK): $(TOOLS_BIN_DIR) $(MDBOOK_SHARE)
 
 
 .PHONY: docs-build
-docs-build: $(MDBOOK) ## Build the kconnect book
+docs-build: docs-generate $(MDBOOK) ## Build the kconnect book
 	$(MDBOOK) build $(BOOKS_DIR)
+
+.PHONY: docs-generate
+docs-generate: $(CMDDOCSGEN) ## Generate the cmd line docs
+	$(CMDDOCSGEN) $(BOOKS_DIR)/src/commands
+
+.PHONY: docs-verify
+docs-verify: docs-generate ## Verify the generated docs are up to date
+	cd $(BOOKS_DIR)/src/commands
+	@if !(git diff --quiet HEAD ); then \
+		git diff; \
+		echo "generated command docs are out of date, run make docs-generate"; exit 1; \
+	fi
 
 .PHONY: docs-serve
 docs-serve: $(MDBOOK) ## Run a local webserver with the compiled book

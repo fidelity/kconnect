@@ -20,9 +20,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/defaults"
@@ -46,7 +47,7 @@ func Command() (*cobra.Command, error) {
 		Short: "Connect to a target environment and discover clusters for use",
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
-				logrus.Debugf("ignoring cobra error %q", err.Error())
+				zap.S().Debugw("ignoring cobra error", "error", err.Error())
 			}
 		},
 	}
@@ -70,11 +71,10 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 	}
 
 	providerCmd := &cobra.Command{
-		Use:   clusterProvider.Name(),
-		Short: fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
+		Use:     clusterProvider.Name(),
+		Short:   fmt.Sprintf("Connect to %s and discover clusters for use", clusterProvider.Name()),
+		Example: clusterProvider.UsageExample(),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
-
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
 			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
@@ -89,10 +89,10 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 				return ErrMissingIdpProtocol
 			}
 
-			return preRun(params, logger)
+			return preRun(params)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.WithField("command", "use").WithField("provider", clusterProvider.Name())
+			zap.S().Infow("running `use` command", "provider", clusterProvider.Name())
 
 			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
@@ -107,7 +107,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger), app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store))
 
 			return a.Use(params)
 		},
@@ -124,6 +124,8 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 	if err := flags.CreateCommandFlags(providerCmd, params.Context.ConfigurationItems()); err != nil {
 		return nil, err
 	}
+
+	providerCmd.SetUsageFunc(providerUsage(clusterProvider.Name()))
 
 	return providerCmd, nil
 }
@@ -153,6 +155,9 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
+	if _, err := cs.String("namespace", "", "Sets namespace for context in kubeconfig"); err != nil {
+		return fmt.Errorf("setting namespace in kubeconfig: %w", err)
+	}
 
 	cs.SetHistoryIgnore("set-current") //nolint
 
@@ -177,8 +182,7 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 	}
 	params.IdentityProvider = idProvider
 
-	logrus.Infof("using identity provider %s", idProvider.Name())
-	idProviderCfg := idProvider.ConfigurationItems()
+	idProviderCfg, _ := idProvider.ConfigurationItems(params.Provider.Name())
 	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
 		return err
 	}
@@ -186,12 +190,11 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 	return nil
 }
 
-func preRun(params *app.UseParams, logger *logrus.Entry) error {
+func preRun(params *app.UseParams) error {
 	// Update the context now the flags have been parsed
 	interactive := isInteractive(params.Context.ConfigurationItems())
 
 	params.Context = provider.NewContext(
-		provider.WithLogger(logger),
 		provider.WithInteractive(interactive),
 		provider.WithConfig(params.Context.ConfigurationItems()),
 	)
@@ -246,4 +249,32 @@ func ensureConfigFolder(path string) error {
 	}
 
 	return nil
+}
+
+func providerUsage(providerName string) func(cmd *cobra.Command) error {
+	return func(cmd *cobra.Command) error {
+		usage := []string{fmt.Sprintf("Usage: %s", cmd.UseLine())}
+
+		if cmd.Example != "" {
+			usage = append(usage, "\nExamples:")
+			usage = append(usage, cmd.Example)
+		}
+
+		usage = append(usage, "\nFlags:")
+		usage = append(usage, cmd.LocalFlags().FlagUsages())
+
+		usage = append(usage, "\nGlobal Flags:")
+		usage = append(usage, cmd.InheritedFlags().FlagUsages())
+
+		for _, provider := range provider.ListIdentityProviders() {
+			providerUsage, err := provider.Usage(providerName)
+			if err != nil {
+				return err
+			}
+			usage = append(usage, providerUsage)
+		}
+
+		cmd.Println(strings.Join(usage, "\n"))
+		return nil
+	}
 }

@@ -19,9 +19,8 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/service/eks/eksiface"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -32,32 +31,30 @@ import (
 func init() {
 	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
 		// TODO: handle fatal error
-		logrus.Fatalf("Failed to register EKS cluster provider plugin: %v", err)
+		zap.S().Fatalw("Failed to register EKS cluster provider plugin", "error", err)
 	}
 }
 
 func newEKSProvider() *eksClusterProvider {
-	logger := logrus.WithField("disovery-provider", "eks")
-	return &eksClusterProvider{
-		logger: logger,
-	}
+	return &eksClusterProvider{}
 }
 
 type eksClusteProviderConfig struct {
 	provider.ClusterProviderConfig
-
-	Region     *string `flag:"region" json:"region"`
-	Profile    *string `flag:"profile" json:"profile"`
-	RoleArn    *string `flag:"role-arn" json:"role-arn"`
-	RoleFilter *string `flag:"role-filter" json:"role-filter"`
+	Region       *string `json:"region"`
+	RegionFilter *string `json:"region-filter"`
+	Profile      *string `json:"profile"`
+	RoleArn      *string `json:"role-arn"`
+	RoleFilter   *string `json:"role-filter"`
 }
 
 // EKSClusterProvider will discover EKS clusters in AWS
 type eksClusterProvider struct {
 	config    *eksClusteProviderConfig
 	identity  *awssp.Identity
-	logger    *logrus.Entry
 	eksClient eksiface.EKSAPI
+
+	logger *zap.SugaredLogger
 }
 
 // Name returns the name of the provider
@@ -67,35 +64,22 @@ func (p *eksClusterProvider) Name() string {
 
 // ConfigurationItems returns the configuration items for this provider
 func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
-	cs := config.NewConfigurationSet()
-	cs.String("partition", endpoints.AwsPartition().ID(), "AWS partition to use") //nolint: errcheck
-	cs.String("region", "", "AWS region to connect to")                           //nolint: errcheck
-	cs.String("profile", "", "AWS profile to use")                                //nolint: errcheck
-	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                //nolint: errcheck
-	cs.String("role-filter", "*EKS*", "A filter to apply to the roles list")      //nolint: errcheck
+	cs := aws.SharedConfig()
 
-	cs.SetRequired("profile")   //nolint: errcheck
-	cs.SetRequired("region")    //nolint: errcheck
-	cs.SetRequired("partition") //nolint: errcheck
-
-	cs.SetHidden("profile") //nolint: errcheck
+	cs.String("region-filter", "", "A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions")                 //nolint: errcheck
+	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                    //nolint: errcheck
+	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name") //nolint: errcheck
 
 	return cs
 }
 
 // ConfigurationResolver returns the resolver to use for config with this provider
 func (p *eksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return &awsConfigResolver{
-		logger: p.logger,
-	}
+	return &awsConfigResolver{}
 }
 
-// Usage returns a description for use in the help/usage
-func (p *eksClusterProvider) Usage() string {
-	return "discover and connect to AWS EKS clusters"
-}
-
-func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity, logger *logrus.Entry) error {
+func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
+	p.ensureLogger()
 	cfg := &eksClusteProviderConfig{}
 	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
@@ -108,13 +92,28 @@ func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Iden
 	}
 	p.identity = awsID
 
-	logger.Debugf("creating AWS session with region %s and profile %s", *p.config.Region, awsID.ProfileName)
+	p.logger.Debugw("creating AWS session", "region", *p.config.Region, "profile", awsID.ProfileName)
 	session, err := aws.NewSession(*p.config.Region, awsID.ProfileName)
 	if err != nil {
 		return fmt.Errorf("getting aws session: %w", err)
 	}
 	p.eksClient = aws.NewEKSClient(session)
 
-	p.logger = logger
 	return nil
+}
+
+func (p *eksClusterProvider) ensureLogger() {
+	if p.logger == nil {
+		p.logger = zap.S().With("provider", "eks")
+	}
+}
+
+// UsageExample will provide an example of the usage of this provider
+func (p *eksClusterProvider) UsageExample() string {
+	return `  # Discover EKS clusters using SAML
+  kconnect use eks --idp-protocol saml
+
+  # Discover EKS clusters using SAML with a specific role
+  kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
+`
 }

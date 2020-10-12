@@ -1,0 +1,18 @@
+name: docs-verify
+
+on: [pull_request]
+
+jobs:
+  verify-docs:
+    runs-on: ubuntu-latest
+    name: Verify Docs
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+        submodules: true
+    - name: Verify Docs
+      run: make docs-verify
+    - name: Build Docs
+      run: make docs-build

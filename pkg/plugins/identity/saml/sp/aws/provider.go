@@ -20,10 +20,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/beevik/etree"
 	"github.com/go-playground/validator/v10"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -33,6 +34,7 @@ import (
 	"github.com/versent/saml2aws/pkg/awsconfig"
 	"github.com/versent/saml2aws/pkg/cfg"
 
+	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -61,14 +63,14 @@ type awsProviderConfig struct {
 	Profile   string `json:"profile" validate:"required"`
 }
 
-func NewServiceProvider(logger *log.Entry) sp.ServiceProvider {
+func NewServiceProvider() sp.ServiceProvider {
 	return &ServiceProvider{
-		logger: logger.WithField("serviceprovider", "aws"),
+		logger: zap.S().With("provider", "saml", "sp", "aws"),
 	}
 }
 
 type ServiceProvider struct {
-	logger *log.Entry
+	logger *zap.SugaredLogger
 }
 
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
@@ -114,7 +116,13 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("parsing aws roles: %w", err)
 	}
 
-	role, err := p.resolveRole(awsRoles, samlAssertions, account)
+	roleFilter := ""
+	if cfg.ExistsWithValue("role-filter") {
+		item := cfg.Get("role-filter")
+		roleFilter = item.Value.(string)
+	}
+
+	role, err := p.resolveRole(awsRoles, samlAssertions, account, roleFilter)
 	if err != nil {
 		return nil, fmt.Errorf("resolving aws role: %w", err)
 	}
@@ -122,7 +130,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	if err := cfg.SetValue("role-arn", role.RoleARN); err != nil {
 		return nil, fmt.Errorf("setting role-arn config value: %w", err)
 	}
-	p.logger.Debugf("selected role: %s", role.RoleARN)
+	p.logger.Debugw("role selected", "role", role.RoleARN)
 
 	awsCreds, err := p.loginToStsUsingRole(account, role, samlAssertions)
 	if err != nil {
@@ -133,7 +141,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	return awsIdentity, nil
 }
 
-func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount) (*saml2aws.AWSRole, error) {
+func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount, roleFilter string) (*saml2aws.AWSRole, error) {
 	var role = new(saml2aws.AWSRole)
 
 	if len(awsRoles) == 1 {
@@ -169,6 +177,8 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 
 	saml2aws.AssignPrincipals(awsRoles, awsAccounts)
 
+	awsAccounts = p.filterAccounts(awsAccounts, roleFilter)
+
 	if account.RoleARN != "" {
 		return saml2aws.LocateRole(awsRoles, account.RoleARN)
 	}
@@ -178,10 +188,28 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 		if err == nil {
 			break
 		}
-		log.Println("Error selecting role, try again")
+		p.logger.Info("Error selecting role, try again")
 	}
 
 	return role, nil
+}
+
+func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFilter string) []*saml2aws.AWSAccount {
+	if roleFilter == "" {
+		return accounts
+	}
+
+	filtered := []*saml2aws.AWSAccount{}
+	for _, account := range accounts {
+		for _, awsRole := range account.Roles {
+			if strings.Contains(awsRole.RoleARN, roleFilter) {
+				filtered = append(filtered, account)
+				break
+			}
+		}
+	}
+
+	return filtered
 }
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
@@ -201,7 +229,7 @@ func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *sam
 		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
 	}
 
-	log.Println("Requesting AWS credentials using SAML")
+	p.logger.Info("requesting AWS credentials using SAML")
 
 	resp, err := svc.AssumeRoleWithSAML(params)
 	if err != nil {
@@ -262,6 +290,12 @@ func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
 	}
 
 	return nil
+}
+
+func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
+	cs := kaws.SharedConfig()
+
+	return cs
 }
 
 func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {

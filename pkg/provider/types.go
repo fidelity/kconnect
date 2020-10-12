@@ -38,10 +38,16 @@ type ClusterProvider interface {
 	Get(ctx *Context, clusterID string, identity Identity) (*Cluster, error)
 
 	// GetClusterConfig will get the kubeconfig for a cluster
-	GetClusterConfig(ctx *Context, cluster *Cluster) (*api.Config, string, error)
+	GetClusterConfig(ctx *Context, cluster *Cluster, namespace string) (*api.Config, string, error)
 
 	// ConfigurationResolver returns the resolver used to interactively resolve configuration
 	ConfigurationResolver() ConfigResolver
+
+	// ConfigurationItems will return the configuration items for the plugin
+	ConfigurationItems() config.ConfigurationSet
+
+	// UsageExample will provide an example of the usage of this provider
+	UsageExample() string
 }
 
 // ConfigResolver is used to resolve the values for config items interactively.
@@ -65,6 +71,13 @@ type IdentityProvider interface {
 	// Authenticate will authenticate a user and return details of
 	// their identity.
 	Authenticate(ctx *Context, clusterProvider string) (Identity, error)
+
+	// ConfigurationItems will return the configuration items for the intentity plugin based
+	// of the cluster provider that its being used in conjunction with
+	ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error)
+
+	// Usage returns a string to display for help
+	Usage(clusterProvider string) (string, error)
 }
 
 // IdentityStore represents an way to store and retrieve credentials
@@ -100,10 +113,4 @@ type Identity interface {
 type Plugin interface {
 	// Name returns the name of the plugin
 	Name() string
-
-	// ConfigurationItems will return the configuration items for the plugin
-	ConfigurationItems() config.ConfigurationSet
-
-	// Usage returns a string to display for help
-	Usage() string
 }

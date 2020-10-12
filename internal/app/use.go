@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/clientcmd"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -43,10 +45,12 @@ type UseParams struct {
 	Identity         provider.Identity
 
 	Context *provider.Context
+
+	Namespace string `json:"namespace,omitempty"`
 }
 
 func (a *App) Use(params *UseParams) error {
-	a.logger.Debug("use command")
+	zap.S().Debug("use command")
 	clusterProvider := params.Provider
 
 	var cluster *provider.Cluster
@@ -72,7 +76,7 @@ func (a *App) Use(params *UseParams) error {
 		return nil
 	}
 
-	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster)
+	kubeConfig, contextName, err := clusterProvider.GetClusterConfig(params.Context, cluster, params.Namespace)
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
 	}
@@ -100,6 +104,12 @@ func (a *App) Use(params *UseParams) error {
 		kubeConfig.Contexts[contextName].Extensions["kconnect"] = historyRef
 	}
 
+	if params.Kubeconfig == "" {
+		zap.S().Debug("no kubeconfig supplied, setting default")
+		pathOptions := clientcmd.NewDefaultPathOptions()
+		params.Kubeconfig = pathOptions.GetDefaultFilename()
+	}
+
 	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig, params.SetCurrent); err != nil {
 		return fmt.Errorf("writing cluster kubeconfig: %w", err)
 	}
@@ -108,7 +118,7 @@ func (a *App) Use(params *UseParams) error {
 }
 
 func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
-	a.logger.Infof("discovering clusters using %s provider", params.Provider.Name())
+	zap.S().Infow("discovering clusters", "provider", params.Provider.Name())
 
 	clusterProvider := params.Provider
 	discoverOutput, err := clusterProvider.Discover(params.Context, params.Identity)
@@ -117,7 +127,7 @@ func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
 	}
 
 	if discoverOutput.Clusters == nil || len(discoverOutput.Clusters) == 0 {
-		a.logger.Info("no clusters discovered")
+		zap.S().Warn("no clusters discovered")
 		return nil, nil
 	}
 
@@ -130,7 +140,7 @@ func (a *App) discoverCluster(params *UseParams) (*provider.Cluster, error) {
 }
 
 func (a *App) getCluster(params *UseParams) (*provider.Cluster, error) {
-	a.logger.Infof("getting cluster %s using %s provider", *params.ClusterID, params.Provider.Name())
+	zap.S().Infow("getting cluster details", "id", *params.ClusterID, "provider", params.Provider.Name())
 
 	clusterProvider := params.Provider
 	cluster, err := clusterProvider.Get(params.Context, *params.ClusterID, params.Identity)
@@ -165,8 +175,8 @@ func (a *App) filterConfig(params *UseParams) map[string]string {
 			boolVal := configItem.Value.(bool)
 			val = strconv.FormatBool(boolVal)
 		case config.ItemTypeInt:
-			intVal := configItem.Value.(int64)
-			val = strconv.FormatInt(intVal, 10)
+			intVal := configItem.Value.(int)
+			val = strconv.Itoa(intVal)
 		}
 
 		filteredConfig[configItem.Name] = val

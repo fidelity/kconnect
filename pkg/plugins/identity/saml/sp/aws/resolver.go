@@ -19,6 +19,7 @@ package aws
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	survey "github.com/AlecAivazis/survey/v2"
@@ -77,10 +78,10 @@ func (p *ServiceProvider) resolveProfile(name string, cfg config.ConfigurationSe
 	profileName := fmt.Sprintf("%s%s", profilePrefix, now.Format("20060102150405"))
 
 	if err := cfg.SetValue(name, profileName); err != nil {
-		p.logger.Errorf("failed setting profile config to %s: %s", profileName, err.Error())
+		p.logger.Errorw("failed setting profile config", "profile", profileName, "error", err.Error())
 		return fmt.Errorf("setting profile config: %w", err)
 	}
-	p.logger.Debugf("created AWS profile name: %s", profileName)
+	p.logger.Debugw("created AWS profile name", "profile", profileName)
 
 	return nil
 }
@@ -109,7 +110,7 @@ func (p *ServiceProvider) resolvePartition(name string, cfg config.Configuration
 	}
 
 	if err := cfg.SetValue(name, partitionID); err != nil {
-		p.logger.Errorf("failed setting partition config to %s: %s", partitionID, err.Error())
+		p.logger.Errorw("failed setting partition config", "partition", partitionID, "error", err.Error())
 		return fmt.Errorf("setting partition config: %w", err)
 	}
 
@@ -141,15 +142,23 @@ func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet
 		return fmt.Errorf("finding partition with id %s: %w", partitionID, ErrPartitionNotFound)
 	}
 
+	regionFilter := ""
+	regionFilterCfg := cfg.Get("region-filter")
+	if regionFilterCfg != nil {
+		regionFilter = regionFilterCfg.Value.(string)
+	}
+
 	options := []string{}
 	for _, region := range partition.Regions() {
-		options = append(options, region.ID())
+		if regionFilter == "" || strings.Contains(region.ID(), regionFilter) {
+			options = append(options, region.ID())
+		}
 	}
 	sort.Slice(options, func(i, j int) bool { return options[i] < options[j] })
 
 	region := ""
 	prompt := &survey.Select{
-		Message: "Select a AWS region",
+		Message: "Select an AWS region",
 		Options: options,
 	}
 	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
@@ -157,7 +166,7 @@ func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet
 	}
 
 	if err := cfg.SetValue(name, region); err != nil {
-		p.logger.Errorf("failed setting region config to %s: %s", region, err.Error())
+		p.logger.Errorw("failed setting region config", "region", region, "error", err.Error())
 		return fmt.Errorf("setting region config: %w", err)
 	}
 
@@ -178,7 +187,7 @@ func (p *ServiceProvider) resolveUsername(name string, cfg config.ConfigurationS
 	}
 
 	if err := cfg.SetValue(name, username); err != nil {
-		p.logger.Errorf("failed setting username config to %s: %s", username, err.Error())
+		p.logger.Errorw("failed setting username config", "username", username, "error", err.Error())
 		return fmt.Errorf("setting username config: %w", err)
 	}
 
@@ -199,7 +208,7 @@ func (p *ServiceProvider) resolvePassword(name string, cfg config.ConfigurationS
 	}
 
 	if err := cfg.SetValue(name, password); err != nil {
-		p.logger.Errorf("failed setting password config to %s: %s", password, err.Error())
+		p.logger.Errorw("failed setting password config", "error", err.Error())
 		return fmt.Errorf("setting password config: %w", err)
 	}
 
@@ -220,7 +229,7 @@ func (p *ServiceProvider) resolveIdpEndpoint(name string, cfg config.Configurati
 	}
 
 	if err := cfg.SetValue(name, endpoint); err != nil {
-		p.logger.Errorf("failed setting idp-endpoint config to %s: %s", endpoint, err.Error())
+		p.logger.Errorw("failed setting idp-endpoint config", "endpoint", endpoint, "error", err.Error())
 		return fmt.Errorf("setting idp-endpoint config: %w", err)
 	}
 
@@ -244,7 +253,7 @@ func (p *ServiceProvider) resolveIdpProvider(name string, cfg config.Configurati
 	}
 
 	if err := cfg.SetValue(name, idpProvider); err != nil {
-		p.logger.Errorf("failed setting idp-provider config to %s: %s", idpProvider, err.Error())
+		p.logger.Errorw("failed setting idp-provider config", "idp-provider", idpProvider, "error", err.Error())
 		return fmt.Errorf("setting idp-provider config: %w", err)
 	}
 

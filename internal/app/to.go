@@ -21,6 +21,8 @@ import (
 	"regexp"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -39,7 +41,7 @@ type ConnectToParams struct {
 }
 
 func (a *App) ConnectTo(params *ConnectToParams) error {
-	a.logger.Debug("running connectto")
+	zap.S().Debug("running connectto")
 
 	entry, err := a.getHistoryEntry(params.AliasOrIDORPosition)
 	if err != nil {
@@ -69,7 +71,6 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 
 	ctx := provider.NewContext(
 		provider.WithConfig(cs),
-		provider.WithLogger(a.logger),
 	)
 
 	useParams := &UseParams{
@@ -138,7 +139,13 @@ func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.Histo
 
 func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
-	if err := cs.AddSet(idProvider.ConfigurationItems()); err != nil {
+
+	idCfg, err := idProvider.ConfigurationItems(clusterProvider.Name())
+	if err != nil {
+		return nil, fmt.Errorf("getting identity provider config: %w", err)
+	}
+
+	if err := cs.AddSet(idCfg); err != nil {
 		return nil, fmt.Errorf("adding identity provider config items: %w", err)
 	}
 	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
@@ -160,7 +167,7 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 	for k, v := range historyEntry.Spec.Flags {
 		configItem := cs.Get(k)
 		if configItem == nil {
-			a.logger.Debugf("no config item called %s found", k)
+			zap.S().Debugw("no config item found", "name", k)
 			continue
 		}
 

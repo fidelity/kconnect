@@ -17,7 +17,7 @@ limitations under the License.
 package identity
 
 import (
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -26,7 +26,7 @@ import (
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("empty", newEmptyProvider()); err != nil {
 		// TODO: handle fatal error
-		log.Fatalf("Failed to register Empty identity provider plugin: %v", err)
+		zap.S().Fatalw("failed to register Empty identity provider plugin", "error", err)
 	}
 }
 
@@ -48,8 +48,8 @@ func (p *emptyIdentityProvider) Name() string {
 }
 
 // Flags will return the flags for this plugin
-func (p *emptyIdentityProvider) ConfigurationItems() config.ConfigurationSet {
-	return nil
+func (p *emptyIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
+	return nil, nil
 }
 
 // Authenticate will authenticate a user and returns their identity
@@ -58,6 +58,6 @@ func (p *emptyIdentityProvider) Authenticate(ctx *provider.Context, clusterProvi
 }
 
 // Usage returns a description for use in the help/usage
-func (p *emptyIdentityProvider) Usage() string {
-	return "an identity provider that does nothing"
+func (p *emptyIdentityProvider) Usage(clusterProvider string) (string, error) {
+	return "", nil
 }

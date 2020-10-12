@@ -60,14 +60,20 @@ make test
 make lint
 ```
 
-7. Build and manually test kconnect locally:
+7. Use `git submodule` for saml2aws third party dependency
+
+```bash
+git submodule update --init --recursive
+```
+
+8. Build and manually test kconnect locally:
 
 ```bash
 make build
 ```
 
-8. Commit and push your branch. We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for the commits and PRs. If the PR is a work in progress ensure that you prefix the title with WIP:.
-9. Create a pull request
-10. Check that the PR checks pass
+9. Commit and push your branch. We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for the commits and PRs. If the PR is a work in progress ensure that you prefix the title with WIP:.
+10. Create a pull request
+11. Check that the PR checks pass
 
 Once a PR has been created it will be reviwed by one of the maintainers of kconnect.

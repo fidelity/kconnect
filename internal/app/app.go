@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 
 	"github.com/fidelity/kconnect/internal/defaults"
@@ -31,7 +30,6 @@ import (
 // App represents the kconnect application and contains the
 // implementation of the apps logic
 type App struct {
-	logger          *logrus.Entry
 	historyStore    history.Store
 	configDirectory string
 	selectCluster   SelectClusterFunc
@@ -48,7 +46,6 @@ type SelectClusterFunc func(discoverOutput *provider.DiscoverOutput) (*provider.
 func New(opts ...Option) *App {
 	app := &App{
 		configDirectory: defaults.AppDirectory(),
-		logger:          logrus.StandardLogger().WithField("app", "kconnect"),
 		selectCluster:   DefaultSelectCluster,
 		sensitiveFlags:  make(map[string]*pflag.Flag),
 	}
@@ -58,13 +55,6 @@ func New(opts ...Option) *App {
 	}
 
 	return app
-}
-
-// WithLogger is an option that will set a logger for the app
-func WithLogger(logger *logrus.Entry) Option {
-	return func(a *App) {
-		a.logger = logger
-	}
 }
 
 // WithSelectClusterFn is an option to allow using a custom

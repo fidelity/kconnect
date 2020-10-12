@@ -19,20 +19,39 @@ package configure
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
+)
+
+var (
+	examples = `  # Display the current configuration
+  kconnect configure
+
+  # Display the configuration as json
+  kconnect configure --output json
+
+  # Set the configuration from a local file
+  kconnect configure -f ./defaults.yaml
+
+  # Set the configuration from a remote location via HTTP
+  kconnect configure -f https://mycompany.com/config.yaml
+
+  # Set the congigiration from stdin
+  cat ./config.yaml | kconnect configure -f -
+`
 )
 
 func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	cfgCmd := &cobra.Command{
-		Use:   "configure",
-		Short: "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
+		Use:     "configure",
+		Short:   "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
+		Example: examples,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
@@ -44,18 +63,15 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger := logrus.New().WithField("command", "configure")
-
 			params := &app.ConfigureInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 
-			a := app.New(app.WithLogger(logger))
+			a := app.New()
 
 			ctx := provider.NewContext(
-				provider.WithLogger(logger),
 				provider.WithConfig(cfg),
 			)
 
