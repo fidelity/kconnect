@@ -9,7 +9,6 @@ require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.35.2
 	github.com/beevik/etree v1.1.0
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
@@ -25,7 +24,6 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/afero v1.3.0 // indirect
@@ -39,9 +37,7 @@ require (
 	github.com/versent/saml2aws v1.8.5-0.20200622110128-d94772688a70
 	github.com/worr/saml2aws v2.15.0+incompatible
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899 // indirect
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666 // indirect
-	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.19.1
