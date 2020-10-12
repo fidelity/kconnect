@@ -262,6 +262,7 @@ func Test_GetLastModified(t *testing.T) {
 	testCases := []struct {
 		name              string
 		input             *historyv1alpha.HistoryEntryList
+		lastModifiedN	  int
 		expectedEntryName string
 		errorExpected     bool
 	}{
@@ -279,6 +280,7 @@ func Test_GetLastModified(t *testing.T) {
 					},
 				},
 			},
+			lastModifiedN: 0,
 			expectedEntryName: "test1",
 			errorExpected: false,
 		},
@@ -287,6 +289,7 @@ func Test_GetLastModified(t *testing.T) {
 			input: &historyv1alpha.HistoryEntryList{
 				Items: []historyv1alpha.HistoryEntry {},
 			},
+			lastModifiedN: 0,
 			expectedEntryName: "",
 			errorExpected: true,
 		},
@@ -299,7 +302,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test1",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUpdated: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 					historyv1alpha.HistoryEntry{
@@ -307,7 +310,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test2",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2020, 3, 1, 1, 1, 1, 1, time.UTC),
+							LastUpdated: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 					historyv1alpha.HistoryEntry{
@@ -315,13 +318,48 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test3",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2020, 2, 1, 1, 1, 1, 1, time.UTC),
+							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 				},
 			},
-			expectedEntryName: "test2",
+			lastModifiedN: 1,
+			expectedEntryName: "test1",
 			errorExpected: false,
+		},
+		{
+			name:  "Out of range",
+			input: &historyv1alpha.HistoryEntryList{
+				Items: []historyv1alpha.HistoryEntry {
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test1",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test2",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test3",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+				},
+			},
+			lastModifiedN: 3,
+			expectedEntryName: "",
+			errorExpected: true,
 		},
 	}
 
@@ -333,7 +371,7 @@ func Test_GetLastModified(t *testing.T) {
 			if err != nil {
 
 			}
-			actualLastModified, err := mockLoader.GetLastModified()
+			actualLastModified, err := mockLoader.GetLastModified(tc.lastModifiedN)
 			if tc.errorExpected && err == nil {
 				t.Fatal("expected error on getting last modified item but not no error")
 			}

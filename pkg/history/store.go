@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"sort"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/history/loader"
@@ -149,7 +150,8 @@ func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, erro
 	return entries[0], nil
 }
 
-func (s *storeImpl) GetLastModified() (*historyv1alpha.HistoryEntry, error) {
+// GetLastModified returns nth last modified item, where 0 is the most recent
+func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error) {
 
 	historyList, err := s.loader.Load()
 	if err != nil {
@@ -159,15 +161,23 @@ func (s *storeImpl) GetLastModified() (*historyv1alpha.HistoryEntry, error) {
 	if len(historyList.Items) == 0 {
 		return nil, ErrNoEntries
 	}
+	if len(historyList.Items) <= n {
+		return nil, ErrEntryNotFound
+	} 
 
-	var lastModifiedEntry historyv1alpha.HistoryEntry
-	for _, entry := range historyList.Items {
-		if lastModifiedEntry.GetName() == "" {
-			lastModifiedEntry = entry
-		} else if entry.Status.LastUpdated.Time.After(lastModifiedEntry.Status.LastUpdated.Time) {
-			lastModifiedEntry = entry
-		}
-	}
+	//sort by timestamp
+	sort.Slice(historyList.Items, func(i, j int) bool {
+		return historyList.Items[i].Status.LastUpdated.Before(&historyList.Items[j].Status.LastUpdated)
+	})
+
+	lastModifiedEntry := historyList.Items[n]
+	// for _, entry := range historyList.Items {
+	// 	if lastModifiedEntry.GetName() == "" {
+	// 		lastModifiedEntry = entry
+	// 	} else if entry.Status.LastUpdated.Time.After(lastModifiedEntry.Status.LastUpdated.Time) {
+	// 		lastModifiedEntry = entry
+	// 	}
+	// }
 	return &lastModifiedEntry, nil
 }
 
