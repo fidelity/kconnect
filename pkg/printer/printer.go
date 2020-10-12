@@ -17,11 +17,15 @@ limitations under the License.
 package printer
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 
+	"gopkg.in/yaml.v2"
+
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	cliprint "k8s.io/cli-runtime/pkg/printers"
 
@@ -41,7 +45,7 @@ var (
 )
 
 type ObjectPrinter interface {
-	Print(object runtime.Object, writer io.Writer) error
+	Print(in interface{}, writer io.Writer) error
 }
 
 func New(outputPrinter OutputPrinter) (ObjectPrinter, error) {
@@ -60,23 +64,48 @@ func New(outputPrinter OutputPrinter) (ObjectPrinter, error) {
 type jsonObjectPrinter struct {
 }
 
-func (p *jsonObjectPrinter) Print(object runtime.Object, writer io.Writer) error {
-	jsonprinter := &cliprint.JSONPrinter{}
-	return printObject(jsonprinter, object, writer)
+func (p *jsonObjectPrinter) Print(in interface{}, writer io.Writer) error {
+	inObj, ok := in.(runtime.Object)
+	if ok {
+		jsonprinter := &cliprint.JSONPrinter{}
+		return printObject(jsonprinter, inObj, writer)
+	}
+
+	data, err := json.Marshal(in)
+	if err != nil {
+		return fmt.Errorf("marshing object as json: %w", err)
+	}
+	_, err = writer.Write(data)
+	return err
 }
 
 type yamlObjectPrinter struct {
 }
 
-func (p *yamlObjectPrinter) Print(object runtime.Object, writer io.Writer) error {
-	yamlPrinter := &cliprint.YAMLPrinter{}
-	return printObject(yamlPrinter, object, writer)
+func (p *yamlObjectPrinter) Print(in interface{}, writer io.Writer) error {
+	inObj, ok := in.(runtime.Object)
+	if ok {
+		yamlPrinter := &cliprint.YAMLPrinter{}
+		return printObject(yamlPrinter, inObj, writer)
+	}
+
+	data, err := yaml.Marshal(in)
+	if err != nil {
+		return fmt.Errorf("marshing object as yaml: %w", err)
+	}
+	_, err = writer.Write(data)
+	return err
 }
 
 type tableObjectPrinter struct {
 }
 
-func (p *tableObjectPrinter) Print(object runtime.Object, writer io.Writer) error {
+func (p *tableObjectPrinter) Print(in interface{}, writer io.Writer) error {
+	inObj, ok := in.(*metav1.Table)
+	if !ok {
+		return fmt.Errorf("table printer can only be used with a table")
+	}
+
 	options := cliprint.PrintOptions{}
 	tablePrinter := cliprint.NewTablePrinter(options)
 	scheme, _, _ := historyv1alpha.NewSchemeAndCodecs()
@@ -85,7 +114,7 @@ func (p *tableObjectPrinter) Print(object runtime.Object, writer io.Writer) erro
 		return err
 	}
 
-	return printer.PrintObj(object, writer)
+	return printer.PrintObj(inObj, writer)
 }
 
 func printObject(resPrinter cliprint.ResourcePrinter, object runtime.Object, writer io.Writer) error {
@@ -110,4 +139,29 @@ func printObject(resPrinter cliprint.ResourcePrinter, object runtime.Object, wri
 	}
 
 	return nil
+}
+
+// ConvertSliceToTable will convert a string slice to a table
+func ConvertSliceToTable(columnName string, items []string) *metav1.Table {
+	table := &metav1.Table{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: metav1.SchemeGroupVersion.String(),
+			Kind:       "Table",
+		},
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{
+				Name: columnName,
+				Type: "string",
+			},
+		},
+	}
+
+	for _, item := range items {
+		row := metav1.TableRow{
+			Cells: []interface{}{item},
+		}
+		table.Rows = append(table.Rows, row)
+	}
+
+	return table
 }

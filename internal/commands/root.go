@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/internal/commands/alias"
 	"github.com/fidelity/kconnect/internal/commands/configure"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/renew"
@@ -102,6 +103,12 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating renew command: %w", err)
 	}
 	rootCmd.AddCommand(renewCmd)
+
+	aliasCmd, err := alias.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating alias command: %w", err)
+	}
+	rootCmd.AddCommand(aliasCmd)
 
 	cobra.OnInitialize(initConfig)
 
