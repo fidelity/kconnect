@@ -19,8 +19,9 @@ package app
 import "errors"
 
 var (
-	ErrUnknownConfigItemType  = errors.New("unknown item type")
-	ErrClusterNotFound        = errors.New("cluster not found")
-	ErrAliasAlreadyUsed       = errors.New("alias already in use")
-	ErrSourceLocationRequired = errors.New("source location is required for importing")
+	ErrUnknownConfigItemType   = errors.New("unknown item type")
+	ErrClusterNotFound         = errors.New("cluster not found")
+	ErrAliasAlreadyUsed        = errors.New("alias already in use")
+	ErrSourceLocationRequired  = errors.New("source location is required for importing")
+	ErrHistoryLocationRequired = errors.New("history location is required")
 )
