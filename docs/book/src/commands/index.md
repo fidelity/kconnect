@@ -21,6 +21,7 @@ kconnect [flags]
 
 ### SEE ALSO
 
+* [kconnect alias](alias.md)	 - Query and manipulate aliases for your connection history.
 * [kconnect configure](configure.md)	 - Set and view your default kconnect configuration. If no flags are supplied your config is displayed.
 * [kconnect ls](ls.md)	 - Query your connection history
 * [kconnect renew](renew.md)	 - Reconnect to last cluster
