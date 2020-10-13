@@ -42,6 +42,7 @@ var (
 	SupportedPrinters = []OutputPrinter{OutputPrinterYAML, OutputPrinterJSON, OutputPrinterTable}
 
 	ErrUnknownPrinterOutput = errors.New("unknown printer output type. Supported types are yaml, json, table")
+	ErrTableRequired        = errors.New("table printer can only be used with a metav1.Table")
 )
 
 type ObjectPrinter interface {
@@ -103,7 +104,7 @@ type tableObjectPrinter struct {
 func (p *tableObjectPrinter) Print(in interface{}, writer io.Writer) error {
 	inObj, ok := in.(*metav1.Table)
 	if !ok {
-		return fmt.Errorf("table printer can only be used with a table")
+		return ErrTableRequired
 	}
 
 	options := cliprint.PrintOptions{}

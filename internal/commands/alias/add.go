@@ -31,21 +31,18 @@ import (
 )
 
 var (
-	examplesLs = `  # Display all the aliases as a table
-  kconnect alias ls
-
-  # Display all the aliases as json
-  kconnect alias ls --output json
+	examplesAdd = `  # Add an alias for a entry
+  kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
 `
 )
 
-func lsCommand() (*cobra.Command, error) { //nolint: dupl
+func addCommand() (*cobra.Command, error) { //nolint: dupl
 	cfg := config.NewConfigurationSet()
 
 	lsCmd := &cobra.Command{
-		Use:     "ls",
-		Short:   "List all the aliases currently defined",
-		Example: examplesLs,
+		Use:     "add",
+		Short:   "Add an alias to a history entry",
+		Example: examplesAdd,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
@@ -57,8 +54,8 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Debug("running `alias ls` command")
-			params := &app.AliasListInput{}
+			zap.S().Debug("running `alias add` command")
+			params := &app.AliasAddInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
@@ -79,12 +76,12 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 				provider.WithConfig(cfg),
 			)
 
-			return a.AliasList(ctx, params)
+			return a.AliasAdd(ctx, params)
 		},
 	}
 
-	if err := addConfigLs(cfg); err != nil {
-		return nil, fmt.Errorf("add ls command config: %w", err)
+	if err := addConfigAdd(cfg); err != nil {
+		return nil, fmt.Errorf("adding add command config: %w", err)
 	}
 
 	if err := flags.CreateCommandFlags(lsCmd, cfg); err != nil {
@@ -95,15 +92,16 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 
 }
 
-func addConfigLs(cs config.ConfigurationSet) error {
+func addConfigAdd(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
-	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
-		return fmt.Errorf("adding output config item: %w", err)
+	if err := app.AddHistoryLocationItems(cs); err != nil {
+		return fmt.Errorf("adding history location config: %w", err)
 	}
-
-	cs.SetHistoryIgnore("output") //nolint
+	if err := app.AddHistoryIdentifierConfig(cs); err != nil {
+		return fmt.Errorf("adding history identifier config: %w", err)
+	}
 
 	return nil
 }
