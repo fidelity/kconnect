@@ -31,21 +31,24 @@ import (
 )
 
 var (
-	examplesLs = `  # Display all the aliases as a table
-  kconnect alias ls
+	examplesRemove = `  # Remove an alias using the alis name
+  kconnect alias remove --alias dev-bu-1
 
-  # Display all the aliases as json
-  kconnect alias ls --output json
+  # Remove an alias using a histiry entry id
+  kconnect alias remove --id 01EMEM5DB60TMX7D8SS2JCX3MT
+
+  # Remove all aliases
+  kconnect alias remove --all
 `
 )
 
-func lsCommand() (*cobra.Command, error) { //nolint: dupl
+func removeCommand() (*cobra.Command, error) { //nolint: dupl
 	cfg := config.NewConfigurationSet()
 
 	lsCmd := &cobra.Command{
-		Use:     "ls",
-		Short:   "List all the aliases currently defined",
-		Example: examplesLs,
+		Use:     "remove",
+		Short:   "Remove an alias from a history entry. Or remove all aliases.",
+		Example: examplesRemove,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
@@ -57,8 +60,8 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Debug("running `alias ls` command")
-			params := &app.AliasListInput{}
+			zap.S().Debug("running `alias remove` command")
+			params := &app.AliasRemoveInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
@@ -79,12 +82,12 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 				provider.WithConfig(cfg),
 			)
 
-			return a.AliasList(ctx, params)
+			return a.AliasRemove(ctx, params)
 		},
 	}
 
-	if err := addConfigLs(cfg); err != nil {
-		return nil, fmt.Errorf("add ls command config: %w", err)
+	if err := addConfigRemove(cfg); err != nil {
+		return nil, fmt.Errorf("add remove command config: %w", err)
 	}
 
 	if err := flags.CreateCommandFlags(lsCmd, cfg); err != nil {
@@ -95,15 +98,20 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 
 }
 
-func addConfigLs(cs config.ConfigurationSet) error {
+func addConfigRemove(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
-	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
-		return fmt.Errorf("adding output config item: %w", err)
+	if err := app.AddHistoryLocationItems(cs); err != nil {
+		return fmt.Errorf("adding history location config: %w", err)
+	}
+	if err := app.AddHistoryIdentifierConfig(cs); err != nil {
+		return fmt.Errorf("adding history identifier config: %w", err)
 	}
 
-	cs.SetHistoryIgnore("output") //nolint
+	if _, err := cs.Bool("all", false, "Remove all aliases from the histiry entries"); err != nil {
+		return fmt.Errorf("adding all config item: %w", err)
+	}
 
 	return nil
 }

@@ -24,4 +24,7 @@ var (
 	ErrAliasAlreadyUsed        = errors.New("alias already in use")
 	ErrSourceLocationRequired  = errors.New("source location is required for importing")
 	ErrHistoryLocationRequired = errors.New("history location is required")
+	ErrHistoryIDRequired       = errors.New("history id is required")
+	ErrAliasRequired           = errors.New("alias is required")
+	ErrAliasAndIDNotAllowed    = errors.New("alias and id bith specified, only 1 is allowed")
 )

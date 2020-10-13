@@ -34,6 +34,11 @@ type HistoryConfig struct {
 	EntryID   string `json:"entry-id"`
 }
 
+type HistoryIdentifierConfig struct {
+	Alias string `json:"alias,omitempty"`
+	ID    string `json:"id,omitempty"`
+}
+
 func AddHistoryLocationItems(cs config.ConfigurationSet) error {
 	if _, err := cs.String("history-location", "", "Location of where the history is stored. (default \"$HOME/.kconnect/history.yaml\")"); err != nil {
 		return fmt.Errorf("adding history-location config: %w", err)

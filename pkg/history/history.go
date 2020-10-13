@@ -31,4 +31,6 @@ type Store interface {
 	GetByProviderWithID(providerName, providerID string) ([]*historyv1alpha.HistoryEntry, error)
 	GetByAlias(alias string) (*historyv1alpha.HistoryEntry, error)
 	GetLastModified() (*historyv1alpha.HistoryEntry, error)
+
+	Update(entry *historyv1alpha.HistoryEntry) error
 }

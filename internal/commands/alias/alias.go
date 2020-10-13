@@ -27,6 +27,10 @@ import (
 	"github.com/fidelity/kconnect/pkg/flags"
 )
 
+const (
+	maxHistoryEntries = 100
+)
+
 func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
@@ -58,6 +62,18 @@ func Command() (*cobra.Command, error) {
 	}
 	aliasCmd.AddCommand(lsCmd)
 
+	addCmd, err := addCommand()
+	if err != nil {
+		return nil, fmt.Errorf("creating alias add command: %w", err)
+	}
+	aliasCmd.AddCommand(addCmd)
+
+	removeCmd, err := removeCommand()
+	if err != nil {
+		return nil, fmt.Errorf("creating alias remove command: %w", err)
+	}
+	aliasCmd.AddCommand(removeCmd)
+
 	return aliasCmd, nil
 
 }
@@ -66,7 +82,7 @@ func addConfigRoot(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
-	if err := app.AddHistoryConfigItems(cs); err != nil {
+	if err := app.AddHistoryLocationItems(cs); err != nil {
 		return fmt.Errorf("adding history config items: %w", err)
 	}
 
