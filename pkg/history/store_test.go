@@ -275,7 +275,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test1",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 				},
@@ -302,7 +302,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test1",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 					historyv1alpha.HistoryEntry{
@@ -310,7 +310,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test2",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 					historyv1alpha.HistoryEntry{
@@ -318,7 +318,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test3",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 				},
@@ -336,7 +336,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test1",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 					historyv1alpha.HistoryEntry{
@@ -344,7 +344,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test2",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 					historyv1alpha.HistoryEntry{
@@ -352,7 +352,7 @@ func Test_GetLastModified(t *testing.T) {
 							Name: "test3",
 						},
 						Status: historyv1alpha.HistoryEntryStatus{
-							LastUpdated: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+							LastUsed: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
 						},
 					},
 				},
@@ -393,7 +393,7 @@ func createEntry(id string) *historyv1alpha.HistoryEntry {
 	entry.ObjectMeta.CreationTimestamp = v1.Time{
 		Time: created,
 	}
-	entry.Status.LastUpdated = v1.Time{
+	entry.Status.LastUsed = v1.Time{
 		Time: created,
 	}
 	entry.Spec = historyv1alpha.HistoryEntrySpec{

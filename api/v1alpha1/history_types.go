@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"time"
@@ -42,8 +43,10 @@ type HistoryEntrySpec struct {
 }
 
 type HistoryEntryStatus struct {
-	// LastUpdated is the date/time that the entry was last updated
-	LastUpdated metav1.Time `json:"lastUpdated"`
+	// LastModified is the date/time that the entry was last modified
+	LastModified metav1.Time `json:"lastModified"`
+	// LastUsed is the date/time that the entry was last updated
+	LastUsed metav1.Time `json:"lastUsed"`
 }
 
 // +kubebuilder:object:root=true
@@ -106,7 +109,8 @@ func NewHistoryEntry() *HistoryEntry {
 		},
 		Spec: HistoryEntrySpec{},
 		Status: HistoryEntryStatus{
-			LastUpdated: created,
+			LastModified: created,
+			LastUsed: created,
 		},
 	}
 
@@ -124,6 +128,9 @@ func NewHistoryReference(entryID string) *HistoryReference {
 }
 
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
+
+	fmt.Printf("h: %+v\n", h.Spec)
+	fmt.Printf("h2: %+v\n", other.Spec)
 	if h == nil || other == nil {
 		return h == other
 	}
@@ -135,6 +142,56 @@ func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 	// TODO: we could do explicit comparison of the fields
 
 	return reflect.DeepEqual(h.Spec, other.Spec)
+}
+
+func (h *HistoryEntry) Equals2(other *HistoryEntry) bool {
+
+	if h == nil || other == nil {
+		return h == other
+	}
+
+	if h == other {
+		return true
+	}
+
+	// TODO: we could do explicit comparison of the fields
+
+	//return reflect.DeepEqual(h.Spec, other.Spec)
+
+	equals := h.Spec.Provider == other.Spec.Provider &&
+		      h.Spec.Identity == other.Spec.Identity &&
+		      h.Spec.ProviderID == other.Spec.ProviderID &&
+		      h.Spec.ConfigFile == other.Spec.ConfigFile &&
+			  *h.Spec.Alias == *other.Spec.Alias
+			  
+	// equals2 :=  reflect.DeepEqual(h.Spec.Flags, other.Spec.Flags)
+	// equals3 := true
+	equals2 := true
+	for k, v := range h.Spec.Flags {
+		v2 := other.Spec.Flags[k]
+		if v != "" || v2 != "" {
+			if v != v2 {
+				fmt.Printf("k %s, v%s", k ,v )
+				equals2 = false
+				break
+			}
+		}
+	}
+
+	equals3 := true
+	for k, v := range other.Spec.Flags {
+		v2 := h.Spec.Flags[k]
+		if v != "" || v2 != "" {
+			if v != v2 {
+				fmt.Printf("k %s, v%s", k ,v )
+				equals2 = false
+				break
+			}
+		}
+	}
+
+	fmt.Printf("%t %t %t", equals, equals2, equals3)
+	return equals && equals2 && equals3
 }
 
 func (l *HistoryEntryList) ToTable() *metav1.Table {

@@ -72,7 +72,7 @@ You can also supply - or LAST to connect to last cluster in history (current clu
 			zap.S().Info("running `to` command")
 
 			params := &app.ConnectToParams{
-				Context:             provider.NewContext(provider.WithConfig(cfg), provider.WithLogger(logger)),
+				Context:             provider.NewContext(provider.WithConfig(cfg)),
 				AliasOrIDORPosition: args[0],
 			}
 
@@ -84,6 +84,8 @@ You can also supply - or LAST to connect to last cluster in history (current clu
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
+			// using to command should never increase number of history items, so set to arbitrary large number
+			params.MaxItems = 10000
 			store, err := history.NewStore(params.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)

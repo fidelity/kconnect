@@ -83,7 +83,7 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 		return fmt.Errorf("unmarshalling config into use params: %w", err)
 	}
 
-	useParams.NoHistory = true
+	//useParams.NoHistory = true
 	useParams.EntryID = historyID
 	useParams.ClusterID = &entry.Spec.ProviderID
 	useParams.SetCurrent = params.SetCurrent

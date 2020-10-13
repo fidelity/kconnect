@@ -67,7 +67,6 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 	if len(historyList.Items) > s.maxHistory {
 		s.trimHistory(historyList)
 	}
-
 	return s.loader.Save(historyList)
 }
 
@@ -167,7 +166,7 @@ func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error)
 
 	//sort by timestamp
 	sort.Slice(historyList.Items, func(i, j int) bool {
-		return historyList.Items[i].Status.LastUpdated.Before(&historyList.Items[j].Status.LastUpdated)
+		return !historyList.Items[i].Status.LastUsed.Before(&historyList.Items[j].Status.LastUsed)
 	})
 
 	lastModifiedEntry := historyList.Items[n]
@@ -222,18 +221,17 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 
 func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (string, bool) {
 	for _, existingEntry := range historyList.Items {
-		if existingEntry.Equals(entry) {
+		if existingEntry.Equals2(entry) {
 			return existingEntry.ObjectMeta.Name, true
 		}
 	}
-
 	return "", false
 }
 
 func (s *storeImpl) updateLastUsed(historyList *historyv1alpha.HistoryEntryList, id string) {
 	for i := range historyList.Items {
 		if historyList.Items[i].ObjectMeta.Name == id {
-			historyList.Items[i].Status.LastUpdated = v1.Now()
+			historyList.Items[i].Status.LastUsed = v1.Now()
 			historyList.Items[i].ObjectMeta.Generation++
 			return
 		}
