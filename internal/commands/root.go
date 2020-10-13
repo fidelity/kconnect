@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/internal/commands/alias"
 	"github.com/fidelity/kconnect/internal/commands/configure"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
@@ -109,6 +110,12 @@ func RootCmd() (*cobra.Command, error) {
 	if err := config.Unmarshall(cfg, params); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
 	}
+
+	aliasCmd, err := alias.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating alias command: %w", err)
+	}
+	rootCmd.AddCommand(aliasCmd)
 
 	cobra.OnInitialize(initConfig)
 

@@ -180,6 +180,34 @@ func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error)
 	return &lastModifiedEntry, nil
 }
 
+func (s *storeImpl) Update(entry *historyv1alpha.HistoryEntry) error {
+	list, err := s.loader.Load()
+	if err != nil {
+		return fmt.Errorf("reading history file: %w", err)
+	}
+
+	if len(list.Items) == 0 {
+		return ErrNoEntries
+	}
+
+	foundIndex := -1
+	for i := range list.Items {
+		existing := list.Items[i]
+		if existing.ObjectMeta.Name == entry.ObjectMeta.Name {
+			foundIndex = i
+			break
+		}
+	}
+
+	if foundIndex == -1 {
+		return ErrEntryNotFound
+	}
+
+	list.Items[foundIndex] = *entry
+
+	return s.loader.Save(list)
+}
+
 func (s *storeImpl) trimHistory(historyList *historyv1alpha.HistoryEntryList) {
 	diff := len(historyList.Items) - s.maxHistory
 	if diff < 1 {
