@@ -106,7 +106,7 @@ func (a *App) AliasAdd(ctx *provider.Context, input *AliasAddInput) error {
 		return history.ErrEntryNotFound
 	}
 	entry.Spec.Alias = &input.Alias
-	entry.Status.LastUpdated = v1.Now()
+	entry.Status.LastModified = v1.Now()
 
 	zap.S().Debug("updating history entry with new alias")
 	if err := a.historyStore.Update(entry); err != nil {
@@ -151,7 +151,7 @@ func (a *App) AliasRemove(ctx *provider.Context, input *AliasRemoveInput) error 
 		updatedEntry := found[i].DeepCopy()
 
 		*updatedEntry.Spec.Alias = ""
-		updatedEntry.Status.LastUpdated = v1.Now()
+		updatedEntry.Status.LastModified = v1.Now()
 
 		zap.S().Debugw("updating history entry to remove alias", "id", updatedEntry.ObjectMeta.Name, "oldalias", oldalias)
 		if err := a.historyStore.Update(updatedEntry); err != nil {

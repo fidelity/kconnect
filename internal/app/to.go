@@ -47,6 +47,9 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
+	if entry == nil {
+		return ErrNoHistoryFound
+	}
 	historyID := entry.ObjectMeta.Name
 
 	idProvider, err := provider.GetIdentityProvider(entry.Spec.Identity)
@@ -87,6 +90,8 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	useParams.EntryID = historyID
 	useParams.ClusterID = &entry.Spec.ProviderID
 	useParams.SetCurrent = params.SetCurrent
+	useParams.IgnoreAlias = true
+	useParams.Alias = entry.Spec.Alias
 
 	identity, err := useParams.IdentityProvider.Authenticate(useParams.Context, useParams.Provider.Name())
 	if err != nil {
@@ -99,7 +104,6 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 
 func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.HistoryEntry, error) {
 
-	fmt.Println(("HELLO WORLD"))
 	lastPositionRegex := regexp.MustCompile("LAST~[0-9]+")
 	getPositionRegex := regexp.MustCompile("[0-9]+")
 	if idOrAliasORPosition == "-" || idOrAliasORPosition == "LAST" {

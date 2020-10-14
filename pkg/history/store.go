@@ -19,7 +19,6 @@ package history
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"sort"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
@@ -221,7 +220,7 @@ func (s *storeImpl) removeEntryFromHistory(historyList *historyv1alpha.HistoryEn
 	for i := range historyList.Items {
 		entry := historyList.Items[i]
 
-		if reflect.DeepEqual(entry, *entryToRemove) {
+		if entry.Name == entryToRemove.Name {
 			historyList.Items = append(historyList.Items[:i], historyList.Items[i+1:]...)
 			return nil
 		}
@@ -249,7 +248,7 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 
 func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (string, bool) {
 	for _, existingEntry := range historyList.Items {
-		if existingEntry.Equals2(entry) {
+		if existingEntry.Equals(entry) {
 			return existingEntry.ObjectMeta.Name, true
 		}
 	}

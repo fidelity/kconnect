@@ -19,7 +19,6 @@ package v1alpha1
 import (
 	"fmt"
 	"math/rand"
-	"reflect"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -127,10 +126,25 @@ func NewHistoryReference(entryID string) *HistoryReference {
 	}
 }
 
+// func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
+
+// 	fmt.Printf("h: %+v\n", h.Spec)
+// 	fmt.Printf("h2: %+v\n", other.Spec)
+// 	if h == nil || other == nil {
+// 		return h == other
+// 	}
+
+// 	if h == other {
+// 		return true
+// 	}
+
+// 	// TODO: we could do explicit comparison of the fields
+
+// 	return reflect.DeepEqual(h.Spec, other.Spec)
+// }
+
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 
-	fmt.Printf("h: %+v\n", h.Spec)
-	fmt.Printf("h2: %+v\n", other.Spec)
 	if h == nil || other == nil {
 		return h == other
 	}
@@ -139,33 +153,11 @@ func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 		return true
 	}
 
-	// TODO: we could do explicit comparison of the fields
-
-	return reflect.DeepEqual(h.Spec, other.Spec)
-}
-
-func (h *HistoryEntry) Equals2(other *HistoryEntry) bool {
-
-	if h == nil || other == nil {
-		return h == other
-	}
-
-	if h == other {
-		return true
-	}
-
-	// TODO: we could do explicit comparison of the fields
-
-	//return reflect.DeepEqual(h.Spec, other.Spec)
-
-	equals := h.Spec.Provider == other.Spec.Provider &&
+	equals1 := h.Spec.Provider == other.Spec.Provider &&
 		      h.Spec.Identity == other.Spec.Identity &&
 		      h.Spec.ProviderID == other.Spec.ProviderID &&
-		      h.Spec.ConfigFile == other.Spec.ConfigFile &&
-			  *h.Spec.Alias == *other.Spec.Alias
-			  
-	// equals2 :=  reflect.DeepEqual(h.Spec.Flags, other.Spec.Flags)
-	// equals3 := true
+			  h.Spec.ConfigFile == other.Spec.ConfigFile 
+			  //&& *h.Spec.Alias == *other.Spec.Alias
 	equals2 := true
 	for k, v := range h.Spec.Flags {
 		v2 := other.Spec.Flags[k]
@@ -177,7 +169,6 @@ func (h *HistoryEntry) Equals2(other *HistoryEntry) bool {
 			}
 		}
 	}
-
 	equals3 := true
 	for k, v := range other.Spec.Flags {
 		v2 := h.Spec.Flags[k]
@@ -189,9 +180,7 @@ func (h *HistoryEntry) Equals2(other *HistoryEntry) bool {
 			}
 		}
 	}
-
-	fmt.Printf("%t %t %t", equals, equals2, equals3)
-	return equals && equals2 && equals3
+	return equals1 && equals2 && equals3
 }
 
 func (l *HistoryEntryList) ToTable() *metav1.Table {

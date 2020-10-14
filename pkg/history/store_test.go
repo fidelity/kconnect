@@ -399,6 +399,8 @@ func createEntry(id string) *historyv1alpha.HistoryEntry {
 	entry.Spec = historyv1alpha.HistoryEntrySpec{
 		ProviderID: id,
 	}
+	emptyString := ""
+	entry.Spec.Alias = &emptyString
 
 	return entry
 }
