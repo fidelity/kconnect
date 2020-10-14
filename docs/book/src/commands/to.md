@@ -6,9 +6,10 @@ Re-connect to a previously connected cluster using your history
 
 use is for re-connecting to a previously connected cluster using your history.
 You can use the history id or alias as the argument.
+You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters
 
 ```
-kconnect to [historyid/alias] [flags]
+kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 ```
 
 ### Examples
@@ -19,6 +20,14 @@ kconnect to [historyid/alias] [flags]
 
   # # Re-connect based on an history id - history id can be found using kconnect ls
   kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Re-connect to current cluster (this is useful for renewing credentials)
+  kconnect to -
+  OR 
+  kconnect to LAST
+
+  # Re-connect to cluster used before current one
+  kconnect to LAST~1
 
   # Re-connect based on an alias supplying a password
   kconnect to uat-bu1 --password supersecret

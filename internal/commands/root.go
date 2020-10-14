@@ -31,7 +31,6 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	"github.com/fidelity/kconnect/internal/commands/configure"
 	"github.com/fidelity/kconnect/internal/commands/ls"
-	"github.com/fidelity/kconnect/internal/commands/renew"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
@@ -98,11 +97,15 @@ func RootCmd() (*cobra.Command, error) {
 	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())
 
-	renewCmd, err := renew.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating renew command: %w", err)
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.ParseFlags(os.Args) //nolint: errcheck
+
+	flags.PopulateConfigFromCommand(rootCmd, cfg)
+	params := &app.CommonConfig{}
+	if err := config.Unmarshall(cfg, params); err != nil {
+		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
 	}
-	rootCmd.AddCommand(renewCmd)
 
 	aliasCmd, err := alias.Command()
 	if err != nil {

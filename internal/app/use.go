@@ -48,6 +48,8 @@ type UseParams struct {
 	Context *provider.Context
 
 	Namespace string `json:"namespace,omitempty"`
+
+	IgnoreAlias bool
 }
 
 func (a *App) Use(params *UseParams) error {
@@ -57,8 +59,10 @@ func (a *App) Use(params *UseParams) error {
 	var cluster *provider.Cluster
 	var err error
 
-	if err := a.resolveAndCheckAlias(params); err != nil {
-		return fmt.Errorf("resolving and checking alias: %w", err)
+	if !params.IgnoreAlias {
+		if err := a.resolveAndCheckAlias(params); err != nil {
+			return fmt.Errorf("resolving and checking alias: %w", err)
+		}
 	}
 
 	if params.ClusterID == nil || *params.ClusterID == "" {

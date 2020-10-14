@@ -18,7 +18,6 @@ package v1alpha1
 
 import (
 	"math/rand"
-	"reflect"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -42,8 +41,10 @@ type HistoryEntrySpec struct {
 }
 
 type HistoryEntryStatus struct {
-	// LastUpdated is the date/time that the entry was last updated
-	LastUpdated metav1.Time `json:"lastUpdated"`
+	// LastModified is the date/time that the entry was last modified
+	LastModified metav1.Time `json:"lastModified"`
+	// LastUsed is the date/time that the entry was last updated
+	LastUsed metav1.Time `json:"lastUsed"`
 }
 
 // +kubebuilder:object:root=true
@@ -106,7 +107,8 @@ func NewHistoryEntry() *HistoryEntry {
 		},
 		Spec: HistoryEntrySpec{},
 		Status: HistoryEntryStatus{
-			LastUpdated: created,
+			LastModified: created,
+			LastUsed:     created,
 		},
 	}
 
@@ -124,17 +126,37 @@ func NewHistoryReference(entryID string) *HistoryReference {
 }
 
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
+
 	if h == nil || other == nil {
 		return h == other
 	}
 
-	if h == other {
-		return true
+	// Compare specific fields
+	equals1 := h.Spec.Provider == other.Spec.Provider &&
+		h.Spec.Identity == other.Spec.Identity &&
+		h.Spec.ProviderID == other.Spec.ProviderID &&
+		h.Spec.ConfigFile == other.Spec.ConfigFile
+	if !equals1 {
+		return false
 	}
-
-	// TODO: we could do explicit comparison of the fields
-
-	return reflect.DeepEqual(h.Spec, other.Spec)
+	// Compare flags are equal. Only compare those with a value that is set (not "")
+	for k, v := range h.Spec.Flags {
+		v2 := other.Spec.Flags[k]
+		if v != "" || v2 != "" {
+			if v != v2 {
+				return false
+			}
+		}
+	}
+	for k, v := range other.Spec.Flags {
+		v2 := h.Spec.Flags[k]
+		if v != "" || v2 != "" {
+			if v != v2 {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (l *HistoryEntryList) ToTable() *metav1.Table {

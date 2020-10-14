@@ -19,7 +19,7 @@ package history
 import (
 	"errors"
 	"fmt"
-	"reflect"
+	"sort"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/history/loader"
@@ -66,7 +66,6 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 	if len(historyList.Items) > s.maxHistory {
 		s.trimHistory(historyList)
 	}
-
 	return s.loader.Save(historyList)
 }
 
@@ -149,7 +148,8 @@ func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, erro
 	return entries[0], nil
 }
 
-func (s *storeImpl) GetLastModified() (*historyv1alpha.HistoryEntry, error) {
+// GetLastModified returns nth last modified item, where 0 is the most recent
+func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error) {
 
 	historyList, err := s.loader.Load()
 	if err != nil {
@@ -159,15 +159,14 @@ func (s *storeImpl) GetLastModified() (*historyv1alpha.HistoryEntry, error) {
 	if len(historyList.Items) == 0 {
 		return nil, ErrNoEntries
 	}
-
-	var lastModifiedEntry historyv1alpha.HistoryEntry
-	for _, entry := range historyList.Items {
-		if lastModifiedEntry.GetName() == "" {
-			lastModifiedEntry = entry
-		} else if entry.Status.LastUpdated.Time.After(lastModifiedEntry.Status.LastUpdated.Time) {
-			lastModifiedEntry = entry
-		}
+	if len(historyList.Items) <= n {
+		return nil, ErrEntryNotFound
 	}
+	//sort by timestamp
+	sort.Slice(historyList.Items, func(i, j int) bool {
+		return !historyList.Items[i].Status.LastUsed.Before(&historyList.Items[j].Status.LastUsed)
+	})
+	lastModifiedEntry := historyList.Items[n]
 	return &lastModifiedEntry, nil
 }
 
@@ -212,7 +211,7 @@ func (s *storeImpl) removeEntryFromHistory(historyList *historyv1alpha.HistoryEn
 	for i := range historyList.Items {
 		entry := historyList.Items[i]
 
-		if reflect.DeepEqual(entry, *entryToRemove) {
+		if entry.Name == entryToRemove.Name {
 			historyList.Items = append(historyList.Items[:i], historyList.Items[i+1:]...)
 			return nil
 		}
@@ -244,14 +243,13 @@ func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, history
 			return existingEntry.ObjectMeta.Name, true
 		}
 	}
-
 	return "", false
 }
 
 func (s *storeImpl) updateLastUsed(historyList *historyv1alpha.HistoryEntryList, id string) {
 	for i := range historyList.Items {
 		if historyList.Items[i].ObjectMeta.Name == id {
-			historyList.Items[i].Status.LastUpdated = v1.Now()
+			historyList.Items[i].Status.LastUsed = v1.Now()
 			historyList.Items[i].ObjectMeta.Generation++
 			return
 		}

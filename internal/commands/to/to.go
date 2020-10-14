@@ -40,6 +40,14 @@ var (
   # # Re-connect based on an history id - history id can be found using kconnect ls
   kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
 
+  # Re-connect to current cluster (this is useful for renewing credentials)
+  kconnect to -
+  OR 
+  kconnect to LAST
+
+  # Re-connect to cluster used before current one
+  kconnect to LAST~1
+
   # Re-connect based on an alias supplying a password
   kconnect to uat-bu1 --password supersecret
 
@@ -52,10 +60,11 @@ func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	toCmd := &cobra.Command{
-		Use:   "to [historyid/alias]",
+		Use:   "to [historyid/alias/-/LAST/LAST~N]",
 		Short: "Re-connect to a previously connected cluster using your history",
 		Long: `use is for re-connecting to a previously connected cluster using your history.
-You can use the history id or alias as the argument.`,
+You can use the history id or alias as the argument.
+You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters`,
 		Example: examples,
 		Args:    cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -72,8 +81,8 @@ You can use the history id or alias as the argument.`,
 			zap.S().Info("running `to` command")
 
 			params := &app.ConnectToParams{
-				Context:   provider.NewContext(provider.WithConfig(cfg)),
-				AliasOrID: args[0],
+				Context:             provider.NewContext(provider.WithConfig(cfg)),
+				AliasOrIDORPosition: args[0],
 			}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
@@ -84,6 +93,8 @@ You can use the history id or alias as the argument.`,
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
+			// using to command should never increase number of history items, so set to arbitrary large number
+			params.MaxItems = 10000
 			store, err := history.NewStore(params.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
