@@ -66,8 +66,8 @@ func Command() (*cobra.Command, error) {
 
 func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command, error) {
 	params := &app.UseParams{
-		Context:  provider.NewContext(),
-		Provider: clusterProvider,
+		Context:     provider.NewContext(),
+		Provider:    clusterProvider,
 		IgnoreAlias: false,
 	}
 

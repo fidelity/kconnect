@@ -33,11 +33,10 @@ type ConnectToParams struct {
 	HistoryConfig
 	KubernetesConfig
 
-	AliasOrIDORPosition  string
-	Password             string `json:"password"`
-	SetCurrent           bool   `json:"set-current,omitempty"`
-          
-	Context *provider.Context
+	AliasOrIDORPosition string
+	Password            string `json:"password"`
+	SetCurrent          bool   `json:"set-current,omitempty"`
+	Context             *provider.Context
 }
 
 func (a *App) ConnectTo(params *ConnectToParams) error {
@@ -86,7 +85,6 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 		return fmt.Errorf("unmarshalling config into use params: %w", err)
 	}
 
-	//useParams.NoHistory = true
 	useParams.EntryID = historyID
 	useParams.ClusterID = &entry.Spec.ProviderID
 	useParams.SetCurrent = params.SetCurrent
@@ -104,8 +102,6 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 
 func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.HistoryEntry, error) {
 
-	lastPositionRegex := regexp.MustCompile("LAST~[0-9]+")
-	getPositionRegex := regexp.MustCompile("[0-9]+")
 	if idOrAliasORPosition == "-" || idOrAliasORPosition == "LAST" {
 		entry, err := a.historyStore.GetLastModified(0)
 		if err != nil {
@@ -113,6 +109,8 @@ func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.Histo
 		}
 		return entry, nil
 	}
+	lastPositionRegex := regexp.MustCompile("LAST~[0-9]+")
+	getPositionRegex := regexp.MustCompile("[0-9]+")
 	if lastPositionRegex.MatchString(idOrAliasORPosition) {
 		n, err := strconv.Atoi(getPositionRegex.FindString(idOrAliasORPosition))
 		if err != nil {

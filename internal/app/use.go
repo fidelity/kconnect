@@ -65,7 +65,6 @@ func (a *App) Use(params *UseParams) error {
 		}
 	}
 
-
 	if params.ClusterID == nil || *params.ClusterID == "" {
 		cluster, err = a.discoverCluster(params)
 	} else {

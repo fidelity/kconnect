@@ -161,21 +161,12 @@ func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error)
 	}
 	if len(historyList.Items) <= n {
 		return nil, ErrEntryNotFound
-	} 
-
+	}
 	//sort by timestamp
 	sort.Slice(historyList.Items, func(i, j int) bool {
 		return !historyList.Items[i].Status.LastUsed.Before(&historyList.Items[j].Status.LastUsed)
 	})
-
 	lastModifiedEntry := historyList.Items[n]
-	// for _, entry := range historyList.Items {
-	// 	if lastModifiedEntry.GetName() == "" {
-	// 		lastModifiedEntry = entry
-	// 	} else if entry.Status.LastUpdated.Time.After(lastModifiedEntry.Status.LastUpdated.Time) {
-	// 		lastModifiedEntry = entry
-	// 	}
-	// }
 	return &lastModifiedEntry, nil
 }
 

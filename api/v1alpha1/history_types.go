@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -109,7 +108,7 @@ func NewHistoryEntry() *HistoryEntry {
 		Spec: HistoryEntrySpec{},
 		Status: HistoryEntryStatus{
 			LastModified: created,
-			LastUsed: created,
+			LastUsed:     created,
 		},
 	}
 
@@ -126,61 +125,38 @@ func NewHistoryReference(entryID string) *HistoryReference {
 	}
 }
 
-// func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
-
-// 	fmt.Printf("h: %+v\n", h.Spec)
-// 	fmt.Printf("h2: %+v\n", other.Spec)
-// 	if h == nil || other == nil {
-// 		return h == other
-// 	}
-
-// 	if h == other {
-// 		return true
-// 	}
-
-// 	// TODO: we could do explicit comparison of the fields
-
-// 	return reflect.DeepEqual(h.Spec, other.Spec)
-// }
-
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 
 	if h == nil || other == nil {
 		return h == other
 	}
 
-	if h == other {
-		return true
-	}
-
+	// Compare specific fields
 	equals1 := h.Spec.Provider == other.Spec.Provider &&
-		      h.Spec.Identity == other.Spec.Identity &&
-		      h.Spec.ProviderID == other.Spec.ProviderID &&
-			  h.Spec.ConfigFile == other.Spec.ConfigFile 
-			  //&& *h.Spec.Alias == *other.Spec.Alias
-	equals2 := true
+		h.Spec.Identity == other.Spec.Identity &&
+		h.Spec.ProviderID == other.Spec.ProviderID &&
+		h.Spec.ConfigFile == other.Spec.ConfigFile
+	if !equals1 {
+		return false
+	}
+	// Compare flags are equal. Only compare those with a value that is set (not "")
 	for k, v := range h.Spec.Flags {
 		v2 := other.Spec.Flags[k]
 		if v != "" || v2 != "" {
 			if v != v2 {
-				fmt.Printf("k %s, v%s", k ,v )
-				equals2 = false
-				break
+				return false
 			}
 		}
 	}
-	equals3 := true
 	for k, v := range other.Spec.Flags {
 		v2 := h.Spec.Flags[k]
 		if v != "" || v2 != "" {
 			if v != v2 {
-				fmt.Printf("k %s, v%s", k ,v )
-				equals2 = false
-				break
+				return false
 			}
 		}
 	}
-	return equals1 && equals2 && equals3
+	return true
 }
 
 func (l *HistoryEntryList) ToTable() *metav1.Table {
