@@ -99,10 +99,6 @@ func RootCmd() (*cobra.Command, error) {
 
 	cobra.OnInitialize(initConfig)
 
-	// Force initial parsing of flags
-	rootCmd.FParseErrWhitelist = cobra.FParseErrWhitelist{
-		UnknownFlags: true,
-	}
 	rootCmd.ParseFlags(os.Args) //nolint: errcheck
 
 	flags.PopulateConfigFromCommand(rootCmd, cfg)

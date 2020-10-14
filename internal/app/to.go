@@ -25,6 +25,7 @@ import (
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -47,7 +48,7 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
 	if entry == nil {
-		return ErrNoHistoryFound
+		return history.ErrEntryNotFound
 	}
 	historyID := entry.ObjectMeta.Name
 
