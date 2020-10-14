@@ -28,9 +28,7 @@ kconnect use eks [flags]
   -c, --cluster-id string         Id of the cluster to use.
   -h, --help                      help for eks
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
-      --idp-endpoint string       identity provider endpoint provided by your IT team
       --idp-protocol string       The idp protocol to use (e.g. saml)
-      --idp-provider string       the name of the idp provider
   -k, --kubeconfig string         Location of the kubeconfig to use. (default "$HOME/.kube/config")
       --max-history int           Sets the maximum number of history items to keep (default 100)
       --namespace string          Sets namespace for context in kubeconfig
