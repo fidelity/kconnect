@@ -79,12 +79,6 @@ type HistoryReference struct {
 	EntryID string
 }
 
-// var IgnoreFlagsInEquals = []string {
-// 	"profile",
-// 	"region-filter",
-// 	"role-filter",
-// }
-
 var ignoreFlags = map[string]struct{}{
 	"profile": {},
 }
