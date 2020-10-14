@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"math/rand"
+	"reflect"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -76,6 +77,16 @@ type HistoryReference struct {
 	metav1.TypeMeta `json:",inline"`
 
 	EntryID string
+}
+
+// var IgnoreFlagsInEquals = []string {
+// 	"profile",
+// 	"region-filter",
+// 	"role-filter",
+// }
+
+var ignoreFlags = map[string]struct{}{
+	"profile": {},
 }
 
 func NewHistoryEntryList() *HistoryEntryList {
@@ -139,24 +150,18 @@ func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 	if !equals1 {
 		return false
 	}
-	// Compare flags are equal. Only compare those with a value that is set (not "")
-	for k, v := range h.Spec.Flags {
-		v2 := other.Spec.Flags[k]
-		if v != "" || v2 != "" {
-			if v != v2 {
-				return false
-			}
+	return reflect.DeepEqual(filterFlags(h.Spec.Flags), filterFlags(other.Spec.Flags))
+}
+
+// filter will create a new map based on flags, without keys that are specifically ignored, and without blank ("") values
+func filterFlags(m map[string]string) map[string]string {
+	filtered := make(map[string]string)
+	for k, v := range m {
+		if _, ignore := ignoreFlags[k]; !ignore && v != "" {
+			filtered[k] = v
 		}
 	}
-	for k, v := range other.Spec.Flags {
-		v2 := h.Spec.Flags[k]
-		if v != "" || v2 != "" {
-			if v != v2 {
-				return false
-			}
-		}
-	}
-	return true
+	return filtered
 }
 
 func (l *HistoryEntryList) ToTable() *metav1.Table {
