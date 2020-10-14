@@ -117,6 +117,9 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
+	if err := cs.SetShort("output", "o"); err != nil {
+		return fmt.Errorf("adding output short flag: %w", err)
+	}
 
 	cs.SetHistoryIgnore("output") //nolint
 
