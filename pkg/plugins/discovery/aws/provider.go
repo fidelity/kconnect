@@ -30,7 +30,6 @@ import (
 
 func init() {
 	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
-		// TODO: handle fatal error
 		zap.S().Fatalw("Failed to register EKS cluster provider plugin", "error", err)
 	}
 }

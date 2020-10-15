@@ -37,33 +37,32 @@ const (
 func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet, interactive bool) error {
 	p.logger.Debug("resolving AWS identity configuration items")
 
+	if interactive {
+		// NOTE: resolution is only needed for required fields
+		if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
+			return fmt.Errorf("resolving idp-provider: %w", err)
+		}
+		if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
+			return fmt.Errorf("resolving idp-endpoint: %w", err)
+		}
+
+		if err := p.resolvePartition("partition", cfg); err != nil {
+			return fmt.Errorf("resolving partition: %w", err)
+		}
+		if err := p.resolveRegion("region", cfg); err != nil {
+			return fmt.Errorf("resolving region: %w", err)
+		}
+		if err := p.resolveUsername("username", cfg); err != nil {
+			return fmt.Errorf("resolving username: %w", err)
+		}
+		if err := p.resolvePassword("password", cfg); err != nil {
+			return fmt.Errorf("resolving password: %w", err)
+		}
+	}
+
+	// NOTE: profile is last as it will use other config items
 	if err := p.resolveProfile("profile", cfg); err != nil {
 		return fmt.Errorf("resolving profile: %w", err)
-	}
-
-	if !interactive {
-		return nil
-	}
-
-	// NOTE: resolution is only needed for required fields
-	if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
-		return fmt.Errorf("resolving idp-provider: %w", err)
-	}
-	if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
-		return fmt.Errorf("resolving idp-endpoint: %w", err)
-	}
-
-	if err := p.resolvePartition("partition", cfg); err != nil {
-		return fmt.Errorf("resolving partition: %w", err)
-	}
-	if err := p.resolveRegion("region", cfg); err != nil {
-		return fmt.Errorf("resolving region: %w", err)
-	}
-	if err := p.resolveUsername("username", cfg); err != nil {
-		return fmt.Errorf("resolving username: %w", err)
-	}
-	if err := p.resolvePassword("password", cfg); err != nil {
-		return fmt.Errorf("resolving password: %w", err)
 	}
 
 	return nil
