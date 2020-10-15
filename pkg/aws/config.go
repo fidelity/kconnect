@@ -24,15 +24,14 @@ import (
 // SharedConfig will return shared configuration items for AWS based cluster and identity providers
 func SharedConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String("partition", endpoints.AwsPartition().ID(), "AWS partition to use") //nolint: errcheck
-	cs.String("region", "", "AWS region to connect to")                           //nolint: errcheck
-	cs.String("profile", "", "AWS profile to use")                                //nolint: errcheck
+	cs.String("partition", endpoints.AwsPartition().ID(), "AWS partition to use")      //nolint: errcheck
+	cs.String("region", "", "AWS region to connect to")                                //nolint: errcheck
+	cs.String("static-profile", "", "AWS profile to use. Only for advanced use cases") //nolint: errcheck
 
-	cs.SetRequired("profile")   //nolint: errcheck
 	cs.SetRequired("region")    //nolint: errcheck
 	cs.SetRequired("partition") //nolint: errcheck
 
-	cs.SetHidden("profile") //nolint: errcheck
+	cs.SetHidden("static-profile") //nolint: errcheck
 
 	return cs
 }
