@@ -51,15 +51,12 @@ const (
 
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
-		// TODO: handle fatal error
 		zap.S().Fatalw("failed to register SAML identity provider plugin", "error", err)
 	}
 }
 
 func newSAMLProvider() *samlIdentityProvider {
-	return &samlIdentityProvider{
-		logger: zap.S().With("provider", "saml"),
-	}
+	return &samlIdentityProvider{}
 }
 
 type samlIdentityProvider struct {
@@ -76,6 +73,7 @@ func (p *samlIdentityProvider) Name() string {
 }
 
 func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
+	p.ensureLogger()
 	cs := config.NewConfigurationSet()
 
 	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
@@ -101,6 +99,7 @@ func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (c
 
 // Authenticate will authenticate a user and returns their identity
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
+	p.ensureLogger()
 	p.logger.Info("authenticating user")
 
 	sp, ok := serviceProviders[clusterProvider]
@@ -238,6 +237,7 @@ func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, provid
 
 // Usage returns the usage for the provider
 func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
+	p.ensureLogger()
 	usage := []string{"SAML idp-protocol Flags:"}
 
 	cfg, err := p.ConfigurationItems(clusterProvider)
@@ -253,4 +253,10 @@ func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
 	usage = append(usage, fs.FlagUsages())
 
 	return strings.Join(usage, "\n"), nil
+}
+
+func (p *samlIdentityProvider) ensureLogger() {
+	if p.logger == nil {
+		p.logger = zap.S().With("provider", "saml")
+	}
 }
