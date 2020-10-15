@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -28,59 +27,32 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
-const (
-	profilePrefix = "kconnect-"
-)
-
 // ResolveConfiguration will resolve the values for the AWS specific config items that have no value.
 // It will query AWS and interactively ask the user for selections.
-func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet, interactive bool) error {
+func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) error {
+	p.ensureLogger()
 	p.logger.Debug("resolving AWS identity configuration items")
 
-	if interactive {
-		// NOTE: resolution is only needed for required fields
-		if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
-			return fmt.Errorf("resolving idp-provider: %w", err)
-		}
-		if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
-			return fmt.Errorf("resolving idp-endpoint: %w", err)
-		}
-
-		if err := p.resolvePartition("partition", cfg); err != nil {
-			return fmt.Errorf("resolving partition: %w", err)
-		}
-		if err := p.resolveRegion("region", cfg); err != nil {
-			return fmt.Errorf("resolving region: %w", err)
-		}
-		if err := p.resolveUsername("username", cfg); err != nil {
-			return fmt.Errorf("resolving username: %w", err)
-		}
-		if err := p.resolvePassword("password", cfg); err != nil {
-			return fmt.Errorf("resolving password: %w", err)
-		}
+	// NOTE: resolution is only needed for required fields
+	if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
+		return fmt.Errorf("resolving idp-provider: %w", err)
+	}
+	if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
+		return fmt.Errorf("resolving idp-endpoint: %w", err)
 	}
 
-	// NOTE: profile is last as it will use other config items
-	if err := p.resolveProfile("profile", cfg); err != nil {
-		return fmt.Errorf("resolving profile: %w", err)
+	if err := p.resolvePartition("partition", cfg); err != nil {
+		return fmt.Errorf("resolving partition: %w", err)
 	}
-
-	return nil
-}
-
-func (p *ServiceProvider) resolveProfile(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
+	if err := p.resolveRegion("region", cfg); err != nil {
+		return fmt.Errorf("resolving region: %w", err)
 	}
-
-	now := time.Now().UTC()
-	profileName := fmt.Sprintf("%s%s", profilePrefix, now.Format("20060102150405"))
-
-	if err := cfg.SetValue(name, profileName); err != nil {
-		p.logger.Errorw("failed setting profile config", "profile", profileName, "error", err.Error())
-		return fmt.Errorf("setting profile config: %w", err)
+	if err := p.resolveUsername("username", cfg); err != nil {
+		return fmt.Errorf("resolving username: %w", err)
 	}
-	p.logger.Debugw("created AWS profile name", "profile", profileName)
+	if err := p.resolvePassword("password", cfg); err != nil {
+		return fmt.Errorf("resolving password: %w", err)
+	}
 
 	return nil
 }

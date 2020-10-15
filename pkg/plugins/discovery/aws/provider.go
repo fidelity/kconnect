@@ -42,7 +42,6 @@ type eksClusteProviderConfig struct {
 	provider.ClusterProviderConfig
 	Region       *string `json:"region"`
 	RegionFilter *string `json:"region-filter"`
-	Profile      *string `json:"profile"`
 	RoleArn      *string `json:"role-arn"`
 	RoleFilter   *string `json:"role-filter"`
 }
