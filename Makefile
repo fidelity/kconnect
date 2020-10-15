@@ -139,6 +139,7 @@ docs-build: docs-generate $(MDBOOK) ## Build the kconnect book
 .PHONY: docs-generate
 docs-generate: $(CMDDOCSGEN) ## Generate the cmd line docs
 	$(CMDDOCSGEN) $(BOOKS_DIR)/src/commands
+	rm -f $(TOOLS_BIN_DIR)/cmddocsgen
 
 .PHONY: docs-verify
 docs-verify: docs-generate ## Verify the generated docs are up to date

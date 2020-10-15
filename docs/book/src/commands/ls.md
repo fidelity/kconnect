@@ -39,7 +39,7 @@ kconnect ls [flags]
   -k, --kubeconfig string          Location of the kubeconfig to use. (default "$HOME/.kube/config")
       --max-history int            Sets the maximum number of history items to keep (default 100)
       --no-history                 If set to true then no history entry will be written
-      --output string              Output format for the results (default "table")
+  -o, --output string              Output format for the results (default "table")
       --provider-id string         Provider specific for a cluster
 ```
 
