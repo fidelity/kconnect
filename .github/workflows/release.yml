@@ -23,12 +23,12 @@ jobs:
               with:
                 password: ${{secrets.DKR_TOKEN}}
                 username: ${{secrets.DKR_USER}}
-            - name: Setup snapcraft
-              run: |
-                sudo snap install snapcraft --classic
-                echo "$SNAP_TOKEN" | snapcraft login --with -
-              env:
-                SNAP_TOKEN: ${{secrets.SNAP_LOGIN}}
+            # - name: Setup snapcraft
+            #   run: |
+            #     sudo snap install snapcraft --classic
+            #     echo "$SNAP_TOKEN" | snapcraft login --with -
+            #   env:
+            #     SNAP_TOKEN: ${{secrets.SNAP_LOGIN}}
             - name: Run GoReleaser
               uses: goreleaser/goreleaser-action@v2
               with:
