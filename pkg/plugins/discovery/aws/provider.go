@@ -30,7 +30,6 @@ import (
 
 func init() {
 	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
-		// TODO: handle fatal error
 		zap.S().Fatalw("Failed to register EKS cluster provider plugin", "error", err)
 	}
 }
@@ -43,7 +42,6 @@ type eksClusteProviderConfig struct {
 	provider.ClusterProviderConfig
 	Region       *string `json:"region"`
 	RegionFilter *string `json:"region-filter"`
-	Profile      *string `json:"profile"`
 	RoleArn      *string `json:"role-arn"`
 	RoleFilter   *string `json:"role-filter"`
 }

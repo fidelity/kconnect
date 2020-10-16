@@ -26,10 +26,10 @@ import (
 
 // NewIdentityStore will create a new AWS identity store
 func NewIdentityStore(cfg config.ConfigurationSet) (provider.IdentityStore, error) {
-	if !cfg.ExistsWithValue("profile") {
+	if !cfg.ExistsWithValue("aws-profile") {
 		return nil, ErrNoProfile
 	}
-	profileCfg := cfg.Get("profile")
+	profileCfg := cfg.Get("aws-profile")
 	profile := profileCfg.Value.(string)
 
 	return &awsIdentityStore{

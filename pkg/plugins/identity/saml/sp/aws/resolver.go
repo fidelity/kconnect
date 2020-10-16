@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
@@ -28,22 +27,11 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
-const (
-	profilePrefix = "kconnect-"
-)
-
 // ResolveConfiguration will resolve the values for the AWS specific config items that have no value.
 // It will query AWS and interactively ask the user for selections.
-func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet, interactive bool) error {
+func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) error {
+	p.ensureLogger()
 	p.logger.Debug("resolving AWS identity configuration items")
-
-	if err := p.resolveProfile("profile", cfg); err != nil {
-		return fmt.Errorf("resolving profile: %w", err)
-	}
-
-	if !interactive {
-		return nil
-	}
 
 	// NOTE: resolution is only needed for required fields
 	if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
@@ -65,23 +53,6 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet, inte
 	if err := p.resolvePassword("password", cfg); err != nil {
 		return fmt.Errorf("resolving password: %w", err)
 	}
-
-	return nil
-}
-
-func (p *ServiceProvider) resolveProfile(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
-	}
-
-	now := time.Now().UTC()
-	profileName := fmt.Sprintf("%s%s", profilePrefix, now.Format("20060102150405"))
-
-	if err := cfg.SetValue(name, profileName); err != nil {
-		p.logger.Errorw("failed setting profile config", "profile", profileName, "error", err.Error())
-		return fmt.Errorf("setting profile config: %w", err)
-	}
-	p.logger.Debugw("created AWS profile name", "profile", profileName)
 
 	return nil
 }

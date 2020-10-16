@@ -60,13 +60,10 @@ type awsProviderConfig struct {
 
 	Partition string `json:"partition" validate:"required"`
 	Region    string `json:"region" validate:"required"`
-	Profile   string `json:"profile" validate:"required"`
 }
 
 func NewServiceProvider() sp.ServiceProvider {
-	return &ServiceProvider{
-		logger: zap.S().With("provider", "saml", "sp", "aws"),
-	}
+	return &ServiceProvider{}
 }
 
 type ServiceProvider struct {
@@ -74,19 +71,15 @@ type ServiceProvider struct {
 }
 
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
+	p.ensureLogger()
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
+	account.Profile = "kconnect-saml-provider"
 
 	regionCfg := cfg.Get("region")
 	if regionCfg == nil || regionCfg.Value.(string) == "" {
 		return ErrNoRegion
 	}
 	account.Region = regionCfg.Value.(string)
-
-	profileCfg := cfg.Get("profile")
-	if profileCfg == nil || profileCfg.Value.(string) == "" {
-		return ErrNoProfile
-	}
-	account.Profile = profileCfg.Value.(string)
 
 	roleCfg := cfg.Get("role-arn")
 	if roleCfg != nil || roleCfg.Value.(string) != "" {
@@ -97,6 +90,7 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 }
 
 func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (provider.Identity, error) {
+	p.ensureLogger()
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -137,8 +131,35 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("logging into AWS using STS and SAMLAssertion: %w", err)
 	}
 
-	awsIdentity := mapCredsToIdentity(awsCreds, account.Profile)
+	// Create profile based on the AWS creds
+	identifier, err := kaws.CreateIDFromCreds(awsCreds)
+	if err != nil {
+		return nil, fmt.Errorf("creating identifier from AWS creds: %w", err)
+	}
+	profileName := fmt.Sprintf("kconnect-%s", identifier)
+	if err := p.setProfileName(profileName, cfg); err != nil {
+		return nil, fmt.Errorf("setting profile name: %w", err)
+	}
+
+	awsIdentity := mapCredsToIdentity(awsCreds, profileName)
 	return awsIdentity, nil
+}
+
+func (p *ServiceProvider) setProfileName(profileName string, cfg config.ConfigurationSet) error {
+	if cfg.ExistsWithValue("static-profile") {
+		p.logger.Debug("static profile name found")
+		item := cfg.Get("static-profile")
+		profileName = item.Value.(string)
+	}
+	p.logger.Debugw("setting aws profile name", "profile", profileName)
+
+	item, err := cfg.String("aws-profile", profileName, "AWS profile name to use")
+	if err != nil {
+		return fmt.Errorf("setting aws-profile: %w", err)
+	}
+	item.Value = profileName
+
+	return nil
 }
 
 func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount, roleFilter string) (*saml2aws.AWSRole, error) {
@@ -243,6 +264,7 @@ func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *sam
 		AWSSecurityToken: aws.StringValue(resp.Credentials.SessionToken),
 		PrincipalARN:     aws.StringValue(resp.AssumedRoleUser.Arn),
 		Expires:          resp.Credentials.Expiration.Local(),
+		Region:           account.Region,
 	}, nil
 }
 
@@ -277,7 +299,7 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 }
 
 func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
-	//TODO: handle this
+	p.ensureLogger()
 	cfg := &awsProviderConfig{}
 
 	if err := config.Unmarshall(configItems, cfg); err != nil {
@@ -293,9 +315,16 @@ func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
 }
 
 func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
+	p.ensureLogger()
 	cs := kaws.SharedConfig()
 
 	return cs
+}
+
+func (p *ServiceProvider) ensureLogger() {
+	if p.logger == nil {
+		p.logger = zap.S().With("provider", "saml", "sp", "aws")
+	}
 }
 
 func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {

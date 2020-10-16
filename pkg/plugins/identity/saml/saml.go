@@ -51,21 +51,17 @@ const (
 
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
-		// TODO: handle fatal error
 		zap.S().Fatalw("failed to register SAML identity provider plugin", "error", err)
 	}
 }
 
 func newSAMLProvider() *samlIdentityProvider {
-	return &samlIdentityProvider{
-		logger: zap.S().With("provider", "saml"),
-	}
+	return &samlIdentityProvider{}
 }
 
 type samlIdentityProvider struct {
 	config          *sp.ProviderConfig
 	serviceProvider sp.ServiceProvider
-	store           provider.IdentityStore
 
 	logger *zap.SugaredLogger
 }
@@ -76,6 +72,7 @@ func (p *samlIdentityProvider) Name() string {
 }
 
 func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
+	p.ensureLogger()
 	cs := config.NewConfigurationSet()
 
 	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
@@ -101,6 +98,7 @@ func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (c
 
 // Authenticate will authenticate a user and returns their identity
 func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
+	p.ensureLogger()
 	p.logger.Info("authenticating user")
 
 	sp, ok := serviceProviders[clusterProvider]
@@ -118,10 +116,6 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	}
 	if err := p.serviceProvider.Validate(ctx.ConfigurationItems()); err != nil {
 		return nil, fmt.Errorf("validating service provider: %w", err)
-	}
-
-	if err := p.createStore(ctx, clusterProvider); err != nil {
-		return nil, fmt.Errorf("creating identity store: %w", err)
 	}
 
 	account, err := p.createAccount(ctx.ConfigurationItems())
@@ -159,7 +153,12 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, fmt.Errorf("processing assertions for: %s: %w", clusterProvider, err)
 	}
 
-	err = p.store.Save(userID)
+	store, err := p.createIdentityStore(ctx, clusterProvider)
+	if err != nil {
+		return nil, fmt.Errorf("creating identity store for %s: %w", clusterProvider, err)
+	}
+
+	err = store.Save(userID)
 	if err != nil {
 		return nil, fmt.Errorf("saving identity: %w", err)
 	}
@@ -184,16 +183,6 @@ func (p *samlIdentityProvider) bindAndValidateConfig(cs config.ConfigurationSet)
 	return nil
 }
 
-func (p *samlIdentityProvider) createStore(ctx *provider.Context, providerName string) error {
-	store, err := p.createIdentityStore(ctx, providerName)
-	if err != nil {
-		return fmt.Errorf("creating identity store for %s: %w", providerName, err)
-	}
-	p.store = store
-
-	return nil
-}
-
 func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.IDPAccount, error) {
 	account := &cfg.IDPAccount{
 		URL:             p.config.IdpEndpoint,
@@ -211,9 +200,13 @@ func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.I
 func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	sp := p.serviceProvider
 
-	p.logger.Debug("resolving SAML provider flags")
-	if err := sp.ResolveConfiguration(ctx.ConfigurationItems(), ctx.IsInteractive()); err != nil {
-		return fmt.Errorf("resolving flags: %w", err)
+	if ctx.IsInteractive() {
+		p.logger.Debug("resolving SAML provider flags")
+		if err := sp.ResolveConfiguration(ctx.ConfigurationItems()); err != nil {
+			return fmt.Errorf("resolving flags: %w", err)
+		}
+	} else {
+		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
 	}
 
 	return nil
@@ -238,6 +231,7 @@ func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, provid
 
 // Usage returns the usage for the provider
 func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
+	p.ensureLogger()
 	usage := []string{"SAML idp-protocol Flags:"}
 
 	cfg, err := p.ConfigurationItems(clusterProvider)
@@ -253,4 +247,10 @@ func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
 	usage = append(usage, fs.FlagUsages())
 
 	return strings.Join(usage, "\n"), nil
+}
+
+func (p *samlIdentityProvider) ensureLogger() {
+	if p.logger == nil {
+		p.logger = zap.S().With("provider", "saml")
+	}
 }
