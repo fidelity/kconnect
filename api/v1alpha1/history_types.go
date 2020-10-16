@@ -158,13 +158,17 @@ func filterFlags(m map[string]string) map[string]string {
 	return filtered
 }
 
-func (l *HistoryEntryList) ToTable() *metav1.Table {
+func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 	table := &metav1.Table{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: metav1.SchemeGroupVersion.String(),
 			Kind:       "Table",
 		},
 		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{
+				Name: "Cur",
+				Type: "string",
+			},
 			{
 				Name: "Id",
 				Type: "string",
@@ -194,16 +198,32 @@ func (l *HistoryEntryList) ToTable() *metav1.Table {
 
 	for _, entry := range l.Items {
 		username := entry.Spec.Flags["username"]
-
-		row := metav1.TableRow{
-			Cells: []interface{}{
-				entry.ObjectMeta.Name,
-				*entry.Spec.Alias,
-				entry.Spec.Provider,
-				entry.Spec.ProviderID,
-				entry.Spec.Identity,
-				username},
+		var row metav1.TableRow
+		if entry.Name == currentContextID {
+			row = metav1.TableRow{
+				Cells: []interface{}{
+					">",
+					entry.ObjectMeta.Name,
+					*entry.Spec.Alias,
+					entry.Spec.Provider,
+					entry.Spec.ProviderID,
+					entry.Spec.Identity,
+					username},
+			}
+		} else {
+			row = metav1.TableRow{
+				Cells: []interface{}{
+					"",
+					entry.ObjectMeta.Name,
+					*entry.Spec.Alias,
+					entry.Spec.Provider,
+					entry.Spec.ProviderID,
+					entry.Spec.Identity,
+					username},
+				}
+	
 		}
+	
 		table.Rows = append(table.Rows, row)
 	}
 
