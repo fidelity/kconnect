@@ -20,6 +20,7 @@ builds:
 
 release:
     prerelease: auto
+    draft: true
 
 archives:
     -
@@ -62,19 +63,18 @@ brews:
       - aws-iam-authenticator
     folder: Formula
 
-dockers:
-  -
-    image_templates:
-    - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
-    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-{{ .ShortCommit }}"
-    #- "docker.io/kconnectcli/kconnect-cli:v{{ .Major }}"
-    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
-    - "docker.io/kconnectcli/kconnect:{{ .ShortCommit }}"
-    build_flag_templates:
-    - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.title={{.ProjectName}}"
-    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-    - "--label=org.opencontainers.image.version={{.Version}}"
+# dockers:
+#   -
+#     image_templates:
+#     - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
+#     - "docker.io/kconnectcli/kconnect:{{ .Tag }}-{{ .ShortCommit }}"
+#     - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
+#     - "docker.io/kconnectcli/kconnect:{{ .ShortCommit }}"
+#     build_flag_templates:
+#     - "--label=org.opencontainers.image.created={{.Date}}"
+#     - "--label=org.opencontainers.image.title={{.ProjectName}}"
+#     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#     - "--label=org.opencontainers.image.version={{.Version}}"
 
 nfpms:
   -
