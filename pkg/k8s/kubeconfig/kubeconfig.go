@@ -64,7 +64,7 @@ func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
 	return nil
 }
 
-func GetCurrentContextID(path string) (*api.Context, error) {
+func GetCurrentContext(path string) (*api.Context, error) {
 
 	pathOptions := clientcmd.NewDefaultPathOptions()
 	if path != "" {
