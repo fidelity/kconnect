@@ -1,18 +1,60 @@
 # Getting started
 
-Once you have installed kconnect you can see a list of the commands available by running:
+Once you have [installed](installation.md) kconnect you can see a list of the commands available by running:
 
 ```bash
 kconnect
 ```
 
-If you wanted to discover clusters in EKS and generate a kubeconfig for a selected cluster you can run the following command which will guide you through connecting:
+The general workflow for using kconnect is the following:
+
+- `kconnect configure` - import configuration that contains defaults for your origanisation - **1 time**
+- `kconnect use` - connect to a cluster for the first time - **only the first time**
+- `kconnect to` - use to re-connect to a cluster that you have already connected to - **most used command day-to-day**
+
+## Creating and importing configuration
+
+Before you use kconnect to help connect to a Kubernetes cluster you may want to import a configuration with your (or your organisations) defaults so that you don't have to supply all the flags.
+
+You will need to create a configuration file (see example [here](https://github.com/fidelity/kconnect/blob/main/examples/config.yaml)). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).
+
+The configuration file can then be imported using the following:
+
+```bash
+kconnect configure -f https://raw.githubusercontent.com/fidelity/kconnect/main/examples/config.yaml
+```
+
+You can check the contents of your local configuration:
+
+```bash
+kconnect configure
+```
+
+## First time connection to a cluster
+
+When discovering and connecting to a cluster for the first time you can do the following:
 
 ```bash
 kconnect use eks --idp-protocol saml
 ```
 
+This will guide you interactively setting the flags and selecting a cluster. It also gives you the option to set a easy to remember alias.
+
 NOTE: only saml is supported at present for IdP.
+
+## Re-connecting to a cluster
+
+If you've previously connected to a cluster you can re-connect to it using the alias (if you set one):
+
+```bash
+kconnect to dev-bu-1
+```
+
+Or using the history id (which can be found by using `kconnect ls`):
+
+```bash
+kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+```
 
 ## Setting Flags
 
