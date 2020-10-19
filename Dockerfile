@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/static:latest
 
-COPY kconnect /
+USER root
+COPY --chown=nonroot:nonroot kconnect /
 
-USER kconnect
-
+USER nonroot
 ENTRYPOINT ["/kconnect"]

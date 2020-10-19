@@ -17,6 +17,8 @@ builds:
         - linux
       goarch:
         - amd64
+        - arm
+        - arm64
 
 release:
     prerelease: auto
@@ -30,7 +32,6 @@ archives:
       name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
       replacements:
         darwin: macos
-        amd64: 64-bit
       format: tar.gz
       format_overrides:
           - goos: windows
@@ -63,25 +64,25 @@ brews:
       - aws-iam-authenticator
     folder: Formula
 
-# dockers:
-#   -
-#     image_templates:
-#     - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
-#     - "docker.io/kconnectcli/kconnect:{{ .Tag }}-{{ .ShortCommit }}"
-#     - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
-#     - "docker.io/kconnectcli/kconnect:{{ .ShortCommit }}"
-#     build_flag_templates:
-#     - "--label=org.opencontainers.image.created={{.Date}}"
-#     - "--label=org.opencontainers.image.title={{.ProjectName}}"
-#     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-#     - "--label=org.opencontainers.image.version={{.Version}}"
+dockers:
+  -
+    image_templates:
+    - "docker.io/kconnectcli/kconnect:latest"
+    - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
+    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-{{ .ShortCommit }}"
+    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
+    - "docker.io/kconnectcli/kconnect:{{ .ShortCommit }}"
+    build_flag_templates:
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
 
 nfpms:
   -
     package_name: kconnect
     replacements:
       darwin: macos
-      amd64: 64-bit
     vendor: kconnect authors
     homepage: https://github.com/fidelity/kconnect
     description: "The Kubernetes Connection Manager CLI"
@@ -99,7 +100,6 @@ nfpms:
 #     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 #     replacements:
 #       darwin: macos
-#       amd64: 64-bit
 #     publish: true
 #     summary: "The Kubernetes Connection Manager CLI"
 #     description: "kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments."
