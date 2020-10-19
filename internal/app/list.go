@@ -77,27 +77,34 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 
 	if *input.Output == printer.OutputPrinterTable {
 
-		//get context
-		currentContext, err := kubeconfig.GetCurrentContextID(input.Kubeconfig); if err != nil {
-			return err
+		currentContexID, err := a.getCurrentContextID(input.Kubeconfig); if err != nil {
+			zap.S().Warnf("Error getting current context ID: %s", err)
 		}
-		kconnectExtension := currentContext.Extensions["kconnect"]
-		b, err := json.Marshal(kconnectExtension); if err != nil {
-			return fmt.Errorf("marshalling json: %w", err)
-		}
-		kconnectExtensionObj := v1alpha1.HistoryReference{}
-		err = json.Unmarshal(b, &kconnectExtensionObj); if err != nil {
-			return fmt.Errorf("unmarshalling json: %w", err)
-		}
-		//kconnectExtensionObj := kconnectExtension.(*v1alpha1.HistoryReference)
-
-		// kconnectExtensionObj, ok := kconnectExtension.(*v1alpha1.HistoryReference); if !ok {
-		// 	fmt.Printf("%+v\n", kconnectExtensionObj)
-		// 	return fmt.Errorf("Casting history reference from extension")
-		// }
-		currentContexID := kconnectExtensionObj.EntryID
 		return objPrinter.Print(list.ToTable(currentContexID), os.Stdout)
 	}
 
 	return objPrinter.Print(list, os.Stdout)
+}
+
+func(a *App) getCurrentContextID(kubecfg string) (string, error) {
+
+	//get context
+	currentContext, err := kubeconfig.GetCurrentContext(kubecfg); if err != nil {
+		return "", err
+	}
+	if currentContext == nil || currentContext.Extensions == nil {
+		return "", fmt.Errorf("no current context set or no extensions present")
+	}
+	kconnectExtension, ok := currentContext.Extensions["kconnect"]; if !ok {
+		return "", fmt.Errorf("getting kubeconfig history extension")
+	}
+	b, err := json.Marshal(kconnectExtension); if err != nil {
+		return "", fmt.Errorf("marshalling json: %w", err)
+	}
+	kconnectExtensionObj := v1alpha1.HistoryReference{}
+	err = json.Unmarshal(b, &kconnectExtensionObj); if err != nil {
+		return "", fmt.Errorf("unmarshalling json: %w", err)
+	}
+	currentContexID := kconnectExtensionObj.EntryID
+	return currentContexID, nil
 }
