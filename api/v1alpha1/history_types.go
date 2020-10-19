@@ -220,10 +220,10 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 					entry.Spec.ProviderID,
 					entry.Spec.Identity,
 					username},
-				}
-	
+			}
+
 		}
-	
+
 		table.Rows = append(table.Rows, row)
 	}
 

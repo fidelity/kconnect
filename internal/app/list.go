@@ -77,7 +77,8 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 
 	if *input.Output == printer.OutputPrinterTable {
 
-		currentContexID, err := a.getCurrentContextID(input.Kubeconfig); if err != nil {
+		currentContexID, err := a.getCurrentContextID(input.Kubeconfig)
+		if err != nil {
 			zap.S().Warnf("Error getting current context ID: %s", err)
 		}
 		return objPrinter.Print(list.ToTable(currentContexID), os.Stdout)
@@ -86,23 +87,27 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 	return objPrinter.Print(list, os.Stdout)
 }
 
-func(a *App) getCurrentContextID(kubecfg string) (string, error) {
+func (a *App) getCurrentContextID(kubecfg string) (string, error) {
 
 	//get context
-	currentContext, err := kubeconfig.GetCurrentContext(kubecfg); if err != nil {
+	currentContext, err := kubeconfig.GetCurrentContext(kubecfg)
+	if err != nil {
 		return "", err
 	}
 	if currentContext == nil || currentContext.Extensions == nil {
-		return "", fmt.Errorf("no current context set or no extensions present")
+		return "", nil
 	}
-	kconnectExtension, ok := currentContext.Extensions["kconnect"]; if !ok {
-		return "", fmt.Errorf("getting kubeconfig history extension")
+	kconnectExtension, ok := currentContext.Extensions["kconnect"]
+	if !ok {
+		return "", nil
 	}
-	b, err := json.Marshal(kconnectExtension); if err != nil {
+	b, err := json.Marshal(kconnectExtension)
+	if err != nil {
 		return "", fmt.Errorf("marshalling json: %w", err)
 	}
 	kconnectExtensionObj := v1alpha1.HistoryReference{}
-	err = json.Unmarshal(b, &kconnectExtensionObj); if err != nil {
+	err = json.Unmarshal(b, &kconnectExtensionObj)
+	if err != nil {
 		return "", fmt.Errorf("unmarshalling json: %w", err)
 	}
 	currentContexID := kconnectExtensionObj.EntryID
