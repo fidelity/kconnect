@@ -19,33 +19,9 @@ Based on the authentication mechanism chosen the CLI will discover Kubernetes cl
 - Regenerate the kubeconfig from your history by using an id or an alias
 - Import defaults values for your company
 
-## Installation
+## Documentation
 
-[Releases](https://github.com/fidelity/kconnect/releases) are available for download for OSX, Linux and Windows.
-
-To install on OSX you can use homebrew:
-
-```bash
-brew install fidelity/tap/kconnect
-```
-
-## Getting Started
-
-Once you have installed kconnect you can see a list of the commands available by running:
-
-```bash
-kconnect
-```
-
-If you wanted to discover clusters in EKS and generate a kubeconfig for a selected cluster you can run the following command which will guide you through connecting:
-
-```bash
-kconnect use eks --idp-protocol saml
-```
-
-NOTE: only saml is supported at present for IdP.
-
-Documentation is contained in the `/docs` directory. The [index is here](docs/README.md).
+For installation, getting started and other documentation head over to the [projects documentation site](https://fidelity.github.io/kconnect/) or look in the [/docs](/docs) directory.
 
 ## Contributions
 

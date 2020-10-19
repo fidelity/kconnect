@@ -97,16 +97,6 @@ func RootCmd() (*cobra.Command, error) {
 	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())
 
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.ParseFlags(os.Args) //nolint: errcheck
-
-	flags.PopulateConfigFromCommand(rootCmd, cfg)
-	params := &app.CommonConfig{}
-	if err := config.Unmarshall(cfg, params); err != nil {
-		return nil, fmt.Errorf("unmarshalling config into use params: %w", err)
-	}
-
 	aliasCmd, err := alias.Command()
 	if err != nil {
 		return nil, fmt.Errorf("creating alias command: %w", err)
