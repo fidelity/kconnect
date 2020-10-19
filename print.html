@@ -180,35 +180,65 @@
 <li>Regenerate the kubeconfig from your history by using an id or an alias</li>
 <li>Import defaults values for your company</li>
 </ul>
-<h2><a class="header" href="#installation" id="installation">Installation</a></h2>
-<p><a href="https://github.com/fidelity/kconnect/releases">Releases</a> are available for download for OSX, Linux and Windows.</p>
-<p>To install on OSX you can use homebrew:</p>
-<pre><code class="language-bash">brew install fidelity/tap/kconnect
-</code></pre>
-<h2><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h2>
-<p>Once you have installed kconnect you can see a list of the commands available by running:</p>
-<pre><code class="language-bash">kconnect
-</code></pre>
-<p>If you wanted to discover clusters in EKS and generate a kubeconfig for a selected cluster you can run the following command which will guide you through connecting:</p>
-<pre><code class="language-bash">kconnect use eks --idp-protocol saml
-</code></pre>
-<p>NOTE: only saml is supported at present for IdP.</p>
-<p>Documentation is contained in the <code>/docs</code> directory. The <a href="docs/README.html">index is here</a>.</p>
+<h2><a class="header" href="#documentation" id="documentation">Documentation</a></h2>
+<p>For installation, getting started and other documentation head over to the <a href="https://fidelity.github.io/kconnect/">projects documentation site</a> or look in the <a href="/docs">/docs</a> directory.</p>
 <h2><a class="header" href="#contributions" id="contributions">Contributions</a></h2>
 <p>Contributions are very welcome. Please read the <a href="CONTRIBUTING.html">contributing guide</a> or see the docs.</p>
-<h1><a class="header" href="#installation-1" id="installation-1">Installation</a></h1>
-<p><a href="https://github.com/fidelity/kconnect/releases">Releases</a> are available for download for OSX, Linux and Windows.</p>
+<h1><a class="header" href="#installation" id="installation">Installation</a></h1>
+<ul>
+<li><a href="installation.html#mac">Mac OSX</a></li>
+<li><a href="installation.html#linux">Linux</a></li>
+<li><a href="installation.html#windows">Windows</a></li>
+<li><a href="installation.html#docker">Docker</a></li>
+</ul>
+<h2><a class="header" href="#mac" id="mac">Mac</a></h2>
 <p>To install on OSX you can use homebrew:</p>
 <pre><code class="language-bash">brew install fidelity/tap/kconnect
 </code></pre>
-<h1><a class="header" href="#getting-started-1" id="getting-started-1">Getting started</a></h1>
-<p>Once you have installed kconnect you can see a list of the commands available by running:</p>
+<p>Alternatively you can download a binary from the latest <a href="https://github.com/fidelity/kconnect/releases">release</a>.</p>
+<h2><a class="header" href="#linux" id="linux">Linux</a></h2>
+<p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains <strong>.deb</strong>, <strong>.rpm</strong> and binaries for Linux.</p>
+<p>We are working on publishing as a snap.</p>
+<h2><a class="header" href="#windows" id="windows">Windows</a></h2>
+<p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains a binary for Windows.</p>
+<p>We have an open issue to support chocolatey in the future/</p>
+<h2><a class="header" href="#docker" id="docker">Docker</a></h2>
+<p>You can also use kconnect via Docker by using the images we publish to Docker Hub:</p>
+<pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
+docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-protocol saml
+</code></pre>
+<h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
+<p>Once you have <a href="installation.html">installed</a> kconnect you can see a list of the commands available by running:</p>
 <pre><code class="language-bash">kconnect
 </code></pre>
-<p>If you wanted to discover clusters in EKS and generate a kubeconfig for a selected cluster you can run the following command which will guide you through connecting:</p>
+<p>The general workflow for using kconnect is the following:</p>
+<ul>
+<li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>
+<li><code>kconnect use</code> - connect to a cluster for the first time - <strong>only the first time</strong></li>
+<li><code>kconnect to</code> - use to re-connect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
+</ul>
+<h2><a class="header" href="#creating-and-importing-configuration" id="creating-and-importing-configuration">Creating and importing configuration</a></h2>
+<p>Before you use kconnect to help connect to a Kubernetes cluster you may want to import a configuration with your (or your organisations) defaults so that you don’t have to supply all the flags.</p>
+<p>You will need to create a configuration file (see example <a href="https://github.com/fidelity/kconnect/blob/main/examples/config.yaml">here</a>). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).</p>
+<p>The configuration file can then be imported using the following:</p>
+<pre><code class="language-bash">kconnect configure -f https://raw.githubusercontent.com/fidelity/kconnect/main/examples/config.yaml
+</code></pre>
+<p>You can check the contents of your local configuration:</p>
+<pre><code class="language-bash">kconnect configure
+</code></pre>
+<h2><a class="header" href="#first-time-connection-to-a-cluster" id="first-time-connection-to-a-cluster">First time connection to a cluster</a></h2>
+<p>When discovering and connecting to a cluster for the first time you can do the following:</p>
 <pre><code class="language-bash">kconnect use eks --idp-protocol saml
 </code></pre>
+<p>This will guide you interactively setting the flags and selecting a cluster. It also gives you the option to set a easy to remember alias.</p>
 <p>NOTE: only saml is supported at present for IdP.</p>
+<h2><a class="header" href="#re-connecting-to-a-cluster" id="re-connecting-to-a-cluster">Re-connecting to a cluster</a></h2>
+<p>If you’ve previously connected to a cluster you can re-connect to it using the alias (if you set one):</p>
+<pre><code class="language-bash">kconnect to dev-bu-1
+</code></pre>
+<p>Or using the history id (which can be found by using <code>kconnect ls</code>):</p>
+<pre><code class="language-bash">kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+</code></pre>
 <h2><a class="header" href="#setting-flags" id="setting-flags">Setting Flags</a></h2>
 <p>Flags can be replaced with environment variables by following the format <code>UPPERCASED_SNAKE_CASE</code> and appending to the <code>KCONNECT_</code> prefix.</p>
 <p>For example<code>--username</code>can be set as<code>KCONNECT_USERNAME</code>; or <code>--idp-protocol</code> as<code>KCONNECT_IDP_PROTOCOL</code>.</p>
@@ -553,7 +583,7 @@
 </ul>
 <p>You can also choose your own issue to work on from this list of available issues.</p>
 <p>When choosing an issue to work on its preferable that you choose a issue that is planned for the next milestone and that has a higher priority....but this is just a nice to have and any contribution would be considered and welcomed.</p>
-<h3><a class="header" href="#getting-started-2" id="getting-started-2">Getting started</a></h3>
+<h3><a class="header" href="#getting-started-1" id="getting-started-1">Getting started</a></h3>
 <ol>
 <li>Install Go &gt;= 1.13</li>
 <li>Fork the kconnect repo</li>

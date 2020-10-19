@@ -164,9 +164,27 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#installation" id="installation">Installation</a></h1>
-<p><a href="https://github.com/fidelity/kconnect/releases">Releases</a> are available for download for OSX, Linux and Windows.</p>
+<ul>
+<li><a href="#mac">Mac OSX</a></li>
+<li><a href="#linux">Linux</a></li>
+<li><a href="#windows">Windows</a></li>
+<li><a href="#docker">Docker</a></li>
+</ul>
+<h2><a class="header" href="#mac" id="mac">Mac</a></h2>
 <p>To install on OSX you can use homebrew:</p>
 <pre><code class="language-bash">brew install fidelity/tap/kconnect
+</code></pre>
+<p>Alternatively you can download a binary from the latest <a href="https://github.com/fidelity/kconnect/releases">release</a>.</p>
+<h2><a class="header" href="#linux" id="linux">Linux</a></h2>
+<p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains <strong>.deb</strong>, <strong>.rpm</strong> and binaries for Linux.</p>
+<p>We are working on publishing as a snap.</p>
+<h2><a class="header" href="#windows" id="windows">Windows</a></h2>
+<p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains a binary for Windows.</p>
+<p>We have an open issue to support chocolatey in the future/</p>
+<h2><a class="header" href="#docker" id="docker">Docker</a></h2>
+<p>You can also use kconnect via Docker by using the images we publish to Docker Hub:</p>
+<pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
+docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-protocol saml
 </code></pre>
 
                     </main>
