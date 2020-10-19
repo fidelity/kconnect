@@ -56,9 +56,13 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 		return fmt.Errorf("reading history file: %w", err)
 	}
 
-	existingID, exists := s.connectionExists(entry, historyList)
+	existingEntry, exists := s.connectionExists(entry, historyList)
 	if exists {
-		s.updateLastUsed(historyList, existingID)
+		entry.Name = existingEntry.Name
+		s.updateLastUsed(historyList, existingEntry.Name)
+		if (entry.Spec.Alias != nil || *entry.Spec.Alias != "") && (existingEntry.Spec.Alias == nil || *existingEntry.Spec.Alias == "") {
+			s.updateAlias(historyList, existingEntry.Name, entry.Spec.Alias)
+		}
 	} else {
 		historyList.Items = append(historyList.Items, *entry)
 	}
@@ -237,13 +241,13 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 	return filteredEntries, nil
 }
 
-func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (string, bool) {
+func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (*historyv1alpha.HistoryEntry, bool) {
 	for _, existingEntry := range historyList.Items {
 		if existingEntry.Equals(entry) {
-			return existingEntry.ObjectMeta.Name, true
+			return &existingEntry, true
 		}
 	}
-	return "", false
+	return nil, false
 }
 
 func (s *storeImpl) updateLastUsed(historyList *historyv1alpha.HistoryEntryList, id string) {
@@ -251,6 +255,15 @@ func (s *storeImpl) updateLastUsed(historyList *historyv1alpha.HistoryEntryList,
 		if historyList.Items[i].ObjectMeta.Name == id {
 			historyList.Items[i].Status.LastUsed = v1.Now()
 			historyList.Items[i].ObjectMeta.Generation++
+			return
+		}
+	}
+}
+
+func (s *storeImpl) updateAlias(historyList *historyv1alpha.HistoryEntryList, id string, alias *string) {
+	for i := range historyList.Items {
+		if historyList.Items[i].ObjectMeta.Name == id {
+			historyList.Items[i].Spec.Alias = alias
 			return
 		}
 	}
