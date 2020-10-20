@@ -97,6 +97,15 @@ func (s *storeImpl) GetAll() (*historyv1alpha.HistoryEntryList, error) {
 	return historyList, nil
 }
 
+func (s *storeImpl) GetAllSortedByLastUsed() (*historyv1alpha.HistoryEntryList, error) {
+	historyList, err := s.GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("getting history sorted by last used timestamp: %w", err)
+	}
+	s.sortByLastUsed(historyList)
+	return historyList, nil
+}
+
 func (s *storeImpl) GetByID(id string) (*historyv1alpha.HistoryEntry, error) {
 	entries, err := s.filterHistory(func(entry *historyv1alpha.HistoryEntry) bool {
 		return entry.ObjectMeta.Name == id
@@ -166,10 +175,7 @@ func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error)
 	if len(historyList.Items) <= n {
 		return nil, ErrEntryNotFound
 	}
-	//sort by timestamp
-	sort.Slice(historyList.Items, func(i, j int) bool {
-		return !historyList.Items[i].Status.LastUsed.Before(&historyList.Items[j].Status.LastUsed)
-	})
+	s.sortByLastUsed(historyList)
 	lastModifiedEntry := historyList.Items[n]
 	return &lastModifiedEntry, nil
 }
@@ -267,4 +273,10 @@ func (s *storeImpl) updateAlias(historyList *historyv1alpha.HistoryEntryList, id
 			return
 		}
 	}
+}
+
+func (s *storeImpl) sortByLastUsed(historyList *historyv1alpha.HistoryEntryList) {
+	sort.Slice(historyList.Items, func(i, j int) bool {
+		return !historyList.Items[i].Status.LastUsed.Before(&historyList.Items[j].Status.LastUsed)
+	})
 }

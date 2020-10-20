@@ -385,6 +385,92 @@ func Test_GetLastModified(t *testing.T) {
 	}
 }
 
+func Test_GetAllSortedByLastUsed(t *testing.T) {
+	testCases := []struct {
+		name              string
+		input             *historyv1alpha.HistoryEntryList
+		expectedEntryNameList []string
+		errorExpected     bool
+	}{
+		{
+			name:  "Multiple items sorted by last used timestamp",
+			input: &historyv1alpha.HistoryEntryList{
+				Items: []historyv1alpha.HistoryEntry {
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test1",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUsed: v1.Date(2021, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test2",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUsed: v1.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test3",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUsed: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+				},
+			},
+			expectedEntryNameList: []string{"test2","test1","test3"},
+			errorExpected: false,
+		},
+		{
+			name:  "Single item sorted by last used timestamp",
+			input: &historyv1alpha.HistoryEntryList{
+				Items: []historyv1alpha.HistoryEntry {
+					historyv1alpha.HistoryEntry{
+						ObjectMeta: v1.ObjectMeta{
+							Name: "test1",
+						},
+						Status: historyv1alpha.HistoryEntryStatus{
+							LastUsed: v1.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
+						},
+					},
+				},
+			},
+			expectedEntryNameList:  []string{"test1"},
+			errorExpected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockLoader, err := createStore(ctrl, tc.input)
+			if err != nil {
+
+			}
+			actualSortedByLastUsed, err := mockLoader.GetAllSortedByLastUsed()
+			if tc.errorExpected && err == nil {
+				t.Fatal("expected error on getting items sorted by last used timestamp but not no error")
+			}
+			if !tc.errorExpected && err != nil {
+				t.Fatalf("got an unexpected error: %v", err)
+			}
+			if len(tc.expectedEntryNameList) != len(actualSortedByLastUsed.Items) {
+				t.Fatalf("expected no of entry %v, but got %v", len(tc.expectedEntryNameList), len(actualSortedByLastUsed.Items))
+			}
+			for i, _ := range tc.expectedEntryNameList {
+				if  !tc.errorExpected && tc.expectedEntryNameList[i] != actualSortedByLastUsed.Items[i].GetName(){
+					t.Fatalf("expected entry name %v, but got %v", tc.expectedEntryNameList[i], actualSortedByLastUsed.Items[i].GetName())
+				}
+			}
+		})
+	}
+}
+
 func createEntry(id string) *historyv1alpha.HistoryEntry {
 	created, _ := time.Parse(time.RFC3339, "2020-09-0109T11:00:00+00:00")
 
@@ -429,6 +515,6 @@ func createStore(ctrl *gomock.Controller, entriesList *historyv1alpha.HistoryEnt
 		DoAndReturn(func() (*historyv1alpha.HistoryEntryList, error) {
 			return entriesList, nil
 		}).Times(1)
-	
+
 	return store, err
 }
