@@ -22,7 +22,6 @@ builds:
 
 release:
     prerelease: auto
-    draft: true
 
 archives:
     -
