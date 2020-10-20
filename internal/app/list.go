@@ -51,7 +51,7 @@ type HistoryQueryInput struct {
 func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) error {
 	zap.S().Debug("querying history")
 
-	list, err := a.historyStore.GetAll()
+	list, err := a.historyStore.GetAllSortedByLastUsed()
 	if err != nil {
 		return fmt.Errorf("getting history entries: %w", err)
 	}

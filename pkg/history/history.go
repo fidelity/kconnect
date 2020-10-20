@@ -32,4 +32,5 @@ type Store interface {
 	GetByAlias(alias string) (*historyv1alpha.HistoryEntry, error)
 	GetLastModified(index int) (*historyv1alpha.HistoryEntry, error)
 	Update(entry *historyv1alpha.HistoryEntry) error
+	GetAllSortedByLastUsed() (*historyv1alpha.HistoryEntryList, error)
 }
