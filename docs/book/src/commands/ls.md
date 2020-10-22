@@ -4,7 +4,9 @@ Query your connection history
 
 ### Synopsis
 
-Query your connection history
+Displays your connection history entries along with their entry IDs and aliases.
+
+Use the `kconnect to` command and an alias or connection history entry ID to reconnect to one of the listed clusters.
 
 ```
 kconnect ls [flags]
@@ -24,6 +26,12 @@ kconnect ls [flags]
 
   # Get the history entries for eks
   kconnect ls --cluster-provider eks
+
+  # Connect to a cluster using a history entry
+  kconnect to ${entryId}
+
+  # Connect to a cluster using an alias
+  kconnect to ${alias}
 
 ```
 
@@ -53,5 +61,5 @@ kconnect ls [flags]
 
 ### SEE ALSO
 
-* [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
-
+* [kconnect](index.md) - The Kubernetes Connection Manager CLI
+* [kconnect to](to.md) - Connect to a cluster using an alias or history entry

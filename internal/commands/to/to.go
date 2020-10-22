@@ -34,7 +34,7 @@ import (
 var (
 	ErrAliasIDRequired = errors.New("alias or id must be specified")
 
-	examples = `  # Re-connect based on an alias
+	examples = `  # Re-connect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
 
   # # Re-connect based on an history id - history id can be found using kconnect ls
@@ -61,8 +61,8 @@ func Command() (*cobra.Command, error) {
 
 	toCmd := &cobra.Command{
 		Use:   "to [historyid/alias/-/LAST/LAST~N]",
-		Short: "Re-connect to a previously connected cluster using your history",
-		Long: `use is for re-connecting to a previously connected cluster using your history.
+		Short: "Re-connect to a previously connected cluster using an alias or history entry",
+		Long: `Use is for re-connecting to a previously connected cluster using an alias or history entry.
 You can use the history id or alias as the argument.
 You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters`,
 		Example: examples,

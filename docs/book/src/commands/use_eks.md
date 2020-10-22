@@ -4,7 +4,22 @@ Connect to eks and discover clusters for use
 
 ### Synopsis
 
-Connect to eks and discover clusters for use
+The `use eks` command attempts to authenticate through the configured identity provider using the supplied credentials, connect to AWS EKS using the supplied 
+connection settings, discover available EKS clusters, and obtain `kubectl` configurations for the chosen cluster.
+
+If successful, the command creates a new connection history entry to store those credentials and AWS EKS connection settings.
+
+The user can then use the `to` command to reconnect to AWS EKS using the values stored in the connection history entry and generate a new `kubectl` 
+configuration context for the chosen cluster with a fresh Kubernetes access token when the stored access token expires.
+
+If supplied with an alias name, the `use eks` command will define an alias for the new connection history entry.  When run in interactive mode, the command will 
+prompt the user to create an alias.
+
+The `ls` command lists previously successful connection history entries - including their aliases.
+
+The `alias ls` command lists all available connection history entry aliases.
+
+The `to` command accepts either a connection history entry ID, alias or reference when reconnecting to AWS EKS to request a fresh access token.
 
 ```
 kconnect use eks [flags]
@@ -18,6 +33,15 @@ kconnect use eks [flags]
 
   # Discover EKS clusters using SAML with a specific role
   kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
+
+  # List available connection history entries
+  kconnect ls
+
+  # Reconnect to a cluster using a connection history entry ID
+  kconnect to ${entryId}
+
+  # Reconnect to a cluster using a connection history entry alias
+  kconnect to ${alias}
 
 ```
 
@@ -64,5 +88,5 @@ kconnect use eks [flags]
 
 ### SEE ALSO
 
-* [kconnect use](use.md)	 - Connect to a target environment and discover clusters for use
-
+* [kconnect use](use.md) - Connect to a target environment and discover clusters for use
+* [kconnect to](to.md) - Connect to a cluster using an alias or history entry

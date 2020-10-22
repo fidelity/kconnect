@@ -5,6 +5,8 @@
 - [Windows](#windows)
 - [Docker](#docker)
 
+<em>NOTE:</em> `kconnect` requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to authenticate to the AWS EKS cluster provider.
+
 ## Mac
 
 To install on OSX you can use homebrew:

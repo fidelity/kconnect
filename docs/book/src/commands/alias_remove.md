@@ -13,14 +13,20 @@ kconnect alias remove [flags]
 ### Examples
 
 ```
-  # Remove an alias using the alis name
+  # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
 
-  # Remove an alias using a histiry entry id
+  # Remove an alias using a history entry id
   kconnect alias remove --id 01EMEM5DB60TMX7D8SS2JCX3MT
 
   # Remove all aliases
   kconnect alias remove --all
+
+  # List available aliases
+  kconnect alias ls
+
+  # Query your connection history - includes aliases
+  kconnect ls
 
 ```
 
@@ -44,5 +50,6 @@ kconnect alias remove [flags]
 
 ### SEE ALSO
 
-* [kconnect alias](alias.md)	 - Query and manipulate aliases for your connection history.
-
+* [kconnect alias](alias.md) - Query and manipulate aliases for connection history entries.
+* [kconnect alias ls](alias_ls.ms) - List available aliases.
+* [kconnect ls](ls.md) - Query your connection history.

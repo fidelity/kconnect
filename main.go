@@ -37,7 +37,7 @@ func main() {
 	}
 
 	v := intver.Get()
-	zap.S().Infow("kconnect - the kubernetes cli", "version", v.Version)
+	zap.S().Infow("kconnect - the Kubernetes Connection Manager CLI", "version", v.Version)
 	zap.S().Debugw("build information", "date", v.BuildDate, "commit", v.CommitHash, "gover", v.GoVersion)
 
 	rootCmd, err := commands.RootCmd()

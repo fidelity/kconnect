@@ -4,7 +4,13 @@ Connect to a target environment and discover clusters for use
 
 ### Synopsis
 
-Connect to a target environment and discover clusters for use
+The `use` command connects to a Kubernetes cluster provider through the configured identity provider in order to discover available 
+Kubernetes clusters and obtain or update `kubectl` configuration contexts with a fresh access token.
+
+The `use` command requires a target provider name as its first parameter.
+
+* [kconnect use eks](use_eks.md) connects to AWS Elastic Kubernetes Service
+  * NOTE: requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 
 ```
 kconnect use [flags]
@@ -26,6 +32,6 @@ kconnect use [flags]
 
 ### SEE ALSO
 
-* [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
-* [kconnect use eks](use_eks.md)	 - Connect to eks and discover clusters for use
+* [kconnect](index.md) - The Kubernetes Connection Manager CLI
+* [kconnect use eks](use_eks.md) - Connect to eks and discover clusters for use
 

@@ -4,7 +4,9 @@ List all the aliases currently defined
 
 ### Synopsis
 
-List all the aliases currently defined
+List all the aliases currently defined for connection history entries.
+
+An alias is a user-friendly name for a connection history entry.
 
 ```
 kconnect alias ls [flags]
@@ -18,6 +20,12 @@ kconnect alias ls [flags]
 
   # Display all the aliases as json
   kconnect alias ls --output json
+
+  # Connect to a cluster using an alias
+  kconnect to ${alias}
+
+  # Query your connection history - includes aliases
+  kconnect ls
 
 ```
 
@@ -39,5 +47,6 @@ kconnect alias ls [flags]
 
 ### SEE ALSO
 
-* [kconnect alias](alias.md)	 - Query and manipulate aliases for your connection history.
-
+* [kconnect alias](alias.md) - Query and manipulate aliases for connection history entries.
+* [kconnect to](to.md) - Connect to a cluster using an alias or history entry.
+* [kconnect ls](ls.md) - Query your connection history.
