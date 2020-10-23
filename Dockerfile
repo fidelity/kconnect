@@ -1,7 +1,5 @@
-FROM gcr.io/distroless/static:latest
+FROM scratch
 
-USER root
-COPY --chown=nonroot:nonroot kconnect /
+COPY  kconnect /
 
-USER nonroot
 ENTRYPOINT ["/kconnect"]

@@ -33,5 +33,5 @@ You can also use kconnect via Docker by using the images we publish to Docker Hu
 
 ```bash
 docker pull docker.io/kconnectcli/kconnect:latest
-docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-protocol saml
+docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml
 ```
