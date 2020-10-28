@@ -27,6 +27,14 @@ type HistoryLocationConfig struct {
 	Location string `json:"history-location"`
 }
 
+func AddHistoryLocationItems(cs config.ConfigurationSet) error {
+	if _, err := cs.String("history-location", "", "Location of where the history is stored. (default \"$HOME/.kconnect/history.yaml\")"); err != nil {
+		return fmt.Errorf("adding history-location config: %w", err)
+	}
+	cs.SetHistoryIgnore("history-location") //nolint
+	return nil
+}
+
 type HistoryConfig struct {
 	HistoryLocationConfig
 	MaxItems  int    `json:"max-history"`
@@ -34,26 +42,10 @@ type HistoryConfig struct {
 	EntryID   string `json:"entry-id"`
 }
 
-type HistoryIdentifierConfig struct {
-	Alias string `json:"alias,omitempty"`
-	ID    string `json:"id,omitempty"`
-}
-
-func AddHistoryLocationItems(cs config.ConfigurationSet) error {
-	if _, err := cs.String("history-location", "", "Location of where the history is stored. (default \"$HOME/.kconnect/history.yaml\")"); err != nil {
-		return fmt.Errorf("adding history-location config: %w", err)
-	}
-
-	cs.SetHistoryIgnore("history-location") //nolint
-
-	return nil
-}
-
 func AddHistoryConfigItems(cs config.ConfigurationSet) error {
 	if err := AddHistoryLocationItems(cs); err != nil {
 		return err
 	}
-
 	if _, err := cs.Int("max-history", defaults.MaxHistoryItems, "Sets the maximum number of history items to keep"); err != nil {
 		return fmt.Errorf("adding max-history config: %w", err)
 	}
@@ -63,15 +55,12 @@ func AddHistoryConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.String("entry-id", "", "existing entry id."); err != nil {
 		return fmt.Errorf("adding entry-id config: %w", err)
 	}
-
 	if err := cs.SetHidden("entry-id"); err != nil {
 		return fmt.Errorf("setting entry-id hidden: %w", err)
 	}
-
 	cs.SetHistoryIgnore("max-history") //nolint
 	cs.SetHistoryIgnore("no-history")  //nolint
 	cs.SetHistoryIgnore("entry-id")    //nolint
-
 	return nil
 }
 
@@ -81,14 +70,12 @@ type KubernetesConfig struct {
 
 // AddKubeconfigConfigItems will add the kubeconfig related config items
 func AddKubeconfigConfigItems(cs config.ConfigurationSet) error {
-
 	if _, err := cs.String("kubeconfig", "", "Location of the kubeconfig to use. (default \"$HOME/.kube/config\")"); err != nil {
 		return fmt.Errorf("adding kubeconfig config: %w", err)
 	}
 	if err := cs.SetShort("kubeconfig", "k"); err != nil {
 		return fmt.Errorf("setting kubeconfig shorthand: %w", err)
 	}
-
 	return nil
 }
 
@@ -108,13 +95,28 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution"); err != nil {
 		return fmt.Errorf("adding non-interactive config: %w", err)
 	}
-
 	cs.SetShort("verbosity", "v")          //nolint
 	cs.SetHistoryIgnore("config")          //nolint
 	cs.SetHistoryIgnore("verbosity")       //nolint
 	cs.SetHistoryIgnore("non-interactive") //nolint
-
 	return nil
+}
+
+type CommonUseConfig struct {
+	Namespace string `json:"namespace,omitempty"`
+}
+
+func AddCommonUseConfigItems(cs config.ConfigurationSet) error {
+	if _, err := cs.String("namespace", "", "Sets namespace for context in kubeconfig"); err != nil {
+		return fmt.Errorf("adding config item: %w", err)
+	}
+	cs.SetShort("namespace", "n") //nolint
+	return nil
+}
+
+type HistoryIdentifierConfig struct {
+	Alias string `json:"alias,omitempty"`
+	ID    string `json:"id,omitempty"`
 }
 
 func AddHistoryIdentifierConfig(cs config.ConfigurationSet) error {
@@ -124,10 +126,8 @@ func AddHistoryIdentifierConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("id", "", "Id for a history entry"); err != nil {
 		return fmt.Errorf("adding id config: %w", err)
 	}
-
 	cs.SetHistoryIgnore("alias") //nolint
 	cs.SetHistoryIgnore("id")    //nolint
-
 	return nil
 }
 
@@ -135,7 +135,6 @@ func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
 	if err := AddHistoryIdentifierConfig(cs); err != nil {
 		return fmt.Errorf("adding history identifier config items: %w", err)
 	}
-
 	if _, err := cs.String("cluster-provider", "", "Name of a cluster provider (i.e. eks)"); err != nil {
 		return fmt.Errorf("adding cluster-provider-id config: %w", err)
 	}
@@ -145,11 +144,9 @@ func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("provider-id", "", "Provider specific for a cluster"); err != nil {
 		return fmt.Errorf("adding provider-id config: %w", err)
 	}
-
 	cs.SetHistoryIgnore("cluster-provider")  //nolint
 	cs.SetHistoryIgnore("identity-provider") //nolint
 	cs.SetHistoryIgnore("provider-id")       //nolint
-
 	return nil
 
 }

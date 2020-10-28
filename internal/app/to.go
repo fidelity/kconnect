@@ -166,6 +166,9 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 	if err := AddCommonConfigItems(cs); err != nil {
 		return nil, fmt.Errorf("adding common config items: %w", err)
 	}
+	if err := AddCommonUseConfigItems(cs); err != nil {
+		return nil, fmt.Errorf("adding common use config items: %w", err)
+	}
 
 	for k, v := range historyEntry.Spec.Flags {
 		configItem := cs.Get(k)
