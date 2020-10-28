@@ -19,5 +19,6 @@ package discovery
 import (
 	// Initialize the identity plugins
 	//_ "github.com/fidelity/kconnect/pkg/plugins/identity/empty" - don't include this provider
+	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aad"
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
 )
