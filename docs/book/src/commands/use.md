@@ -1,16 +1,19 @@
 ## kconnect use
 
-Connect to a target environment and discover clusters for use
+Connect to a Kubernetes cluster provider and cluster.
 
 ### Synopsis
 
-The `use` command connects to a Kubernetes cluster provider through the configured identity provider in order to discover available 
-Kubernetes clusters and obtain or update `kubectl` configuration contexts with a fresh access token.
+Connect to a managed Kubernetes cluster provider via the configured identity provider, prompting the user to enter or
+choose connection settings appropriate to the provider and a target cluster once connected.
 
-The `use` command requires a target provider name as its first parameter.
+The kconnect tool generates a kubectl configuration context with a fresh access token to connect to the chosen cluster
+and adds a connection history entry to store the chosen connection settings.  The user can then reconnect to the provider 
+using the stored setting and refresh their access token by the connection history entry ID or alias.
 
-* [kconnect use eks](use_eks.md) connects to AWS Elastic Kubernetes Service
-  * NOTE: requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
+The use command requires a target provider name as its first parameter.
+
+* Note: kconnect requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to use the AWS EKS provider.
 
 ```
 kconnect use [flags]

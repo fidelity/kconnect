@@ -34,37 +34,47 @@ import (
 var (
 	ErrAliasIDRequired = errors.New("alias or id must be specified")
 
-	examples = `  # Re-connect based on an alias - aliases can be found using kconnect ls
+	shortDesc = "Reconnect to a connection history entry."
+	longDesc  = `Reconnect to a cluster in the connection history by its entry ID or alias.
+
+The kconnect tool creates an entry in the user's connection history with all the connection settings each time it generates a 
+new kubectl configuration context for a Kubernetes cluster.  The user can then reconnect to the same cluster and refresh their
+access token or regenerate the kubectl configuration context using the connection history entry's ID or alias.
+
+The to command also accepts - or LAST as proxy refereneces to the most recent connection history entry, or LAST~N for the Nth 
+previous entry.
+
+Although kconnect does not save the user's password in the connection history, the user can avoid having to enter their 
+password interactively by setting the KCONNECT_PASSWORD environment variable or the --password command-line flag.  Otherwise 
+kconnect will promot the user to enter their password.`
+	examples = `  # Reconnect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
 
-  # # Re-connect based on an history id - history id can be found using kconnect ls
+  # Reconnect based on an history id - history id can be found using kconnect ls
   kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
 
-  # Re-connect to current cluster (this is useful for renewing credentials)
+  # Reconnect to current cluster (this is useful for renewing credentials)
   kconnect to -
   OR 
   kconnect to LAST
 
-  # Re-connect to cluster used before current one
+  # Reconnect to cluster used before current one
   kconnect to LAST~1
 
-  # Re-connect based on an alias supplying a password
+  # Reconnect based on an alias supplying a password
   kconnect to uat-bu1 --password supersecret
 
-  # Re-connect based on an alias supplying a password via env var
-  KCONNECT_PASSWORD=supersecret kconnect to uat-bu1
-`
+  # Reconnect based on an alias supplying a password via env var
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu1`
 )
 
 func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	toCmd := &cobra.Command{
-		Use:   "to [historyid/alias/-/LAST/LAST~N]",
-		Short: "Re-connect to a previously connected cluster using an alias or history entry",
-		Long: `Use is for re-connecting to a previously connected cluster using an alias or history entry.
-You can use the history id or alias as the argument.
-You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters`,
+		Use:     "to [historyid/alias/-/LAST/LAST~N]",
+		Short:   shortDesc,
+		Long:    longDesc,
 		Example: examples,
 		Args:    cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {

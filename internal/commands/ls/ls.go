@@ -31,18 +31,30 @@ import (
 )
 
 var (
-	examples = `  # Display all the history as a table
+	shortDesc = "Query the user's connection history"
+	longDesc  = `Query and display the user's connection history entries, including entry IDs and aliases.
+
+Each time kconnect creates a new kubectl context to connect to a Kubernetes cluster, it saves the
+settings for the new connection as an entry in the user's connection history.  The user can then 
+reconnect using those same settings later via the connection history entry's ID or alias.
+`
+	examples = `  # Display all connection history entries as a table
   kconnect ls
 
-  # Display the history as yaml
+  # Display all connection history entries as YAML
   kconnect ls --output yaml
 
-  # Get the history for a specific entry id
+  # Display a specific connection history entry by entry id
   kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
 
-  # Get the history entries for eks
+  # Display a specific connection history entry by its alias
+  kconnect ls --alias mydev
+
+  # Display all connection history entries for the EKS mamaged cluster provider
   kconnect ls --cluster-provider eks
-`
+
+  # Reconnect using the connection history entry alias
+  kconnect to mydev`
 )
 
 func Command() (*cobra.Command, error) {
@@ -50,7 +62,8 @@ func Command() (*cobra.Command, error) {
 
 	lsCmd := &cobra.Command{
 		Use:     "ls",
-		Short:   "Query your connection history",
+		Short:   shortDesc,
+		Long:    longDesc,
 		Example: examples,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)

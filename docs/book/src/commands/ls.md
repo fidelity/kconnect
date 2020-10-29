@@ -1,10 +1,10 @@
 ## kconnect ls
 
-Query your connection history
+Query the connection history
 
 ### Synopsis
 
-Displays your connection history entries along with their entry IDs and aliases.
+Displays the user's connection history entries along with their entry IDs and aliases.
 
 Use the `kconnect to` command and an alias or connection history entry ID to reconnect to one of the listed clusters.
 

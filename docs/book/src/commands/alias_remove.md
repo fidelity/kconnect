@@ -1,10 +1,12 @@
 ## kconnect alias remove
 
-Remove an alias from a history entry. Or remove all aliases.
+Remove connection history entry aliases.
 
 ### Synopsis
 
-Remove an alias from a history entry. Or remove all aliases.
+Remove an alias from a single connection history entry by the entry ID or the alias.
+
+This command will remove all connection history aliases if passed the --all flag.
 
 ```
 kconnect alias remove [flags]
