@@ -222,7 +222,7 @@ func (a *App) resolveAndCheckAlias(params *UseParams) error {
 		return ErrAliasAlreadyUsed
 	}
 
-	zap.S().Infow("Command to connect using this alias: kconnect to " + params.Alias)
+	zap.S().Infof("Command to reconnect using this alias: kconnect to %s", params.Alias)
 
 	return nil
 }
