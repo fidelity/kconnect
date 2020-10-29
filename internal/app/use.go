@@ -34,6 +34,7 @@ import (
 // UseParams are the parameters to the use function
 type UseParams struct {
 	CommonConfig
+	CommonUseConfig
 	HistoryConfig
 	KubernetesConfig
 	provider.IdentityProviderConfig
@@ -46,8 +47,6 @@ type UseParams struct {
 	Identity         provider.Identity
 
 	Context *provider.Context
-
-	Namespace string `json:"namespace,omitempty"`
 
 	IgnoreAlias bool
 }
