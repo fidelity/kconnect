@@ -27,7 +27,16 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-var (
+const (
+	shortDesc = "Set and view your kconnect configuration."
+	longDesc  = `The configure command creates kconnect configuration files and displays previously-defined configurations
+in a user-friendly display format.
+
+If run with no flags, the command displays the configurations stored in the current user's 
+$HOME/.kconnect/config.yaml file.
+
+The configure command can create a set of default configurations for a new system or a new user via the -f 
+flag and a local filename or remote URL.  You would typically use this flag the first time you use kconnect.`
 	examples = `  # Display the current configuration
   kconnect configure
 
@@ -50,7 +59,8 @@ func Command() (*cobra.Command, error) {
 
 	cfgCmd := &cobra.Command{
 		Use:     "configure",
-		Short:   "Set and view your default kconnect configuration. If no flags are supplied your config is displayed.",
+		Short:   shortDesc,
+		Long:    longDesc,
 		Example: examples,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
