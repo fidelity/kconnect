@@ -41,7 +41,7 @@ The kconnect tool creates an entry in the user's connection history with all the
 new kubectl configuration context for a Kubernetes cluster.  The user can then reconnect to the same cluster and refresh their
 access token or regenerate the kubectl configuration context using the connection history entry's ID or alias.
 
-The to command also accepts - or LAST as proxy refereneces to the most recent connection history entry, or LAST~N for the Nth 
+The to command also accepts - or LAST as proxy references to the most recent connection history entry, or LAST~N for the Nth 
 previous entry.
 
 Although kconnect does not save the user's password in the connection history, the user can avoid having to enter their 
