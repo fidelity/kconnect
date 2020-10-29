@@ -17,15 +17,19 @@ limitations under the License.
 package app
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"go.uber.org/zap"
 
+	"github.com/AlecAivazis/survey/v2"
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/history"
+	"github.com/fidelity/kconnect/pkg/printer"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -43,7 +47,7 @@ type ConnectToParams struct {
 func (a *App) ConnectTo(params *ConnectToParams) error {
 	zap.S().Debug("running connectto")
 
-	entry, err := a.getHistoryEntry(params.AliasOrIDORPosition)
+	entry, err := a.getHistoryEntry(params)
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
@@ -101,8 +105,16 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	return a.Use(useParams)
 }
 
-func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.HistoryEntry, error) {
+func (a *App) getHistoryEntry(params *ConnectToParams) (*historyv1alpha.HistoryEntry, error) {
 
+	idOrAliasORPosition := params.AliasOrIDORPosition
+	if idOrAliasORPosition == "ls" {
+		entry, err := a.getInteractive(params)
+		if err != nil {
+			return nil, fmt.Errorf("getting history interactivly: %w", err)
+		}
+		return entry, nil
+	}
 	if idOrAliasORPosition == "-" || idOrAliasORPosition == "LAST" {
 		entry, err := a.historyStore.GetLastModified(0)
 		if err != nil {
@@ -135,6 +147,48 @@ func (a *App) getHistoryEntry(idOrAliasORPosition string) (*historyv1alpha.Histo
 	entry, err = a.historyStore.GetByAlias(idOrAliasORPosition)
 	if err != nil {
 		return nil, fmt.Errorf("getting history entry by alias: %w", err)
+	}
+
+	return entry, nil
+}
+
+func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEntry, error) {
+
+	entries, err := a.historyStore.GetAllSortedByLastUsed()
+	if err != nil {
+		return nil, fmt.Errorf("getting history entries")
+	}
+	currentContexID, err := a.getCurrentContextID(params.Kubeconfig)
+	entriesTable := entries.ToTable(currentContexID)
+	options := []string{}
+	objPrinter, err := printer.New("table")
+	buf := new(bytes.Buffer)
+	objPrinter.Print(entriesTable, buf)
+	tableString := buf.String()
+
+	for i, s := range strings.Split(tableString, "\n") {	
+		if i == 0 || s == "" {
+			continue
+		}
+		options = append(options, s)
+	}
+
+	selectedEntryString := ""
+	prompt := &survey.Select{
+		Message: "Select a history entry",
+		Options: options,
+	}
+	if err := survey.AskOne(prompt, &selectedEntryString, survey.WithValidator(survey.Required)); err != nil {
+		return nil, fmt.Errorf("asking for entry: %w", err)
+	}
+	nameRegex := regexp.MustCompile("[a-zA-Z0-9]+")
+	selectedEntryName := nameRegex.FindString(selectedEntryString)
+	if selectedEntryName == "" {
+		return nil, history.ErrEntryNotFound
+	}
+	entry, err :=  a.historyStore.GetByID(selectedEntryName)
+	if err != nil {
+		return nil, fmt.Errorf("error getting entry with id: %w", err)
 	}
 
 	return entry, nil
