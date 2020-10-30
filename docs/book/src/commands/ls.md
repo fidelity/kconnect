@@ -4,6 +4,7 @@ Query the user's connection history
 
 ### Synopsis
 
+
 Query and display the user's connection history entries, including entry IDs and
 aliases.
 
@@ -20,6 +21,7 @@ kconnect ls [flags]
 ### Examples
 
 ```
+
   # Display all connection history entries as a table
   kconnect ls
 

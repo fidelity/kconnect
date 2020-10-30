@@ -4,6 +4,7 @@ Query and manipulate connection history entry aliases.
 
 ### Synopsis
 
+
 An alias is a user-friendly name for a connection history entry, otherwise 
 referred to by its entry ID. 
 
@@ -18,6 +19,7 @@ kconnect alias [flags]
 ### Examples
 
 ```
+
   # Add an alias to an existing connection history entry
   kconnect alias add --id 123456 --alias appdev
 

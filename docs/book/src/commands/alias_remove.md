@@ -4,6 +4,7 @@ Remove connection history entry aliases.
 
 ### Synopsis
 
+
 Remove an alias from a single connection history entry by the entry ID or the 
 alias.
 
@@ -18,6 +19,7 @@ kconnect alias remove [flags]
 ### Examples
 
 ```
+
   # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
 

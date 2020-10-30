@@ -4,6 +4,7 @@ List all the aliases currently defined
 
 ### Synopsis
 
+
 List all the aliases currently defined for connection history entries in the
 user's connection history.
 
@@ -17,6 +18,7 @@ kconnect alias ls [flags]
 ### Examples
 
 ```
+
   # Display all the aliases as a table
   kconnect alias ls
 

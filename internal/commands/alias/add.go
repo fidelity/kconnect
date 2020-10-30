@@ -32,12 +32,14 @@ import (
 
 const (
 	shortDescAdd = "Add an alias to a connection history entry"
-	longDescAdd  = `Adds a user-friendly alias to a connection history entry.
+	longDescAdd  = `
+Adds a user-friendly alias to a connection history entry.
 
 The user can then reconnect and refresh the access token for that cluster using 
 the alias instead of the connection history entry's unique ID.
 `
-	examplesAdd = `  # Add an alias to a connection history entry
+	examplesAdd = `
+  # Add an alias to a connection history entry
   kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
 
   # Connect to a cluster using the alias

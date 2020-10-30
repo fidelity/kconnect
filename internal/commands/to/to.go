@@ -35,7 +35,8 @@ var (
 	ErrAliasIDRequired = errors.New("alias or id must be specified")
 
 	shortDesc = "Reconnect to a connection history entry."
-	longDesc  = `Reconnect to a cluster in the connection history by its entry ID or alias.
+	longDesc  = `
+Reconnect to a cluster in the connection history by its entry ID or alias.
 
 The kconnect tool creates an entry in the user's connection history with all the
 connection settings each time it generates a new kubectl configuration context 
@@ -51,7 +52,8 @@ the user can avoid having to enter their password interactively by setting the
 KCONNECT_PASSWORD environment variable or the --password command-line flag.  
 Otherwise kconnect will promot the user to enter their password.
 `
-	examples = `  # Reconnect based on an alias - aliases can be found using kconnect ls
+	examples = `
+  # Reconnect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
 
   # Reconnect based on an history id - history id can be found using kconnect ls

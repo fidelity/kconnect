@@ -4,6 +4,7 @@ Add an alias to a connection history entry
 
 ### Synopsis
 
+
 Adds a user-friendly alias to a connection history entry.
 
 The user can then reconnect and refresh the access token for that cluster using 
@@ -17,6 +18,7 @@ kconnect alias add [flags]
 ### Examples
 
 ```
+
   # Add an alias to a connection history entry
   kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
 

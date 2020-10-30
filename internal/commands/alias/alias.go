@@ -30,13 +30,15 @@ import (
 const (
 	maxHistoryEntries = 100
 	shortDesc         = "Query and manipulate connection history entry aliases."
-	longDesc          = `An alias is a user-friendly name for a connection history entry, otherwise 
+	longDesc          = `
+An alias is a user-friendly name for a connection history entry, otherwise 
 referred to by its entry ID. 
 
 The alias command and sub-commands allow you to query and manipulate aliases for
 connection history entries.
 `
-	examples = `  # Add an alias to an existing connection history entry
+	examples = `
+  # Add an alias to an existing connection history entry
   kconnect alias add --id 123456 --alias appdev
 
   # List available connection history entry aliases

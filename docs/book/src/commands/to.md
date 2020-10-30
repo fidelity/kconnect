@@ -4,6 +4,7 @@ Reconnect to a connection history entry.
 
 ### Synopsis
 
+
 Reconnect to a cluster in the connection history by its entry ID or alias.
 
 The kconnect tool creates an entry in the user's connection history with all the
@@ -28,6 +29,7 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 ### Examples
 
 ```
+
   # Reconnect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
 

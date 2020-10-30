@@ -29,7 +29,8 @@ import (
 
 const (
 	shortDesc = "Set and view your kconnect configuration."
-	longDesc  = `The configure command creates kconnect configuration files and displays 
+	longDesc  = `
+The configure command creates kconnect configuration files and displays 
 previously-defined configurations in a user-friendly display format.
 
 If run with no flags, the command displays the configurations stored in the 
@@ -41,7 +42,8 @@ system or a new user via the -f flag and a local filename or remote URL.
 The user typically only needs to use this command the first time they use 
 kconnect.
 `
-	examples = `  # Display user's current configurations
+	examples = `
+  # Display user's current configurations
   kconnect configure
 
   # Display the user's configurations as json

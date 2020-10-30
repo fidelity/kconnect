@@ -4,6 +4,7 @@ The Kubernetes Connection Manager CLI
 
 ### Synopsis
 
+
 The kconnect tool uses a pre-configured Identity Provider to log in to one or
 more managed Kubernetes cluster providers, discovers the list of clusters 
 visible to your authenticated user and options, and generates a kubectl 
@@ -34,38 +35,39 @@ kconnect [flags]
 ### Examples
 
 ```
-# Display a help screen with kconnect commands.
-kconnect help
 
-# Configure the default identity provider and connection profile for your user.
-#
-# Use this command to set up kconnect the first time you use it on a new system.
-#
-kconnect configure -f FILE_OR_URL
+  # Display a help screen with kconnect commands.
+  kconnect help
 
-# Create a kubectl confirguration context for an AWS EKS cluster.
-#
-# Use this command the first time you connect to a new cluster or a new context.
-#
-kconnect use eks
+  # Configure the default identity provider and connection profile for your user.
+  #
+  # Use this command to set up kconnect the first time you use it on a new system.
+  #
+  kconnect configure -f FILE_OR_URL
 
-# Display connection history entries.
-#
-kconnect ls
+  # Create a kubectl confirguration context for an AWS EKS cluster.
+  #
+  # Use this command the first time you connect to a new cluster or a new context.
+  #
+  kconnect use eks
 
-# Add an alias to a connection history entry.
-#
-kconnect alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
+  # Display connection history entries.
+  #
+  kconnect ls
 
-# Reconnect and refresh the token for an aliased connection history entry.
-#
-# Use this to reconnect to a provider and refresh an expired access token.
-#
-kconnect to MYALIAS
+  # Add an alias to a connection history entry.
+  #
+  kconnect alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
 
-# Display connection history entry aliases.
-#
-kconnect alias ls
+  # Reconnect and refresh the token for an aliased connection history entry.
+  #
+  # Use this to reconnect to a provider and refresh an expired access token.
+  #
+  kconnect to MYALIAS
+
+  # Display connection history entry aliases.
+  #
+  kconnect alias ls
 
 ```
 

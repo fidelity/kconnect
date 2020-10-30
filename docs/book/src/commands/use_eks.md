@@ -4,6 +4,7 @@ Connect to the eks cluster provider and choose a cluster.
 
 ### Synopsis
 
+
 Connect to eks via the configured identify provider, prompting the user to enter 
 or choose connection settings and a target cluster once connected.
 
@@ -30,6 +31,7 @@ kconnect use eks [flags]
 ### Examples
 
 ```
+
   # Discover EKS clusters using SAML
   kconnect use eks --idp-protocol saml
 

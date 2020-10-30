@@ -43,11 +43,13 @@ var (
 const (
 	shortDesc         = "Connect to a Kubernetes cluster provider and cluster."
 	shortDescProvider = "Connect to the %s cluster provider and choose a cluster."
-	longDescHead      = `Connect to a managed Kubernetes cluster provider via the configured identity 
+	longDescHead      = `
+Connect to a managed Kubernetes cluster provider via the configured identity 
 provider, prompting the user to enter or choose connection settings appropriate 
 to the provider and a target cluster once connected.
 `
-	longDescProviderHead = `Connect to %s via the configured identify provider, prompting the user to enter 
+	longDescProviderHead = `
+Connect to %s via the configured identify provider, prompting the user to enter 
 or choose connection settings and a target cluster once connected.
 `
 	longDescBody = `
@@ -70,7 +72,8 @@ The use command requires a target provider name as its first parameter.
   [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 
 `
-	usageExample = `  # Connect to EKS and choose an available EKS cluster.
+	usageExample = `
+  # Connect to EKS and choose an available EKS cluster.
   kconnect use eks
 
   # Connect to an EKS cluster and create an alias for its connection history entry.

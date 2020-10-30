@@ -4,6 +4,7 @@ Set and view your kconnect configuration.
 
 ### Synopsis
 
+
 The configure command creates kconnect configuration files and displays 
 previously-defined configurations in a user-friendly display format.
 
@@ -24,6 +25,7 @@ kconnect configure [flags]
 ### Examples
 
 ```
+
   # Display user's current configurations
   kconnect configure
 

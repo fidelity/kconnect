@@ -32,13 +32,15 @@ import (
 
 var (
 	shortDescRemove = "Remove connection history entry aliases."
-	longDescRemove  = `Remove an alias from a single connection history entry by the entry ID or the 
+	longDescRemove  = `
+Remove an alias from a single connection history entry by the entry ID or the 
 alias.
 
 Set the --all flag on this command to remove all connection history aliases from
 the user's connection history.
 `
-	examplesRemove = `  # Remove an alias using the alias name
+	examplesRemove = `
+  # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
 
   # Remove an alias using a histiry entry id

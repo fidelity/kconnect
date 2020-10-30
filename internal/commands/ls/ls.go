@@ -32,7 +32,8 @@ import (
 
 var (
 	shortDesc = "Query the user's connection history"
-	longDesc  = `Query and display the user's connection history entries, including entry IDs and
+	longDesc  = `
+Query and display the user's connection history entries, including entry IDs and
 aliases.
 
 Each time kconnect creates a new kubectl context to connect to a Kubernetes 
@@ -40,7 +41,8 @@ cluster, it saves the settings for the new connection as an entry in the user's
 connection history.  The user can then reconnect using those same settings later 
 via the connection history entry's ID or alias.
 `
-	examples = `  # Display all connection history entries as a table
+	examples = `
+  # Display all connection history entries as a table
   kconnect ls
 
   # Display all connection history entries as YAML

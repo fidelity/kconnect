@@ -4,6 +4,7 @@ Connect to a Kubernetes cluster provider and cluster.
 
 ### Synopsis
 
+
 Connect to a managed Kubernetes cluster provider via the configured identity 
 provider, prompting the user to enter or choose connection settings appropriate 
 to the provider and a target cluster once connected.
@@ -33,6 +34,7 @@ kconnect use [flags]
 ### Examples
 
 ```
+
   # Connect to EKS and choose an available EKS cluster.
   kconnect use eks
 

@@ -108,7 +108,8 @@ func (p *eksClusterProvider) ensureLogger() {
 
 // UsageExample will provide an example of the usage of this provider
 func (p *eksClusterProvider) UsageExample() string {
-	return `  # Discover EKS clusters using SAML
+	return `
+  # Discover EKS clusters using SAML
   kconnect use eks --idp-protocol saml
 
   # Discover EKS clusters using SAML with a specific role
