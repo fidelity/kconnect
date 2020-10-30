@@ -1,15 +1,32 @@
 ## kconnect alias
 
-Query and manipulate connection history aliases.
+Query and manipulate connection history entry aliases.
 
 ### Synopsis
 
-An alias is a user-friendly name for a connection history entry, otherwise referred to by its entry ID.
+An alias is a user-friendly name for a connection history entry, otherwise 
+referred to by its entry ID. 
 
-The alias command and sub-commands allow you to query and manipulate aliases for connection history entries.
+The alias command and sub-commands allow you to query and manipulate aliases for
+connection history entries.
+
 
 ```
 kconnect alias [flags]
+```
+
+### Examples
+
+```
+  # Add an alias to an existing connection history entry
+  kconnect alias add --id 123456 --alias appdev
+
+  # List available connection history entry aliases
+  kconnect alias ls
+
+  # Remove an alias from a connection history entry
+  kconnect alias remove --alias appdev
+
 ```
 
 ### Options
@@ -29,8 +46,8 @@ kconnect alias [flags]
 
 ### SEE ALSO
 
-* [kconnect](index.md) - The Kubernetes Connection Manager CLI
-* [kconnect alias add](alias_add.md) - Add an alias to a history entry
-* [kconnect alias ls](alias_ls.md) - List all the aliases currently defined
-* [kconnect alias remove](alias_remove.md) - Remove an alias from a history entry. Or remove all aliases.
+* [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
+* [kconnect alias add](alias_add.md)	 - Add an alias to a connection history entry
+* [kconnect alias ls](alias_ls.md)	 - List all the aliases currently defined
+* [kconnect alias remove](alias_remove.md)	 - Remove connection history entry aliases.
 

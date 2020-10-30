@@ -37,16 +37,20 @@ var (
 	shortDesc = "Reconnect to a connection history entry."
 	longDesc  = `Reconnect to a cluster in the connection history by its entry ID or alias.
 
-The kconnect tool creates an entry in the user's connection history with all the connection settings each time it generates a 
-new kubectl configuration context for a Kubernetes cluster.  The user can then reconnect to the same cluster and refresh their
-access token or regenerate the kubectl configuration context using the connection history entry's ID or alias.
+The kconnect tool creates an entry in the user's connection history with all the
+connection settings each time it generates a new kubectl configuration context 
+for a Kubernetes cluster.  The user can then reconnect to the same cluster and 
+refresh their access token or regenerate the kubectl configuration context using
+the connection history entry's ID or alias.
 
-The to command also accepts - or LAST as proxy references to the most recent connection history entry, or LAST~N for the Nth 
-previous entry.
+The to command also accepts - or LAST as proxy references to the most recent 
+connection history entry, or LAST~N for the Nth previous entry.
 
-Although kconnect does not save the user's password in the connection history, the user can avoid having to enter their 
-password interactively by setting the KCONNECT_PASSWORD environment variable or the --password command-line flag.  Otherwise 
-kconnect will promot the user to enter their password.`
+Although kconnect does not save the user's password in the connection history, 
+the user can avoid having to enter their password interactively by setting the 
+KCONNECT_PASSWORD environment variable or the --password command-line flag.  
+Otherwise kconnect will promot the user to enter their password.
+`
 	examples = `  # Reconnect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
 
@@ -65,7 +69,8 @@ kconnect will promot the user to enter their password.`
   kconnect to uat-bu1 --password supersecret
 
   # Reconnect based on an alias supplying a password via env var
-  KCONNECT_PASSWORD=supersecret kconnect to uat-bu1`
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
+ `
 )
 
 func Command() (*cobra.Command, error) {

@@ -32,9 +32,11 @@ import (
 
 var (
 	shortDescLs = "List all the aliases currently defined"
-	longDescLs  = `List all the aliases currently defined for connection history entries.
+	longDescLs  = `List all the aliases currently defined for connection history entries in the
+user's connection history.
 
-An alias is a user-friendly name for a connection history entry.`
+An alias is a user-friendly name for a connection history entry.
+`
 	examplesLs = `  # Display all the aliases as a table
   kconnect alias ls
 

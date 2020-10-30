@@ -1,17 +1,25 @@
 ## kconnect to
 
-Reconnect to a previously connected cluster
+Reconnect to a connection history entry.
 
 ### Synopsis
 
-Reconnect to a previously connected cluster using an alias or connection history entry.
+Reconnect to a cluster in the connection history by its entry ID or alias.
 
-The `to` command accepts `-` or `LAST` as a proxy for the most recent connection history entry, or `LAST~N` for previous entries.
+The kconnect tool creates an entry in the user's connection history with all the
+connection settings each time it generates a new kubectl configuration context 
+for a Kubernetes cluster.  The user can then reconnect to the same cluster and 
+refresh their access token or regenerate the kubectl configuration context using
+the connection history entry's ID or alias.
 
-Use the `kconnect ls` command to query your connection history.
+The to command also accepts - or LAST as proxy references to the most recent 
+connection history entry, or LAST~N for the Nth previous entry.
 
-The `to` command will connect using the password passed in via the `--password` flag or stored in the `KCONNECT_PASSWORD` 
-environment variable.  It will prompt the user for a password if they have not supplied one via the flag or environment variable.
+Although kconnect does not save the user's password in the connection history, 
+the user can avoid having to enter their password interactively by setting the 
+KCONNECT_PASSWORD environment variable or the --password command-line flag.  
+Otherwise kconnect will promot the user to enter their password.
+
 
 ```
 kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
@@ -20,32 +28,26 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 ### Examples
 
 ```
-  # List connection history entries - including aliases
-  kconnect ls
-
-  # Reconnect to a cluster by its connection history entry ID
-  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
-
-  # List available connection history entry aliases
-  kconnect alias ls
-
-  # Reconnect to a cluster by its connection history entry alias
+  # Reconnect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
 
-  # Reconnect to the most recent connection - useful for renewing credentials
+  # Reconnect based on an history id - history id can be found using kconnect ls
+  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Reconnect to current cluster (this is useful for renewing credentials)
   kconnect to -
-  # or 
+  OR 
   kconnect to LAST
 
-  # Reconnect to cluster one entry before the most recent connection (second in the history list)
+  # Reconnect to cluster used before current one
   kconnect to LAST~1
 
-  # Reconnect using the supplied password
+  # Reconnect based on an alias supplying a password
   kconnect to uat-bu1 --password supersecret
 
-  # Store a password in the KCONNECT_PASSWORD environment variable and reconnect using the stored password
-  KCONNECT_PASSWORD=supersecret kconnect to uat-bu1
-
+  # Reconnect based on an alias supplying a password via env var
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
+ 
 ```
 
 ### Options
@@ -54,7 +56,7 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
   -h, --help                      help for to
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
   -k, --kubeconfig string         Location of the kubeconfig to use. (default "$HOME/.kube/config")
-      --password string           Reconnect using the supplied password string
+      --password string           Password to use
       --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
 ```
 
@@ -68,6 +70,5 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 
 ### SEE ALSO
 
-* [kconnect](index.md) - The Kubernetes Connection Manager CLI
-* [kconnect ls](ls.md) - Query your connection history
-* [kconnect alias ls](alias_ls.md) - List available aliases
+* [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
+

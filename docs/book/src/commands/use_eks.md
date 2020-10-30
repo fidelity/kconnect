@@ -1,25 +1,27 @@
 ## kconnect use eks
 
-Connect to eks and discover clusters for use
+Connect to the eks cluster provider and choose a cluster.
 
 ### Synopsis
 
-The `use eks` command attempts to authenticate through the configured identity provider using the supplied credentials, connect to AWS EKS using the supplied 
-connection settings, discover available EKS clusters, and obtain `kubectl` configurations for the chosen cluster.
+Connect to eks via the configured identify provider, prompting the user to enter 
+or choose connection settings and a target cluster once connected.
 
-If successful, the command creates a new connection history entry to store those credentials and AWS EKS connection settings.
+The kconnect tool generates a kubectl configuration context with a fresh access 
+token to connect to the chosen cluster and adds a connection history entry to 
+store the chosen connection settings.  If given an alias name, kconnect will add
+a user-friendly alias to the new connection history entry.
 
-The user can then use the `to` command to reconnect to AWS EKS using the values stored in the connection history entry and generate a new `kubectl` 
-configuration context for the chosen cluster with a fresh Kubernetes access token when the stored access token expires.
+The user can then reconnect to the provider with the settings stored in the 
+connection history entry using the kconnect to command and the connection history
+entry ID or alias.  When the user reconnects using a connection history entry, 
+kconnect regenerates the kubectl configuration context and refreshes their access 
+token.
 
-If supplied with an alias name, the `use eks` command will define an alias for the new connection history entry.  When run in interactive mode, the command will 
-prompt the user to create an alias.
+* Note: kconnect use eks requires aws-iam-authenticator.
+  [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 
-The `ls` command lists previously successful connection history entries - including their aliases.
 
-The `alias ls` command lists all available connection history entry aliases.
-
-The `to` command accepts either a connection history entry ID, alias or reference when reconnecting to AWS EKS to request a fresh access token.
 
 ```
 kconnect use eks [flags]
@@ -34,14 +36,14 @@ kconnect use eks [flags]
   # Discover EKS clusters using SAML with a specific role
   kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
 
-  # List available connection history entries
+  # Discover an EKS cluster and add an alias to its connection history entry
+  kconnect use eks --alias mycluster
+
+  # Reconnect to a cluster by its connection history entry alias.
+  kconnect to mycluster
+
+  # Display the user's connection history as a table.
   kconnect ls
-
-  # Reconnect to a cluster using a connection history entry ID
-  kconnect to ${entryId}
-
-  # Reconnect to a cluster using a connection history entry alias
-  kconnect to ${alias}
 
 ```
 
@@ -52,7 +54,9 @@ kconnect use eks [flags]
   -c, --cluster-id string         Id of the cluster to use.
   -h, --help                      help for eks
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
+      --idp-endpoint string       identity provider endpoint provided by your IT team
       --idp-protocol string       The idp protocol to use (e.g. saml)
+      --idp-provider string       the name of the idp provider
   -k, --kubeconfig string         Location of the kubeconfig to use. (default "$HOME/.kube/config")
       --max-history int           Sets the maximum number of history items to keep (default 100)
       --namespace string          Sets namespace for context in kubeconfig
@@ -88,5 +92,5 @@ kconnect use eks [flags]
 
 ### SEE ALSO
 
-* [kconnect use](use.md) - Connect to a target environment and discover clusters for use
-* [kconnect to](to.md) - Connect to a cluster using an alias or history entry
+* [kconnect use](use.md)	 - Connect to a Kubernetes cluster provider and cluster.
+

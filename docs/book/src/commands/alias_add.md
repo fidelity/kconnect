@@ -1,12 +1,14 @@
 ## kconnect alias add
 
-Add an alias to a history entry
+Add an alias to a connection history entry
 
 ### Synopsis
 
 Adds a user-friendly alias to a connection history entry.
 
-You can then connect again to the same cluster using the `kconnect to` command and the alias.
+The user can then reconnect and refresh the access token for that cluster using 
+the alias instead of the connection history entry's unique ID.
+
 
 ```
 kconnect alias add [flags]
@@ -15,7 +17,7 @@ kconnect alias add [flags]
 ### Examples
 
 ```
-  # Add an alias to a history entry
+  # Add an alias to a connection history entry
   kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
 
   # Connect to a cluster using the alias
@@ -48,7 +50,5 @@ kconnect alias add [flags]
 
 ### SEE ALSO
 
-* [kconnect alias](alias.md) - Query and manipulate aliases for connection history entries.
-* [kconnect alias ls](alias_ls.md) - List available aliases.
-* [kconnect to](to.md) - Connect to a cluster using an alias or history entry.
-* [kconnect ls](ls.md) - Query your connection history.
+* [kconnect alias](alias.md)	 - Query and manipulate connection history entry aliases.
+

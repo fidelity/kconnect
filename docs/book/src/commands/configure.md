@@ -4,14 +4,18 @@ Set and view your kconnect configuration.
 
 ### Synopsis
 
-The `configure` command creates `kconnect` configuration files and displays previously-defined configurations
-in a user-friendly display format.
+The configure command creates kconnect configuration files and displays 
+previously-defined configurations in a user-friendly display format.
 
-If run with no flags, the command displays the configurations stored in the current user's 
-`~/.kconnect/config.yaml` file.
+If run with no flags, the command displays the configurations stored in the 
+current user's $HOME/.kconnect/config.yaml file.
 
-The `configure` command can create a set of default configurations for a new system or a new user via the `-f` 
-flag and a local filename or remote URL.  You would typically use this flag the first time you use `kconnect`.
+The configure command can create a set of default configurations for a new 
+system or a new user via the -f flag and a local filename or remote URL.
+
+The user typically only needs to use this command the first time they use 
+kconnect.
+
 
 ```
 kconnect configure [flags]
@@ -20,19 +24,19 @@ kconnect configure [flags]
 ### Examples
 
 ```
-  # Display the current configuration
+  # Display user's current configurations
   kconnect configure
 
-  # Display the configuration as json
+  # Display the user's configurations as json
   kconnect configure --output json
 
-  # Create a set of user configurations from a local file
+  # Set the user's configurations from a local file
   kconnect configure -f ./defaults.yaml
 
-  # Create a set of user configurations from a remote location via HTTP
+  # Set the user's configurations from a remote location via HTTP
   kconnect configure -f https://mycompany.com/config.yaml
 
-  # Create a set of user configirations from stdin
+  # Set the user's configurations from stdin
   cat ./config.yaml | kconnect configure -f -
 
 ```
@@ -55,5 +59,5 @@ kconnect configure [flags]
 
 ### SEE ALSO
 
-* [kconnect](index.md) - The Kubernetes Connection Manager CLI
+* [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
 

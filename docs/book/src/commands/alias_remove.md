@@ -4,9 +4,12 @@ Remove connection history entry aliases.
 
 ### Synopsis
 
-Remove an alias from a single connection history entry by the entry ID or the alias.
+Remove an alias from a single connection history entry by the entry ID or the 
+alias.
 
-This command will remove all connection history aliases if passed the --all flag.
+Set the --all flag on this command to remove all connection history aliases from
+the user's connection history.
+
 
 ```
 kconnect alias remove [flags]
@@ -18,7 +21,7 @@ kconnect alias remove [flags]
   # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
 
-  # Remove an alias using a history entry id
+  # Remove an alias using a histiry entry id
   kconnect alias remove --id 01EMEM5DB60TMX7D8SS2JCX3MT
 
   # Remove all aliases
@@ -52,6 +55,5 @@ kconnect alias remove [flags]
 
 ### SEE ALSO
 
-* [kconnect alias](alias.md) - Query and manipulate aliases for connection history entries.
-* [kconnect alias ls](alias_ls.ms) - List available aliases.
-* [kconnect ls](ls.md) - Query your connection history.
+* [kconnect alias](alias.md)	 - Query and manipulate connection history entry aliases.
+

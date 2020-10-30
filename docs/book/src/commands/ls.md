@@ -1,12 +1,17 @@
 ## kconnect ls
 
-Query the connection history
+Query the user's connection history
 
 ### Synopsis
 
-Displays the user's connection history entries along with their entry IDs and aliases.
+Query and display the user's connection history entries, including entry IDs and
+aliases.
 
-Use the `kconnect to` command and an alias or connection history entry ID to reconnect to one of the listed clusters.
+Each time kconnect creates a new kubectl context to connect to a Kubernetes 
+cluster, it saves the settings for the new connection as an entry in the user's 
+connection history.  The user can then reconnect using those same settings later 
+via the connection history entry's ID or alias.
+
 
 ```
 kconnect ls [flags]
@@ -15,23 +20,23 @@ kconnect ls [flags]
 ### Examples
 
 ```
-  # Display all the history as a table
+  # Display all connection history entries as a table
   kconnect ls
 
-  # Display the history as yaml
+  # Display all connection history entries as YAML
   kconnect ls --output yaml
 
-  # Get the history for a specific entry id
+  # Display a specific connection history entry by entry id
   kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
 
-  # Get the history entries for eks
+  # Display a specific connection history entry by its alias
+  kconnect ls --alias mydev
+
+  # Display all connection history entries for the EKS mamaged cluster provider
   kconnect ls --cluster-provider eks
 
-  # Connect to a cluster using a history entry
-  kconnect to ${entryId}
-
-  # Connect to a cluster using an alias
-  kconnect to ${alias}
+  # Reconnect using the connection history entry alias
+  kconnect to mydev
 
 ```
 
@@ -61,5 +66,5 @@ kconnect ls [flags]
 
 ### SEE ALSO
 
-* [kconnect](index.md) - The Kubernetes Connection Manager CLI
-* [kconnect to](to.md) - Connect to a cluster using an alias or history entry
+* [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
+
