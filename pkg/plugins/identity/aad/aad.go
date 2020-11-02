@@ -91,7 +91,19 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 
 	switch userRealm.AccountType {
 	case identity.AccountTypeFederated:
-		_, _ = identityClient.GetMex(userRealm.FederationMetadataURL)
+		doc, err := identityClient.GetMex(userRealm.FederationMetadataURL)
+		if err != nil {
+			return nil, err //TODO: specific error
+		}
+		endpoint := doc.UsernamePasswordEndpoint
+		wsTrustResponse, err := identityClient.GetWsTrustResponse(authCfg, userRealm.CloudAudienceURN, &endpoint)
+		if err != nil {
+			return nil, err //TODO: specific error
+		}
+		fmt.Println(wsTrustResponse)
+		//
+		identityClient.GetOauth2TokenFromSamlAssertion(authCfg, wsTrustResponse.Body.RequestSecurityTokenResponseCollection.RequestSecurityTokenResponse.RequestedSecurityToken.Assertion, "https://management.azure.com/")
+
 	case identity.AccountTypeManaged:
 	default:
 		return nil, identity.ErrUnknownAccountType
