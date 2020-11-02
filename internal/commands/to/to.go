@@ -66,11 +66,11 @@ func Command() (*cobra.Command, error) {
 You can use the history id or alias as the argument.
 You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters`,
 		Example: examples,
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return ErrAliasIDRequired
-			}
+			// if len(args) < 1 {
+			// 	return ErrAliasIDRequired
+			// }
 
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
@@ -80,9 +80,13 @@ You can also supply - or LAST to connect to last cluster in history (current clu
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zap.S().Info("running `to` command")
 
+			aliasOrIDORPosition := ""
+			if len(args) > 0 {
+				aliasOrIDORPosition = args[0]
+			}
 			params := &app.ConnectToParams{
 				Context:             provider.NewContext(provider.WithConfig(cfg)),
-				AliasOrIDORPosition: args[0],
+				AliasOrIDORPosition: aliasOrIDORPosition,
 			}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
