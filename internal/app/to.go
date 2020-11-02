@@ -162,7 +162,7 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	if err != nil {
 		return nil, fmt.Errorf("getting history entrie options: %w", err)
 	}
-	
+
 	selectedEntryString := ""
 	prompt := &survey.Select{
 		Message: "Select a history entry",
@@ -207,7 +207,6 @@ func (a *App) generateOptions(params *ConnectToParams, entries *historyv1alpha.H
 	}
 	return options, nil
 }
-
 
 func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
