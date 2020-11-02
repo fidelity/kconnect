@@ -40,6 +40,9 @@ var (
   # # Re-connect based on an history id - history id can be found using kconnect ls
   kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
 
+  # Re-connect interactively from history list
+  kconnect to
+  
   # Re-connect to current cluster (this is useful for renewing credentials)
   kconnect to -
   OR 
@@ -63,18 +66,14 @@ func Command() (*cobra.Command, error) {
 		Use:   "to [historyid/alias/-/LAST/LAST~N]",
 		Short: "Re-connect to a previously connected cluster using your history",
 		Long: `use is for re-connecting to a previously connected cluster using your history.
+If no value is supplied, then you can interactively select a history item to reconnect to
 You can use the history id or alias as the argument.
 You can also supply - or LAST to connect to last cluster in history (current cluster), or LAST~N for previous clusters`,
 		Example: examples,
 		Args:    cobra.MaximumNArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			// if len(args) < 1 {
-			// 	return ErrAliasIDRequired
-			// }
-
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
-
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {

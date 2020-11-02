@@ -158,24 +158,11 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	if err != nil {
 		return nil, fmt.Errorf("getting history entries: %w", err)
 	}
-	currentContexID, _ := a.getCurrentContextID(params.Kubeconfig)
-	entriesTable := entries.ToTable(currentContexID)
-	options := []string{}
-	objPrinter, err := printer.New("table")
+	options, err := a.generateOptions(params, entries)
 	if err != nil {
-		return nil, fmt.Errorf("making printer: %w", err)
+		return nil, fmt.Errorf("getting history entrie options: %w", err)
 	}
-	buf := new(bytes.Buffer)
-	objPrinter.Print(entriesTable, buf)
-	tableString := buf.String()
-
-	for i, s := range strings.Split(tableString, "\n") {
-		if i == 0 || s == "" {
-			continue
-		}
-		options = append(options, s)
-	}
-
+	
 	selectedEntryString := ""
 	prompt := &survey.Select{
 		Message: "Select a history entry",
@@ -184,6 +171,7 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	if err := survey.AskOne(prompt, &selectedEntryString, survey.WithValidator(survey.Required)); err != nil {
 		return nil, fmt.Errorf("asking for entry: %w", err)
 	}
+	// Get the name (ID) of the entry, which is the first alphanumerical string in the row
 	nameRegex := regexp.MustCompile("[a-zA-Z0-9]+")
 	selectedEntryName := nameRegex.FindString(selectedEntryString)
 	if selectedEntryName == "" {
@@ -193,24 +181,25 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	if err != nil {
 		return nil, fmt.Errorf("error getting entry with id: %w", err)
 	}
-
 	return entry, nil
 }
 
 func (a *App) generateOptions(params *ConnectToParams, entries *historyv1alpha.HistoryEntryList) ([]string, error) {
 
+	options := []string{}
+	// Make the history entries table, same output  as the kconnect ls command
 	currentContexID, _ := a.getCurrentContextID(params.Kubeconfig)
 	entriesTable := entries.ToTable(currentContexID)
-	options := []string{}
 	objPrinter, err := printer.New("table")
 	if err != nil {
 		return nil, fmt.Errorf("making printer: %w", err)
 	}
+	// Do not print the table to stdout, instead pass it to a byte buffer. We can then convert this to a string and use each row as an option
 	buf := new(bytes.Buffer)
 	objPrinter.Print(entriesTable, buf)
 	tableString := buf.String()
-
 	for i, s := range strings.Split(tableString, "\n") {
+		// Ignore the first option as this is the headers. Also ignore empty values
 		if i == 0 || s == "" {
 			continue
 		}
