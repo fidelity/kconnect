@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -37,7 +38,14 @@ type netHTTPClient struct {
 }
 
 func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
-	r, err := http.NewRequest(req.Method, req.URL, nil)
+	var r *http.Request
+	var err error
+
+	if req.Body == nil {
+		r, err = http.NewRequest(req.Method, req.URL, nil)
+	} else {
+		r, err = http.NewRequest(req.Method, req.URL, strings.NewReader(*req.Body))
+	}
 	if err != nil {
 		return nil, fmt.Errorf("creating http request: %w", err)
 	}
@@ -46,7 +54,7 @@ func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
 	}
 
 	zap.S().Debugw("http request", "url", req.URL, "method", req.Method, "headers", req.Headers)
-	zap.S().Debug(req.Body)
+	//zap.S().Debug(*req.Body)
 
 	resp, err := n.client.Do(r)
 	if err != nil {
@@ -71,7 +79,7 @@ func (n *netHTTPClient) Post(url string, body string, headers map[string]string)
 	req := &ClientRequest{
 		Method:  "POST",
 		Headers: headers,
-		Body:    body,
+		Body:    &body,
 		URL:     url,
 	}
 

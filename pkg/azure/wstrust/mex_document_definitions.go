@@ -1,8 +1,11 @@
-package identity
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+package wstrust
 
 import "encoding/xml"
 
-type MexDocument struct {
+type definitions struct {
 	XMLName         xml.Name `xml:"definitions"`
 	Text            string   `xml:",chardata"`
 	Name            string   `xml:"name,attr"`
@@ -32,8 +35,9 @@ type MexDocument struct {
 			All  struct {
 				Text                    string `xml:",chardata"`
 				NegotiateAuthentication struct {
-					Text string `xml:",chardata"`
-					HTTP string `xml:"http,attr"`
+					Text    string `xml:",chardata"`
+					HTTP    string `xml:"http,attr"`
+					XMLName xml.Name
 				} `xml:"NegotiateAuthentication"`
 				TransportBinding struct {
 					Text   string `xml:",chardata"`
@@ -44,7 +48,7 @@ type MexDocument struct {
 							Text   string `xml:",chardata"`
 							Policy struct {
 								Text       string `xml:",chardata"`
-								HttpsToken struct {
+								HTTPSToken struct {
 									Text                     string `xml:",chardata"`
 									RequireClientCertificate string `xml:"RequireClientCertificate,attr"`
 								} `xml:"HttpsToken"`
@@ -54,21 +58,31 @@ type MexDocument struct {
 							Text   string `xml:",chardata"`
 							Policy struct {
 								Text     string `xml:",chardata"`
-								Basic256 string `xml:"Basic256"`
-								Basic128 string `xml:"Basic128"`
+								Basic256 struct {
+									Text string `xml:",chardata"`
+								} `xml:"Basic256"`
+								Basic128 struct {
+									Text string `xml:",chardata"`
+								} `xml:"Basic128"`
 							} `xml:"Policy"`
 						} `xml:"AlgorithmSuite"`
 						Layout struct {
 							Text   string `xml:",chardata"`
 							Policy struct {
 								Text   string `xml:",chardata"`
-								Strict string `xml:"Strict"`
+								Strict struct {
+									Text string `xml:",chardata"`
+								} `xml:"Strict"`
 							} `xml:"Policy"`
 						} `xml:"Layout"`
-						IncludeTimestamp string `xml:"IncludeTimestamp"`
+						IncludeTimestamp struct {
+							Text string `xml:",chardata"`
+						} `xml:"IncludeTimestamp"`
 					} `xml:"Policy"`
 				} `xml:"TransportBinding"`
-				UsingAddressing           string `xml:"UsingAddressing"`
+				UsingAddressing struct {
+					Text string `xml:",chardata"`
+				} `xml:"UsingAddressing"`
 				EndorsingSupportingTokens struct {
 					Text   string `xml:",chardata"`
 					Sp     string `xml:"sp,attr"`
@@ -79,8 +93,12 @@ type MexDocument struct {
 							IncludeToken string `xml:"IncludeToken,attr"`
 							Policy       struct {
 								Text                       string `xml:",chardata"`
-								RequireThumbprintReference string `xml:"RequireThumbprintReference"`
-								WssX509V3Token10           string `xml:"WssX509V3Token10"`
+								RequireThumbprintReference struct {
+									Text string `xml:",chardata"`
+								} `xml:"RequireThumbprintReference"`
+								WssX509V3Token10 struct {
+									Text string `xml:",chardata"`
+								} `xml:"WssX509V3Token10"`
 							} `xml:"Policy"`
 						} `xml:"X509Token"`
 						RsaToken struct {
@@ -102,25 +120,43 @@ type MexDocument struct {
 							IncludeToken string `xml:"IncludeToken,attr"`
 							Policy       struct {
 								Text                         string `xml:",chardata"`
-								WssGssKerberosV5ApReqToken11 string `xml:"WssGssKerberosV5ApReqToken11"`
+								WssGssKerberosV5ApReqToken11 struct {
+									Text string `xml:",chardata"`
+								} `xml:"WssGssKerberosV5ApReqToken11"`
 							} `xml:"Policy"`
 						} `xml:"KerberosToken"`
 						IssuedToken struct {
 							Text                         string `xml:",chardata"`
 							IncludeToken                 string `xml:"IncludeToken,attr"`
 							RequestSecurityTokenTemplate struct {
-								Text                      string `xml:",chardata"`
-								KeyType                   string `xml:"KeyType"`
-								EncryptWith               string `xml:"EncryptWith"`
-								SignatureAlgorithm        string `xml:"SignatureAlgorithm"`
-								CanonicalizationAlgorithm string `xml:"CanonicalizationAlgorithm"`
-								EncryptionAlgorithm       string `xml:"EncryptionAlgorithm"`
-								KeySize                   string `xml:"KeySize"`
-								KeyWrapAlgorithm          string `xml:"KeyWrapAlgorithm"`
+								Text    string `xml:",chardata"`
+								KeyType struct {
+									Text string `xml:",chardata"`
+								} `xml:"KeyType"`
+								EncryptWith struct {
+									Text string `xml:",chardata"`
+								} `xml:"EncryptWith"`
+								SignatureAlgorithm struct {
+									Text string `xml:",chardata"`
+								} `xml:"SignatureAlgorithm"`
+								CanonicalizationAlgorithm struct {
+									Text string `xml:",chardata"`
+								} `xml:"CanonicalizationAlgorithm"`
+								EncryptionAlgorithm struct {
+									Text string `xml:",chardata"`
+								} `xml:"EncryptionAlgorithm"`
+								KeySize struct {
+									Text string `xml:",chardata"`
+								} `xml:"KeySize"`
+								KeyWrapAlgorithm struct {
+									Text string `xml:",chardata"`
+								} `xml:"KeyWrapAlgorithm"`
 							} `xml:"RequestSecurityTokenTemplate"`
 							Policy struct {
 								Text                     string `xml:",chardata"`
-								RequireInternalReference string `xml:"RequireInternalReference"`
+								RequireInternalReference struct {
+									Text string `xml:",chardata"`
+								} `xml:"RequireInternalReference"`
 							} `xml:"Policy"`
 						} `xml:"IssuedToken"`
 						KeyValueToken struct {
@@ -135,7 +171,9 @@ type MexDocument struct {
 					Sp     string `xml:"sp,attr"`
 					Policy struct {
 						Text                     string `xml:",chardata"`
-						MustSupportRefThumbprint string `xml:"MustSupportRefThumbprint"`
+						MustSupportRefThumbprint struct {
+							Text string `xml:",chardata"`
+						} `xml:"MustSupportRefThumbprint"`
 					} `xml:"Policy"`
 				} `xml:"Wss11"`
 				Trust10 struct {
@@ -143,9 +181,15 @@ type MexDocument struct {
 					Sp     string `xml:"sp,attr"`
 					Policy struct {
 						Text                    string `xml:",chardata"`
-						MustSupportIssuedTokens string `xml:"MustSupportIssuedTokens"`
-						RequireClientEntropy    string `xml:"RequireClientEntropy"`
-						RequireServerEntropy    string `xml:"RequireServerEntropy"`
+						MustSupportIssuedTokens struct {
+							Text string `xml:",chardata"`
+						} `xml:"MustSupportIssuedTokens"`
+						RequireClientEntropy struct {
+							Text string `xml:",chardata"`
+						} `xml:"RequireClientEntropy"`
+						RequireServerEntropy struct {
+							Text string `xml:",chardata"`
+						} `xml:"RequireServerEntropy"`
 					} `xml:"Policy"`
 				} `xml:"Trust10"`
 				SignedSupportingTokens struct {
@@ -158,7 +202,10 @@ type MexDocument struct {
 							IncludeToken string `xml:"IncludeToken,attr"`
 							Policy       struct {
 								Text               string `xml:",chardata"`
-								WssUsernameToken10 string `xml:"WssUsernameToken10,omitempty"`
+								WssUsernameToken10 struct {
+									Text    string `xml:",chardata"`
+									XMLName xml.Name
+								} `xml:"WssUsernameToken10"`
 							} `xml:"Policy"`
 						} `xml:"UsernameToken"`
 					} `xml:"Policy"`
@@ -168,9 +215,15 @@ type MexDocument struct {
 					Sp     string `xml:"sp,attr"`
 					Policy struct {
 						Text                    string `xml:",chardata"`
-						MustSupportIssuedTokens string `xml:"MustSupportIssuedTokens"`
-						RequireClientEntropy    string `xml:"RequireClientEntropy"`
-						RequireServerEntropy    string `xml:"RequireServerEntropy"`
+						MustSupportIssuedTokens struct {
+							Text string `xml:",chardata"`
+						} `xml:"MustSupportIssuedTokens"`
+						RequireClientEntropy struct {
+							Text string `xml:",chardata"`
+						} `xml:"RequireClientEntropy"`
+						RequireServerEntropy struct {
+							Text string `xml:",chardata"`
+						} `xml:"RequireServerEntropy"`
 					} `xml:"Policy"`
 				} `xml:"Trust13"`
 				SignedEncryptedSupportingTokens struct {
@@ -183,7 +236,10 @@ type MexDocument struct {
 							IncludeToken string `xml:"IncludeToken,attr"`
 							Policy       struct {
 								Text               string `xml:",chardata"`
-								WssUsernameToken10 string `xml:"WssUsernameToken10"`
+								WssUsernameToken10 struct {
+									Text    string `xml:",chardata"`
+									XMLName xml.Name
+								} `xml:"WssUsernameToken10"`
 							} `xml:"Policy"`
 						} `xml:"UsernameToken"`
 					} `xml:"Policy"`
@@ -278,33 +334,18 @@ type MexDocument struct {
 				Location string `xml:"location,attr"`
 			} `xml:"address"`
 			EndpointReference struct {
-				Text     string `xml:",chardata"`
-				Address  string `xml:"Address"`
+				Text    string `xml:",chardata"`
+				Address struct {
+					Text string `xml:",chardata"`
+				} `xml:"Address"`
 				Identity struct {
 					Text  string `xml:",chardata"`
 					Xmlns string `xml:"xmlns,attr"`
-					Spn   string `xml:"Spn"`
+					Spn   struct {
+						Text string `xml:",chardata"`
+					} `xml:"Spn"`
 				} `xml:"Identity"`
 			} `xml:"EndpointReference"`
 		} `xml:"port"`
 	} `xml:"service"`
-}
-
-type Envelope struct {
-	XMLName xml.Name
-	Body    Body
-}
-
-type Body struct {
-	XMLName                      xml.Name                     `xml:"Body"`
-	RequestSecurityTokenResponse RequestSecurityTokenResponse `xml:"RequestSecurityTokenResponse"`
-}
-
-type RequestSecurityTokenResponse struct {
-	XMLName                xml.Name               `xml:"RequestSecurityTokenResponse"`
-	RequestedSecurityToken RequestedSecurityToken `xml:"RequestedSecurityToken"`
-}
-
-type RequestedSecurityToken struct {
-	Assertion string `xml:",innerxml"`
 }

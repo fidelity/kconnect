@@ -1,8 +1,16 @@
 package identity
 
+import (
+	"encoding/xml"
+
+	"github.com/fidelity/kconnect/pkg/azure/wstrust"
+)
+
 type Client interface {
 	GetUserRealm(cfg *AuthenticationConfig) (*UserRealm, error)
-	GetMex(federationMetadataURL string) (*MexDocument, error)
+	GetMex(federationMetadataURL string) (*wstrust.MexDocument, error)
+	GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error)
+	GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*string, error)
 }
 
 type AuthorityConfig struct {
@@ -53,3 +61,27 @@ var (
 	AccountTypeFederated = AccountType("Federated")
 	AccountTypeManaged   = AccountType("Managed")
 )
+
+type WSTrustResponse struct {
+	XMLName xml.Name
+	Body    WSTrustResponseBody
+}
+
+type WSTrustResponseBody struct {
+	XMLName                                xml.Name                               `xml:"Body"`
+	RequestSecurityTokenResponseCollection RequestSecurityTokenResponseCollection `xml:"RequestSecurityTokenResponseCollection"`
+}
+
+type RequestSecurityTokenResponseCollection struct {
+	XMLName                      xml.Name                     `xml:"RequestSecurityTokenResponseCollection"`
+	RequestSecurityTokenResponse RequestSecurityTokenResponse `xml:"RequestSecurityTokenResponse"`
+}
+
+type RequestSecurityTokenResponse struct {
+	XMLName                xml.Name               `xml:"RequestSecurityTokenResponse"`
+	RequestedSecurityToken RequestedSecurityToken `xml:"RequestedSecurityToken"`
+}
+
+type RequestedSecurityToken struct {
+	Assertion string `xml:",innerxml"`
+}

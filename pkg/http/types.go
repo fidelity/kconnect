@@ -26,7 +26,7 @@ type Client interface {
 // ClientRequest represents a http request
 type ClientRequest struct {
 	URL     string
-	Body    string
+	Body    *string
 	Method  string
 	Headers map[string]string
 }
