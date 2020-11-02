@@ -108,7 +108,7 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 func (a *App) getHistoryEntry(params *ConnectToParams) (*historyv1alpha.HistoryEntry, error) {
 
 	idOrAliasORPosition := params.AliasOrIDORPosition
-	if idOrAliasORPosition == "ls" {
+	if idOrAliasORPosition == "" {
 		entry, err := a.getInteractive(params)
 		if err != nil {
 			return nil, fmt.Errorf("getting history interactivly: %w", err)
@@ -156,17 +156,20 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 
 	entries, err := a.historyStore.GetAllSortedByLastUsed()
 	if err != nil {
-		return nil, fmt.Errorf("getting history entries")
+		return nil, fmt.Errorf("getting history entries: %w", err)
 	}
-	currentContexID, err := a.getCurrentContextID(params.Kubeconfig)
+	currentContexID, _ := a.getCurrentContextID(params.Kubeconfig)
 	entriesTable := entries.ToTable(currentContexID)
 	options := []string{}
 	objPrinter, err := printer.New("table")
+	if err != nil {
+		return nil, fmt.Errorf("making printer: %w", err)
+	}
 	buf := new(bytes.Buffer)
 	objPrinter.Print(entriesTable, buf)
 	tableString := buf.String()
 
-	for i, s := range strings.Split(tableString, "\n") {	
+	for i, s := range strings.Split(tableString, "\n") {
 		if i == 0 || s == "" {
 			continue
 		}
@@ -186,13 +189,36 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	if selectedEntryName == "" {
 		return nil, history.ErrEntryNotFound
 	}
-	entry, err :=  a.historyStore.GetByID(selectedEntryName)
+	entry, err := a.historyStore.GetByID(selectedEntryName)
 	if err != nil {
 		return nil, fmt.Errorf("error getting entry with id: %w", err)
 	}
 
 	return entry, nil
 }
+
+func (a *App) generateOptions(params *ConnectToParams, entries *historyv1alpha.HistoryEntryList) ([]string, error) {
+
+	currentContexID, _ := a.getCurrentContextID(params.Kubeconfig)
+	entriesTable := entries.ToTable(currentContexID)
+	options := []string{}
+	objPrinter, err := printer.New("table")
+	if err != nil {
+		return nil, fmt.Errorf("making printer: %w", err)
+	}
+	buf := new(bytes.Buffer)
+	objPrinter.Print(entriesTable, buf)
+	tableString := buf.String()
+
+	for i, s := range strings.Split(tableString, "\n") {
+		if i == 0 || s == "" {
+			continue
+		}
+		options = append(options, s)
+	}
+	return options, nil
+}
+
 
 func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
