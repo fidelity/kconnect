@@ -10,19 +10,19 @@ on:
       - reopened
 
 jobs:
-  wipcheck:
-    name: Check if work-in-progress
-    runs-on: ubuntu-latest
-    steps:
-    # Block if WIP
-    - name: check WIP
-      uses: wip/action@v1.0.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#   wipcheck:
+#     name: Check if work-in-progress
+#     runs-on: ubuntu-latest
+#     steps:
+#     # Block if WIP
+#     - name: check WIP
+#       uses: wip/action@v1.0.0
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   titlecheck:
     name: PR title follows coventional commit
-    needs: wipcheck
+    #needs: wipcheck
     runs-on: ubuntu-latest
     steps:
     - name: Check conventinal title
