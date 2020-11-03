@@ -89,6 +89,7 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		return nil, fmt.Errorf("getting user realm: %w", err)
 	}
 
+	var token *identity.OauthToken
 	switch userRealm.AccountType {
 	case identity.AccountTypeFederated:
 		doc, err := identityClient.GetMex(userRealm.FederationMetadataURL)
@@ -100,14 +101,17 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		if err != nil {
 			return nil, err //TODO: specific error
 		}
-		fmt.Println(wsTrustResponse)
-		//
-		identityClient.GetOauth2TokenFromSamlAssertion(authCfg, wsTrustResponse.Body.RequestSecurityTokenResponseCollection.RequestSecurityTokenResponse.RequestedSecurityToken.Assertion, "https://management.azure.com/")
+		token, err = identityClient.GetOauth2TokenFromSamlAssertion(authCfg, wsTrustResponse.Body.RequestSecurityTokenResponseCollection.RequestSecurityTokenResponse.RequestedSecurityToken.Assertion, "https://management.azure.com/")
+		if err != nil {
+			return nil, err //TODO: specific error
+		}
 
 	case identity.AccountTypeManaged:
 	default:
 		return nil, identity.ErrUnknownAccountType
 	}
+
+	fmt.Println(token)
 
 	return nil, nil
 }
