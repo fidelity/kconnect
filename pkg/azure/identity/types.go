@@ -10,7 +10,7 @@ type Client interface {
 	GetUserRealm(cfg *AuthenticationConfig) (*UserRealm, error)
 	GetMex(federationMetadataURL string) (*wstrust.MexDocument, error)
 	GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error)
-	GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*string, error)
+	GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*OauthToken, error)
 }
 
 type AuthorityConfig struct {
@@ -84,4 +84,16 @@ type RequestSecurityTokenResponse struct {
 
 type RequestedSecurityToken struct {
 	Assertion string `xml:",innerxml"`
+}
+
+type OauthToken struct {
+	Type         string `json:"token_type"`
+	Scope        string `json:"scope"`
+	ExpiresIn    string `json:"expires_in"`
+	ExpiresOn    string `json:"expires_on"`
+	NotBefore    string `json:"not_before"`
+	Resource     string `json:"resource"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	IDToken      string `json:"id_token"`
 }

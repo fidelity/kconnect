@@ -106,7 +106,7 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 	return wsTrustResp, nil
 }
 
-func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*string, error) {
+func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*OauthToken, error) {
 
 	assertionEncoded := base64.StdEncoding.EncodeToString([]byte(assertion))
 	data := url.Values{}
@@ -118,7 +118,7 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 
 	url := fmt.Sprintf("%soauth2/token", cfg.Authority.AuthorityURI)
 
-	headers := make(map[string]string)
+	headers := make(map[string]string) //TODO: add common headers
 	headers["Content-Type"] = "application/x-www-form-urlencoded"
 
 	resp, err := c.httpClient.Post(url, data.Encode(), headers)
@@ -126,15 +126,13 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 		return nil, err
 	}
 
-	// requestToken := &RequestToken{}
+	token := &OauthToken{}
 
-	// if err := json.Unmarshal(body, requestToken); err != nil {
-	// 	return nil, err
-	// }
-	body := resp.Body()
-	fmt.Println(body)
+	if err := json.Unmarshal([]byte(resp.Body()), token); err != nil {
+		return nil, fmt.Errorf("unmarshalling oauth token: %w", err)
+	}
 
-	return &body, err
+	return token, err
 }
 
 func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (string, error) {
