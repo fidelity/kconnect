@@ -91,7 +91,7 @@ type RequestedSecurityToken struct {
 type OauthToken struct {
 	Type         string `json:"token_type"`
 	Scope        string `json:"scope"`
-	ExpiresIn    string `json:"expires_in"`
+	ExpiresIn    string `json:"expires_in"` //seconds
 	ExpiresOn    string `json:"expires_on"`
 	NotBefore    string `json:"not_before"`
 	Resource     string `json:"resource"`

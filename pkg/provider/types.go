@@ -104,13 +104,16 @@ type Cluster struct {
 	CertificateAuthorityData *string `yaml:"ca"`
 }
 
-// Identity represents a users identity for use with discovery.
-// NOTE: details of this need finalising
-type Identity interface {
-}
-
 // Plugin is an interface that can be implemented for returned usage information
 type Plugin interface {
 	// Name returns the name of the plugin
 	Name() string
+}
+
+// Identity represents a users identity for use with discovery.
+// NOTE: details of this need finalising
+type Identity interface {
+	Type() string
+	Name() string
+	IsExpired() bool
 }

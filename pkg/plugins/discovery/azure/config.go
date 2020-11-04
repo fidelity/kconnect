@@ -14,33 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package azure
 
 import (
-	"time"
+	"k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-// Identity represents an AWS identity
-type Identity struct {
-	ProfileName      string
-	AWSAccessKey     string
-	AWSSecretKey     string
-	AWSSessionToken  string
-	AWSSecurityToken string
-	PrincipalARN     string
-	Expires          time.Time
-	Region           string
-}
-
-func (i *Identity) Type() string {
-	return "aws"
-}
-
-func (i *Identity) Name() string {
-	return i.PrincipalARN
-}
-
-func (i *Identity) IsExpired() bool {
-	now := time.Now().UTC()
-	return now.After(i.Expires)
+func (p *aksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, namespace string) (*api.Config, string, error) {
+	return nil, "", nil
 }

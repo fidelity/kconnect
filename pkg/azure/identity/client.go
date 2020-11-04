@@ -39,16 +39,13 @@ func (c *AzureADClient) GetUserRealm(cfg *AuthenticationConfig) (*UserRealm, err
 	if resp.ResponseCode() != http.StatusOK {
 		return nil, ErrInvalidResponseCode
 	}
-	fmt.Println(resp.Body())
 
 	userRealm := &UserRealm{}
-
 	if err := json.Unmarshal([]byte(resp.Body()), userRealm); err != nil {
 		return nil, fmt.Errorf("unmarshalling user realm: %w", err)
 	}
 
 	//TODO: add validation???
-	fmt.Println(userRealm)
 
 	return userRealm, nil
 }
@@ -130,7 +127,6 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 	}
 
 	token := &OauthToken{}
-
 	if err := json.Unmarshal([]byte(resp.Body()), token); err != nil {
 		return nil, fmt.Errorf("unmarshalling oauth token: %w", err)
 	}
