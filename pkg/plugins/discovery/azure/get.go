@@ -14,33 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package azure
 
 import (
-	"time"
+	"fmt"
+
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-// Identity represents an AWS identity
-type Identity struct {
-	ProfileName      string
-	AWSAccessKey     string
-	AWSSecretKey     string
-	AWSSessionToken  string
-	AWSSecurityToken string
-	PrincipalARN     string
-	Expires          time.Time
-	Region           string
-}
+// Get will get the details of a AKS cluster.
+func (p *aksClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
+	if err := p.setup(ctx, identity); err != nil {
+		return nil, fmt.Errorf("setting up aks provider: %w", err)
+	}
 
-func (i *Identity) Type() string {
-	return "aws"
-}
+	p.logger.Infow("getting AKS cluster", "id", clusterID)
 
-func (i *Identity) Name() string {
-	return i.PrincipalARN
-}
-
-func (i *Identity) IsExpired() bool {
-	now := time.Now().UTC()
-	return now.After(i.Expires)
+	return nil, nil
 }

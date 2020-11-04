@@ -14,30 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package oidc
 
-import (
-	"time"
-)
+import "time"
 
-// Identity represents an AWS identity
+// Identity is an identity that is based on OpenID Connect
 type Identity struct {
-	ProfileName      string
-	AWSAccessKey     string
-	AWSSecretKey     string
-	AWSSessionToken  string
-	AWSSecurityToken string
-	PrincipalARN     string
-	Expires          time.Time
-	Region           string
+	Scope        string `json:"scope"`
+	Expires      time.Time
+	Resource     string `json:"resource"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	IDToken      string `json:"id_token"`
 }
 
 func (i *Identity) Type() string {
-	return "aws"
+	return "oidc"
 }
 
 func (i *Identity) Name() string {
-	return i.PrincipalARN
+	return "" //TODO: get from ID token?
 }
 
 func (i *Identity) IsExpired() bool {

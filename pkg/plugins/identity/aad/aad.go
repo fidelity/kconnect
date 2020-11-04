@@ -18,12 +18,15 @@ package aad
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
 	khttp "github.com/fidelity/kconnect/pkg/http"
+	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -107,15 +110,25 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		}
 
 	case identity.AccountTypeManaged:
-	case identity.AccountTypeUnknown:
-		identityClient.GetOauth2TokenFromUsernamePassword(authCfg)
+		token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg)
+		if err != nil {
+			return nil, err //TODO: specific error
+		}
+	case identity.AccountTypeUnknown: //TODO: need to check other parts
+		token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg)
+		if err != nil {
+			return nil, err //TODO: specific error
+		}
 	default:
 		return nil, identity.ErrUnknownAccountType
 	}
 
-	fmt.Println(token)
+	id, err := p.createIdentityFromToken(token)
+	if err != nil {
+		return nil, fmt.Errorf("creating identity from oauth token: %w", err)
+	}
 
-	return nil, nil
+	return id, nil
 }
 
 // ConfigurationItems will return the configuration items for the intentity plugin based
@@ -147,4 +160,22 @@ func (p *aadIdentityProvider) ensureLogger() {
 	if p.logger == nil {
 		p.logger = zap.S().With("provider", "aad")
 	}
+}
+
+func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken) (*oidc.Identity, error) {
+	id := &oidc.Identity{
+		AccessToken:  token.AccessToken,
+		IDToken:      token.IDToken,
+		RefreshToken: token.RefreshToken,
+		Resource:     token.Resource,
+		Scope:        token.Scope,
+	}
+
+	expires, err := strconv.ParseInt(token.ExpiresOn, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("parsing expireson: %w", err)
+	}
+	id.Expires = time.Unix(expires, 0)
+
+	return id, nil
 }

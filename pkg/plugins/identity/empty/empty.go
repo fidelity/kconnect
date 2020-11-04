@@ -38,10 +38,6 @@ func newEmptyProvider() *emptyIdentityProvider {
 type emptyIdentityProvider struct {
 }
 
-// EmptyIdentity is a empty empty returned from the EmptyIdentityProvider
-type EmptyIdentity struct {
-}
-
 // Name returns the name of the plugin
 func (p *emptyIdentityProvider) Name() string {
 	return "Empty Identity Provider"
@@ -60,4 +56,20 @@ func (p *emptyIdentityProvider) Authenticate(ctx *provider.Context, clusterProvi
 // Usage returns a description for use in the help/usage
 func (p *emptyIdentityProvider) Usage(clusterProvider string) (string, error) {
 	return "", nil
+}
+
+// EmptyIdentity is a empty empty returned from the EmptyIdentityProvider
+type EmptyIdentity struct {
+}
+
+func (i *EmptyIdentity) Type() string {
+	return "empty"
+}
+
+func (i *EmptyIdentity) Name() string {
+	return "empty"
+}
+
+func (i *EmptyIdentity) IsExpired() bool {
+	return false
 }
