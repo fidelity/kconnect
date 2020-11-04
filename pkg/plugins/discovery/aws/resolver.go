@@ -60,6 +60,6 @@ func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (r *awsConfigResolver) Resolve(config config.ConfigurationSet) error {
+func (r *awsConfigResolver) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
 	return nil
 }

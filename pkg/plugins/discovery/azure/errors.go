@@ -16,18 +16,8 @@ limitations under the License.
 
 package azure
 
-import (
-	"fmt"
+import "errors"
 
-	"github.com/fidelity/kconnect/pkg/provider"
+var (
+	ErrNotOIDCIdentity = errors.New("unsupported identity, oidc.Identity required")
 )
-
-func (p *aksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
-	if err := p.setup(ctx.ConfigurationItems(), identity); err != nil {
-		return nil, fmt.Errorf("setting up aks provider: %w", err)
-	}
-
-	p.logger.Info("discovering AKS clusters")
-
-	return nil, nil
-}

@@ -18,7 +18,6 @@ package aad
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -29,6 +28,10 @@ import (
 	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
+
+// var (
+// 	unixEpoch = time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
+// )
 
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("aad", newProvider()); err != nil {
@@ -171,11 +174,19 @@ func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken
 		Scope:        token.Scope,
 	}
 
-	expires, err := strconv.ParseInt(token.ExpiresOn, 10, 64)
+	// expiresSeconds, err := token.ExpiresOn.Float64()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("getting ExpiresOn: %w", err)
+	// }
+
+	// expiresDur := time.Duration(expiresSeconds * float64(time.Second))
+	// id.Expires = unixEpoch.Add(expiresDur)
+
+	expiresSeconds, err := token.ExpiresOn.Int64()
 	if err != nil {
-		return nil, fmt.Errorf("parsing expireson: %w", err)
+		return nil, fmt.Errorf("getting ExpiresOn: %w", err)
 	}
-	id.Expires = time.Unix(expires, 0)
+	id.Expires = time.Unix(expiresSeconds, 0)
 
 	return id, nil
 }

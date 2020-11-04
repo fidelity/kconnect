@@ -58,7 +58,7 @@ type ConfigResolver interface {
 
 	// Resolve will resolve the values for the supplied config items. It will interactively
 	// resolve the values by asking the user for selections.
-	Resolve(config config.ConfigurationSet) error
+	Resolve(config config.ConfigurationSet, identity Identity) error
 }
 
 type ConfigResolveFunc func(name string, config *config.ConfigurationSet) error
