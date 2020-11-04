@@ -107,6 +107,8 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		}
 
 	case identity.AccountTypeManaged:
+	case identity.AccountTypeUnknown:
+		identityClient.GetOauth2TokenFromUsernamePassword(authCfg)
 	default:
 		return nil, identity.ErrUnknownAccountType
 	}

@@ -11,6 +11,7 @@ type Client interface {
 	GetMex(federationMetadataURL string) (*wstrust.MexDocument, error)
 	GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error)
 	GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*OauthToken, error)
+	GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig) (*OauthToken, error)
 }
 
 type AuthorityConfig struct {
@@ -60,6 +61,7 @@ type AccountType string
 var (
 	AccountTypeFederated = AccountType("Federated")
 	AccountTypeManaged   = AccountType("Managed")
+	AccountTypeUnknown   = AccountType("Unknown")
 )
 
 type WSTrustResponse struct {
