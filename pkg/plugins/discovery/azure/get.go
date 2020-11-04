@@ -24,7 +24,7 @@ import (
 
 // Get will get the details of a AKS cluster.
 func (p *aksClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
-	if err := p.setup(ctx, identity); err != nil {
+	if err := p.setup(ctx.ConfigurationItems(), identity); err != nil {
 		return nil, fmt.Errorf("setting up aks provider: %w", err)
 	}
 

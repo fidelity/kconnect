@@ -264,7 +264,7 @@ func preRun(params *app.UseParams) error {
 	}
 	params.Identity = identity
 
-	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems())
+	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems(), params.Identity)
 }
 
 func getIdpProtocol(args []string, params *app.UseParams) (string, error) {

@@ -40,3 +40,7 @@ func (i *Identity) IsExpired() bool {
 	now := time.Now().UTC()
 	return now.After(i.Expires)
 }
+
+func (i *Identity) OAuthToken() string {
+	return i.AccessToken
+}

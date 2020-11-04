@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"encoding/json"
 	"encoding/xml"
 
 	"github.com/fidelity/kconnect/pkg/azure/wstrust"
@@ -89,13 +90,13 @@ type RequestedSecurityToken struct {
 }
 
 type OauthToken struct {
-	Type         string `json:"token_type"`
-	Scope        string `json:"scope"`
-	ExpiresIn    string `json:"expires_in"` //seconds
-	ExpiresOn    string `json:"expires_on"`
-	NotBefore    string `json:"not_before"`
-	Resource     string `json:"resource"`
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	IDToken      string `json:"id_token"`
+	Type         string      `json:"token_type"`
+	Scope        string      `json:"scope"`
+	ExpiresIn    json.Number `json:"expires_in"` //seconds
+	ExpiresOn    json.Number `json:"expires_on"`
+	NotBefore    json.Number `json:"not_before"`
+	Resource     string      `json:"resource"`
+	AccessToken  string      `json:"access_token"`
+	RefreshToken string      `json:"refresh_token"`
+	IDToken      string      `json:"id_token"`
 }

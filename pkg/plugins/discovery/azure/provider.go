@@ -21,7 +21,10 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/Azure/go-autorest/autorest"
+
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -48,7 +51,8 @@ type aksClusterProviderConfig struct {
 }
 
 type aksClusterProvider struct {
-	config *aksClusterProviderConfig
+	config     *aksClusterProviderConfig
+	authorizer *autorest.BearerAuthorizer
 
 	logger *zap.SugaredLogger
 }
@@ -70,18 +74,25 @@ func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 
 // ConfigurationResolver returns the resolver to use for config with this provider
 func (p *aksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return &azureConfigResolver{}
+	return p
 }
 
-func (p *aksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
+func (p *aksClusterProvider) setup(cs config.ConfigurationSet, identity provider.Identity) error {
 	p.ensureLogger()
 	cfg := &aksClusterProviderConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(cs, cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
 	}
 	p.config = cfg
 
-	//TODO: get the identity and create the client
+	id, ok := identity.(*oidc.Identity)
+	if !ok {
+		return ErrNotOIDCIdentity
+	}
+
+	p.logger.Debugw("creating bearer authorizer")
+	bearerAuth := autorest.NewBearerAuthorizer(id)
+	p.authorizer = bearerAuth
 
 	return nil
 }
