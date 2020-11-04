@@ -1,12 +1,14 @@
 package identity
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,6 +39,7 @@ func (c *AzureADClient) GetUserRealm(cfg *AuthenticationConfig) (*UserRealm, err
 	if resp.ResponseCode() != http.StatusOK {
 		return nil, ErrInvalidResponseCode
 	}
+	fmt.Println(resp.Body())
 
 	userRealm := &UserRealm{}
 
@@ -135,6 +138,31 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 	return token, err
 }
 
+func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig) (*OauthToken, error) {
+
+	params := map[string]string{
+		"grant_type":  "password",
+		"username":    cfg.Username,
+		"password":    cfg.Password,
+		"client_id":   cfg.ClientID,
+		"scope":       "openid offline_access profile",
+		"client_info": "1",
+	}
+
+	headers := make(map[string]string)
+	headers["Content-Type"] = "application/x-www-form-urlencoded; charset=utf-8"
+
+	body := c.endcodeQueryParams(params)
+
+	resp, err := c.httpClient.Post(cfg.Endpoints.TokenEndpoint, body, headers)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(resp.Body())
+
+	return nil, nil
+}
+
 func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (string, error) {
 
 	messageID := uuid.New()
@@ -214,4 +242,26 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceU
 		"</s:Envelope>"
 
 	return requestTemplate, nil
+}
+
+func (c *AzureADClient) endcodeQueryParams(params map[string]string) string {
+	var buffer bytes.Buffer
+
+	keys := []string{}
+
+	for k := range params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for i, key := range keys {
+		if i > 0 {
+			buffer.WriteString("&")
+		}
+		buffer.WriteString(url.QueryEscape(key))
+		buffer.WriteString("=")
+		buffer.WriteString(url.QueryEscape(params[key]))
+	}
+
+	return buffer.String()
 }
