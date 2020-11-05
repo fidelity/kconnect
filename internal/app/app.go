@@ -21,6 +21,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/pflag"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/history"
@@ -75,18 +76,22 @@ func WithHistoryStore(store history.Store) Option {
 // 1 cluster then it automatically selects it. If there are more than 1 cluster then
 // a selection is displayed and the user must choose one
 func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cluster, error) {
+	clusterNameToID := make(map[string]string)
 	options := []string{}
 	for _, cluster := range discoverOutput.Clusters {
-		options = append(options, cluster.ID)
+		clusterNameToID[cluster.Name] = cluster.ID
+		options = append(options, cluster.Name)
 	}
 
 	if len(options) == 1 {
-		return discoverOutput.Clusters[options[0]], nil
+		clusterID := clusterNameToID[options[0]]
+		zap.S().Debugw("only 1 cluster, auto selecting", "id", clusterID)
+		return discoverOutput.Clusters[clusterID], nil
 	}
 
 	clusterName := ""
 	prompt := &survey.Select{
-		Message:  "Select the cluster",
+		Message:  "Select a cluster",
 		Options:  options,
 		PageSize: defaults.DefaultUIPageSize,
 		Help:     "Select a cluster to connect to from the discovered clusters",
@@ -94,6 +99,8 @@ func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cl
 	if err := survey.AskOne(prompt, &clusterName, survey.WithValidator(survey.Required)); err != nil {
 		return nil, fmt.Errorf("selecting a cluster: %w", err)
 	}
+	clusterID := clusterNameToID[clusterName]
+	zap.S().Debugw("selected cluster", "id", clusterID)
 
-	return discoverOutput.Clusters[clusterName], nil
+	return discoverOutput.Clusters[clusterID], nil
 }

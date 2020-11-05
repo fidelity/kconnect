@@ -73,25 +73,29 @@ func (p *aksClusterProvider) resolveSubscription(name string, cfg config.Configu
 		return fmt.Errorf("getting subscription list: %w", err)
 	}
 
+	subs := make(map[string]string)
 	options := []string{}
 	for _, sub := range res.Values() {
-		option := fmt.Sprintf("%s: %s", *sub.DisplayName, *sub.SubscriptionID)
-		options = append(options, option)
+		subs[*sub.DisplayName] = *sub.SubscriptionID
+		options = append(options, *sub.DisplayName)
 	}
 	sort.Strings(options)
 
 	selectedSubscription := ""
 	prompt := &survey.Select{
-		Message: "Select the Azure subscription",
+		Message: "Select an Azure subscription",
 		Options: options,
 	}
 	if err := survey.AskOne(prompt, &selectedSubscription, survey.WithValidator(survey.Required)); err != nil {
 		return fmt.Errorf("asking for subscription: %w", err)
 	}
 
-	if err := cfg.SetValue(name, selectedSubscription); err != nil {
+	subscriptionID := subs[selectedSubscription]
+
+	if err := cfg.SetValue(name, subscriptionID); err != nil {
 		return fmt.Errorf("setting subscription-id config: %w", err)
 	}
+	p.logger.Debugw("selected subscription", "name", selectedSubscription, "id", subscriptionID)
 
 	return nil
 }

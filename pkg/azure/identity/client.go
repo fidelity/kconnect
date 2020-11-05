@@ -59,7 +59,6 @@ func (c *AzureADClient) GetMex(federationMetadataURL string) (*wstrust.MexDocume
 	if resp.ResponseCode() != http.StatusOK {
 		return nil, ErrInvalidResponseCode
 	}
-	fmt.Printf(resp.Body())
 
 	doc, err := wstrust.CreateWsTrustMexDocument(resp.Body())
 	if err != nil {
@@ -74,8 +73,6 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 	if err != nil {
 		return nil, fmt.Errorf("creating envelope: %w", err)
 	}
-	fmt.Println(envelopeBody)
-	fmt.Println(endpoint.URL)
 
 	headers := make(map[string]string)
 	headers["Accept"] = "application/json"
@@ -154,9 +151,13 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(resp.Body())
 
-	return nil, nil
+	token := &OauthToken{}
+	if err := json.Unmarshal([]byte(resp.Body()), token); err != nil {
+		return nil, fmt.Errorf("unmarshalling oauth token: %w", err)
+	}
+
+	return token, nil
 }
 
 func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (string, error) {
