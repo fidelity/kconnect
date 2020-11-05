@@ -17,11 +17,36 @@ limitations under the License.
 package azure
 
 import (
+	"errors"
+	"fmt"
+
 	"k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
+
+	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 func (p *aksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, namespace string) (*api.Config, string, error) {
+	p.logger.Debug("getting cluster config")
+
+	resourceID, err := id.Parse(cluster.ID)
+	if err != nil {
+		return nil, "", fmt.Errorf("parsing cluster id: %w", err)
+	}
+
+	client := containerservice.NewManagedClustersClient(resourceID.SubscriptionID)
+	client.Authorizer = p.authorizer
+
+	result, err := client.ListClusterUserCredentials(ctx.Context, resourceID.ResourceGroupName, resourceID.ResourceName)
+	if err != nil {
+		return nil, "", fmt.Errorf("getting user credentials: %w", err)
+	}
+
+	if len(*result.Kubeconfigs) == 0 {
+		return nil, "", errors.New("no kubeconfigs")
+	}
+
 	return nil, "", nil
 }
