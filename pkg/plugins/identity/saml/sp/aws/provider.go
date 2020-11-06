@@ -254,15 +254,13 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*s
 	prompt := &survey.Select{
 		Message: "Select an AWS region",
 		Options: roleOptions,
-		Filter: utils.SurveyFilter,
+		Filter:  utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &selectedRole, survey.WithValidator(survey.Required)); err != nil {
 		return nil, fmt.Errorf("asking for region: %w", err)
 	}
 	return roles[selectedRole], nil
 }
-
-
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
 	sess, err := session.NewSession(&aws.Config{
