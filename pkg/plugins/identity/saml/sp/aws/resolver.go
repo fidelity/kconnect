@@ -132,7 +132,7 @@ func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet
 	prompt := &survey.Select{
 		Message: "Select an AWS region",
 		Options: options,
-		Filter: utils.SurveyFilter,
+		Filter:  utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
 		return fmt.Errorf("asking for region: %w", err)

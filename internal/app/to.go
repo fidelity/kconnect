@@ -168,7 +168,7 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	prompt := &survey.Select{
 		Message: "Select a history entry",
 		Options: options,
-		Filter: utils.SurveyFilter,
+		Filter:  utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &selectedEntryString, survey.WithValidator(survey.Required)); err != nil {
 		return nil, fmt.Errorf("asking for entry: %w", err)
