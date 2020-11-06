@@ -17,12 +17,13 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
-	"k8s.io/client-go/tools/clientcmd/api"
-
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -31,22 +32,43 @@ import (
 func (p *aksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, namespace string) (*api.Config, string, error) {
 	p.logger.Debug("getting cluster config")
 
-	resourceID, err := id.Parse(cluster.ID)
+	cfg, err := p.getKubeconfig(ctx.Context, cluster)
 	if err != nil {
-		return nil, "", fmt.Errorf("parsing cluster id: %w", err)
+		return nil, "", fmt.Errorf("getting kubeconfig: %w", err)
+	}
+
+	if namespace != "" {
+		p.logger.Debugw("setting kubernetes namespace", "namespace", namespace)
+		cfg.Contexts[cfg.CurrentContext].Namespace = namespace
+	}
+
+	return cfg, cfg.CurrentContext, nil
+}
+
+func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *provider.Cluster) (*api.Config, error) {
+	resourceID, err := id.FromClusterID(cluster.ID)
+	if err != nil {
+		return nil, fmt.Errorf("parsing cluster id: %w", err)
 	}
 
 	client := containerservice.NewManagedClustersClient(resourceID.SubscriptionID)
 	client.Authorizer = p.authorizer
 
-	result, err := client.ListClusterUserCredentials(ctx.Context, resourceID.ResourceGroupName, resourceID.ResourceName)
+	//TODO: option for user credentials as well?
+	credentialList, err := client.ListClusterAdminCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
 	if err != nil {
-		return nil, "", fmt.Errorf("getting user credentials: %w", err)
+		return nil, fmt.Errorf("getting user credentials: %w", err)
 	}
 
-	if len(*result.Kubeconfigs) == 0 {
-		return nil, "", errors.New("no kubeconfigs")
+	if credentialList.Kubeconfigs == nil || len(*credentialList.Kubeconfigs) < 1 {
+		return nil, errors.New("no kubeconfigs available for the managed cluster cluster")
 	}
 
-	return nil, "", nil
+	config := *(*credentialList.Kubeconfigs)[0].Value
+	kubeCfg, err := clientcmd.Load(config)
+	if err != nil {
+		return nil, fmt.Errorf("loading kubeconfig: %w", err)
+	}
+
+	return kubeCfg, err
 }

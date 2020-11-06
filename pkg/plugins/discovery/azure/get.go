@@ -17,12 +17,11 @@ limitations under the License.
 package azure
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
 
+	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -33,15 +32,15 @@ func (p *aksClusterProvider) Get(ctx *provider.Context, clusterID string, identi
 	}
 	p.logger.Infow("getting AKS cluster", "id", clusterID)
 
-	parts := strings.Split(clusterID, "/")
-	if len(parts) != 3 {
-		return nil, errors.New("unexpected format for id")
+	resourceID, err := id.FromClusterID(clusterID)
+	if err != nil {
+		return nil, fmt.Errorf("getting resource id: %w", err)
 	}
 
-	client := containerservice.NewManagedClustersClient(parts[0])
+	client := containerservice.NewManagedClustersClient(resourceID.SubscriptionID)
 	client.Authorizer = p.authorizer
 
-	result, err := client.Get(ctx.Context, parts[1], parts[2])
+	result, err := client.Get(ctx.Context, resourceID.ResourceGroupName, resourceID.ResourceName)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster: %w", err)
 	}

@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
@@ -62,7 +61,7 @@ func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cl
 	}
 
 	for _, val := range list.Values() {
-		clusterID, err := p.createClusterID(&val)
+		clusterID, err := id.ToClusterID(*val.ID)
 		if err != nil {
 			return nil, fmt.Errorf("create cluster id: %w", err)
 		}
@@ -74,22 +73,4 @@ func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cl
 	}
 
 	return clusters, nil
-}
-
-func (p *aksClusterProvider) createClusterID(cluster *containerservice.ManagedCluster) (string, error) {
-	clusterID, err := id.Parse(*cluster.ID)
-	if err != nil {
-		return "", fmt.Errorf("parsing cluster id: %w", err)
-	}
-
-	if clusterID.Provider != "Microsoft.ContainerService" {
-		return "", errors.New("cluster is not for the container service")
-	}
-	if clusterID.ResourceType != "managedClusters" {
-		return "", errors.New("resource type is not a managed cluster")
-	}
-
-	generatedID := fmt.Sprintf("%s/%s/%s", clusterID.SubscriptionID, clusterID.ResourceGroupName, clusterID.ResourceName)
-
-	return generatedID, nil
 }
