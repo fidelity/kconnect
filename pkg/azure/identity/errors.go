@@ -8,4 +8,5 @@ var (
 	ErrTokenEndpointNotFound         = errors.New("token endpoint not found")
 	ErrIssuerNotFound                = errors.New("issues not found")
 	ErrUnknownAccountType            = errors.New("unknown account type")
+	ErrOIDCResponse                  = errors.New("oidc error")
 )

@@ -49,12 +49,10 @@ func (r *ResourceIdentifier) String() string {
 
 // Parse will create a AzureIdentifier from a id string
 func Parse(resourceID string) (*ResourceIdentifier, error) {
-	if strings.HasPrefix(resourceID, "/") {
-		resourceID = resourceID[1:]
-	}
+	resourceID = strings.TrimPrefix(resourceID, "/")
 
 	parts := strings.Split(resourceID, "/")
-	if len(parts) != 8 {
+	if len(parts) != resourceIDPartsNum {
 		return nil, ErrIDUnrecognizedFormat
 	}
 

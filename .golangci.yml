@@ -3,6 +3,7 @@ run:
     tests: false
     skip-dirs:
     - third_party/*
+    - pkg/azure/wstrust
     skip-files:
     - "zz_generated.*\\.go$"
     - ".*_mock\\.go"
