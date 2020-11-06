@@ -20,10 +20,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
 	survey "github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/beevik/etree"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -252,11 +254,15 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*s
 	sort.Strings(roleOptions)
 	selectedRole := ""
 	prompt := &survey.Select{
-		Message: "Select an AWS region",
+		Message: "Select an AWS role",
 		Options: roleOptions,
 		Filter:  utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &selectedRole, survey.WithValidator(survey.Required)); err != nil {
+		if err == terminal.InterruptErr {
+			fmt.Println("Received interrupt, exiting..")
+			os.Exit(0)
+		}
 		return nil, fmt.Errorf("asking for region: %w", err)
 	}
 	return roles[selectedRole], nil
