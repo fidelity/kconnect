@@ -68,7 +68,7 @@ func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs.String("tenant-id", "", "The Azure tenant to use")              //nolint: errcheck
 	cs.String("subscription-id", "", "The Azure subscription to use")  //nolint: errcheck
 	cs.String("resource-group", "", "The Azure resource group to use") //nolint: errcheck
-	cs.Bool("admin", false, "Generate admin user kubeconfig")
+	cs.Bool("admin", false, "Generate admin user kubeconfig")          //nolint: errcheck
 
 	cs.SetRequired("tenant-id") //nolint: errcheck
 

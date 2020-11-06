@@ -17,6 +17,7 @@ limitations under the License.
 package aad
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -29,9 +30,9 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-// var (
-// 	unixEpoch = time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
-// )
+var (
+	ErrAddingCommonCfg = errors.New("adding common identity config")
+)
 
 func init() {
 	if err := provider.RegisterIdentityProviderPlugin("aad", newProvider()); err != nil {
@@ -141,15 +142,15 @@ func (p *aadIdentityProvider) ConfigurationItems(clusterProviderName string) (co
 	cs := config.NewConfigurationSet()
 
 	if err := provider.AddCommonIdentityConfig(cs); err != nil {
-		return nil, fmt.Errorf("adding common identity config")
+		return nil, ErrAddingCommonCfg
 	}
 
-	cs.String("tenant-id", "", "the azure tenant id")
-	cs.String("client-id", "04b07795-8ddb-461a-bbee-02f9e1bf7b46", "the azure ad client id")
-	cs.String("aad-host", string(identity.AADHostWorldwide), "The AAD host to use")
+	cs.String("tenant-id", "", "The azure tenant id")                                        //nolint: errcheck
+	cs.String("client-id", "04b07795-8ddb-461a-bbee-02f9e1bf7b46", "The azure ad client id") //nolint: errcheck
+	cs.String("aad-host", string(identity.AADHostWorldwide), "The AAD host to use")          //nolint: errcheck
 
-	cs.SetShort("tenant-id", "t")
-	cs.SetRequired("tenant-id")
+	cs.SetShort("tenant-id", "t") //nolint: errcheck
+	cs.SetRequired("tenant-id")   //nolint: errcheck
 
 	return cs, nil
 }
@@ -173,14 +174,6 @@ func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken
 		Resource:     token.Resource,
 		Scope:        token.Scope,
 	}
-
-	// expiresSeconds, err := token.ExpiresOn.Float64()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("getting ExpiresOn: %w", err)
-	// }
-
-	// expiresDur := time.Duration(expiresSeconds * float64(time.Second))
-	// id.Expires = unixEpoch.Add(expiresDur)
 
 	expiresSeconds, err := token.ExpiresOn.Int64()
 	if err != nil {

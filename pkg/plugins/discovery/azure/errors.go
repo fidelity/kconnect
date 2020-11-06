@@ -20,4 +20,5 @@ import "errors"
 
 var (
 	ErrNotOIDCIdentity = errors.New("unsupported identity, oidc.Identity required")
+	ErrNoKubeconfigs   = errors.New("no kubeconfigs available for the managed cluster cluster")
 )

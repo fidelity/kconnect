@@ -26,3 +26,9 @@ For installation, getting started and other documentation head over to the [proj
 ## Contributions
 
 Contributions are very welcome. Please read the [contributing guide](CONTRIBUTING.md) or see the docs.
+
+## Acknowledgements
+
+For the SAML identity provider we rely heavily on the [saml2aws](https://github.com/Versent/saml2aws) project by Versent. For the Azure AD provider we have taken inspiration from the [Microsoft Authentication Library for Go](https://github.com/AzureAD/microsoft-authentication-library-for-go) and have directly used their wstrust package (see [pkg/azure/wstrust](pkg/azure/wstruct)). 
+
+Thanks to both these projects for making the implementation easier.

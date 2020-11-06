@@ -18,7 +18,6 @@ package azure
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
@@ -65,7 +64,7 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *provide
 	}
 
 	if credentialList.Kubeconfigs == nil || len(*credentialList.Kubeconfigs) < 1 {
-		return nil, errors.New("no kubeconfigs available for the managed cluster cluster")
+		return nil, ErrNoKubeconfigs
 	}
 
 	config := *(*credentialList.Kubeconfigs)[0].Value

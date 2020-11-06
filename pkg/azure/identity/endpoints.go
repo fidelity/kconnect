@@ -53,7 +53,7 @@ func (r *oidcEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, error
 	}
 
 	if oidcResp.Error != "" {
-		return nil, fmt.Errorf("oidc error: %s", oidcResp.Error)
+		return nil, fmt.Errorf("oidc response %s: %w", oidcResp.Error, ErrOIDCResponse)
 	}
 
 	if oidcResp.AuthorizationEndpoint == "" {

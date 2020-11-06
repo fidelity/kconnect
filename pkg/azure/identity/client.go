@@ -18,6 +18,10 @@ import (
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
 
+const (
+	DefaultTokenDurationMins = 10
+)
+
 type AzureADClient struct {
 	httpClient khttp.Client
 }
@@ -69,10 +73,7 @@ func (c *AzureADClient) GetMex(federationMetadataURL string) (*wstrust.MexDocume
 }
 
 func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error) {
-	envelopeBody, err := c.createEnvelope(cfg, cloudAudienceURN, endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("creating envelope: %w", err)
-	}
+	envelopeBody := c.createEnvelope(cfg, endpoint)
 
 	headers := make(map[string]string)
 	headers["Accept"] = "application/json"
@@ -81,11 +82,12 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 	headers["User-Agent"] = "kconnect/0.2.1" //TODO: add to common headers
 	headers["return-client-request-id"] = "true"
 
-	if endpoint.EndpointVersion == wstrust.Trust2005 {
+	switch endpoint.EndpointVersion {
+	case wstrust.Trust2005:
 		headers["soapaction"] = wstrust.Trust2005Spec
-	} else if endpoint.EndpointVersion == wstrust.Trust13 {
+	case wstrust.Trust13:
 		headers["soapaction"] = wstrust.Trust13Spec
-	} else {
+	default:
 		headers["soapaction"] = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue"
 	}
 
@@ -160,7 +162,7 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 	return token, nil
 }
 
-func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (string, error) {
+func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstrust.Endpoint) string {
 
 	messageID := uuid.New()
 
@@ -171,17 +173,18 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceU
 	var keyType string
 	var requestType string
 
-	if endpoint.EndpointVersion == wstrust.Trust2005 {
+	switch endpoint.EndpointVersion {
+	case wstrust.Trust2005:
 		soapAction = wstrust.Trust2005Spec
 		requestTrustNamespace = "http://schemas.xmlsoap.org/ws/2005/02/trust"
 		keyType = "http://schemas.xmlsoap.org/ws/2005/05/identity/NoProofKey"
 		requestType = "http://schemas.xmlsoap.org/ws/2005/02/trust/Issue"
-	} else if endpoint.EndpointVersion == wstrust.Trust13 {
+	case wstrust.Trust13:
 		soapAction = wstrust.Trust13Spec
 		requestTrustNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512"
 		keyType = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer"
 		requestType = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue"
-	} else {
+	default:
 		soapAction = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue"
 		requestTrustNamespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512"
 		keyType = "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer"
@@ -189,7 +192,7 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceU
 	}
 
 	start := time.Now().UTC()
-	end := start.Add(time.Minute * time.Duration(10))
+	end := start.Add(time.Minute * time.Duration(DefaultTokenDurationMins))
 
 	startFormatted := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d.%02dZ",
 		start.Year(), start.Month(), start.Day(),
@@ -238,7 +241,7 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, cloudAudienceU
 		"</s:Body>" +
 		"</s:Envelope>"
 
-	return requestTemplate, nil
+	return requestTemplate
 }
 
 func (c *AzureADClient) endcodeQueryParams(params map[string]string) string {

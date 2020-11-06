@@ -25,9 +25,18 @@ import (
 const (
 	ContainerServiceProvider = "Microsoft.ContainerService"
 	ManagedClustersResource  = "managedClusters"
+
+	clusterIDPartsNum  = 3
+	resourceIDPartsNum = 8
 )
 
-// ToClusterID creates a cluster id based on an azure resouce id
+var (
+	ErrNotContainerService   = errors.New("cluster is not for the container service")
+	ErrNotManagedCluster     = errors.New("resource type is not a managed cluster")
+	ErrUnrecognizedClusterID = errors.New("cluster id in unrecognized format")
+)
+
+// ToClusterID creates a cluster id based on an azure resource id
 func ToClusterID(clusterResourceID string) (string, error) {
 	resourceID, err := Parse(clusterResourceID)
 	if err != nil {
@@ -35,10 +44,10 @@ func ToClusterID(clusterResourceID string) (string, error) {
 	}
 
 	if resourceID.Provider != ContainerServiceProvider {
-		return "", errors.New("cluster is not for the container service")
+		return "", ErrNotContainerService
 	}
 	if resourceID.ResourceType != ManagedClustersResource {
-		return "", errors.New("resource type is not a managed cluster")
+		return "", ErrNotManagedCluster
 	}
 
 	generatedID := fmt.Sprintf("%s/%s/%s", resourceID.SubscriptionID, resourceID.ResourceGroupName, resourceID.ResourceName)
@@ -49,8 +58,8 @@ func ToClusterID(clusterResourceID string) (string, error) {
 // FromClusterID will create a ResourceIdentifer from a cluster id
 func FromClusterID(clusterID string) (*ResourceIdentifier, error) {
 	parts := strings.Split(clusterID, "/")
-	if len(parts) != 3 {
-		return nil, errors.New("cluster id in unrecognized format")
+	if len(parts) != clusterIDPartsNum {
+		return nil, ErrUnrecognizedClusterID
 	}
 
 	return &ResourceIdentifier{
