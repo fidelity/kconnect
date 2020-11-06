@@ -23,10 +23,12 @@ import (
 )
 
 var (
-	ErrIDUnrecognizedFormat = errors.New("cluster id format is unrecognized")
+	// ErrIDUnrecognizedFormat is an error if the format of the resource id is unrecognozed
+	ErrIDUnrecognizedFormat = errors.New("resource id format is unrecognized")
 )
 
-type AzureIdentifier struct {
+// ResourceIdentifier represents the uniqie identifier for a resource
+type ResourceIdentifier struct {
 	SubscriptionID    string
 	ResourceGroupName string
 	Provider          string
@@ -34,8 +36,19 @@ type AzureIdentifier struct {
 	ResourceName      string
 }
 
+// String retruns the string representation of the resource identifier
+func (r *ResourceIdentifier) String() string {
+	return fmt.Sprintf("/subscriptions/%s/resourcegroups/%s/providers/%s/%s/%s",
+		r.SubscriptionID,
+		r.ResourceGroupName,
+		r.Provider,
+		r.ResourceType,
+		r.ResourceName,
+	)
+}
+
 // Parse will create a AzureIdentifier from a id string
-func Parse(resourceID string) (*AzureIdentifier, error) {
+func Parse(resourceID string) (*ResourceIdentifier, error) {
 	if strings.HasPrefix(resourceID, "/") {
 		resourceID = resourceID[1:]
 	}
@@ -63,7 +76,7 @@ func Parse(resourceID string) (*AzureIdentifier, error) {
 		return nil, fmt.Errorf("finding provider: %w", ErrIDUnrecognizedFormat)
 	}
 
-	azureIdentifier := &AzureIdentifier{
+	azureIdentifier := &ResourceIdentifier{
 		SubscriptionID:    subscriptionID,
 		ResourceGroupName: resourceGroupName,
 		Provider:          providerName,

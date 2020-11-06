@@ -24,24 +24,29 @@ import (
 	"github.com/fidelity/kconnect/pkg/azure/id"
 )
 
-func TestParse(t *testing.T) {
+func TestResourceParse(t *testing.T) {
 	testCases := []struct {
 		name       string
 		idInput    string
 		expectErr  bool
-		expectedId *id.AzureIdentifier
+		expectedId *id.ResourceIdentifier
 	}{
 		{
 			name:      "container service parse",
 			idInput:   "/subscriptions/6c667d97-8ee0-40d5-a233-03b3f890b690/resourcegroups/rg-test-1/providers/Microsoft.ContainerService/managedClusters/my-test-cluster",
 			expectErr: false,
-			expectedId: &id.AzureIdentifier{
+			expectedId: &id.ResourceIdentifier{
 				Provider:          "Microsoft.ContainerService",
 				ResourceGroupName: "rg-test-1",
 				ResourceName:      "my-test-cluster",
 				ResourceType:      "managedClusters",
 				SubscriptionID:    "6c667d97-8ee0-40d5-a233-03b3f890b690",
 			},
+		},
+		{
+			name:      "no subscriptions",
+			idInput:   "/6c667d97-8ee0-40d5-a233-03b3f890b690/resourcegroups/rg-test-1/providers/Microsoft.ContainerService/managedClusters/my-test-cluster",
+			expectErr: true,
 		},
 	}
 
@@ -58,4 +63,23 @@ func TestParse(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestResourceString(t *testing.T) {
+	g := NewWithT(t)
+
+	expectedID := "/subscriptions/6c667d97-8ee0-40d5-a233-03b3f890b690/resourcegroups/rg-test-1/providers/Microsoft.ContainerService/managedClusters/my-test-cluster"
+
+	resourceID := &id.ResourceIdentifier{
+		Provider:          "Microsoft.ContainerService",
+		ResourceGroupName: "rg-test-1",
+		ResourceName:      "my-test-cluster",
+		ResourceType:      "managedClusters",
+		SubscriptionID:    "6c667d97-8ee0-40d5-a233-03b3f890b690",
+	}
+
+	actualID := resourceID.String()
+
+	g.Expect(actualID).To(Equal(expectedID))
+
 }

@@ -15,9 +15,11 @@ require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.35.2
 	github.com/beevik/etree v1.1.0
+	github.com/brianvoe/gofakeit/v5 v5.10.1
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
+	github.com/google/gofuzz v1.2.0
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.10
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect
