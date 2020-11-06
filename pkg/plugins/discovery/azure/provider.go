@@ -46,8 +46,8 @@ type aksClusterProviderConfig struct {
 	provider.ClusterProviderConfig
 	TenantID       *string `json:"tenant-id"`
 	SubscriptionID *string `json:"subscription-id"`
-	Region         *string `json:"region"`
-	RegionFilter   *string `json:"region-filter"`
+	ResourceGroup  *string `json:"resource-group"`
+	Admin          bool    `json:"admin"`
 }
 
 type aksClusterProvider struct {
@@ -65,9 +65,16 @@ func (p *aksClusterProvider) Name() string {
 func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
 
-	cs.String("region-filter", "", "A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions") //nolint: errcheck
-	cs.String("tenant-id", "", "The Azure tenant to use")
-	cs.String("subscription-id", "", "The Azure subscription to use")
+	cs.String("tenant-id", "", "The Azure tenant to use")              //nolint: errcheck
+	cs.String("subscription-id", "", "The Azure subscription to use")  //nolint: errcheck
+	cs.String("resource-group", "", "The Azure resource group to use") //nolint: errcheck
+	cs.Bool("admin", false, "Generate admin user kubeconfig")
+
+	cs.SetRequired("tenant-id") //nolint: errcheck
+
+	cs.SetShort("resource-group", "r") //nolint: errcheck
+	cs.SetShort("tenant-id", "t")      //nolint: errcheck
+	cs.SetShort("subscription", "s")   //nolint: errcheck
 
 	return cs
 }
