@@ -54,8 +54,12 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *provide
 	client := containerservice.NewManagedClustersClient(resourceID.SubscriptionID)
 	client.Authorizer = p.authorizer
 
-	//TODO: option for user credentials as well?
-	credentialList, err := client.ListClusterAdminCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
+	var credentialList containerservice.CredentialResults
+	if p.config.Admin {
+		credentialList, err = client.ListClusterAdminCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
+	} else {
+		credentialList, err = client.ListClusterUserCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("getting user credentials: %w", err)
 	}

@@ -55,7 +55,14 @@ func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cl
 	client.Authorizer = p.authorizer
 
 	clusters := []*provider.Cluster{}
-	list, err := client.List(ctx.Context)
+
+	var list containerservice.ManagedClusterListResultPage
+	var err error
+	if p.config.ResourceGroup == nil || *p.config.ResourceGroup == "" {
+		list, err = client.List(ctx.Context)
+	} else {
+		list, err = client.ListByResourceGroup(ctx.Context, *p.config.ResourceGroup)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("querying for AKS clusters: %w", err)
 	}
