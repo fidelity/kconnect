@@ -259,7 +259,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*s
 		Filter:  utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &selectedRole, survey.WithValidator(survey.Required)); err != nil {
-		if err == terminal.InterruptErr {
+		if errors.Is(err, terminal.InterruptErr) {
 			fmt.Println("Received interrupt, exiting..")
 			os.Exit(0)
 		}
