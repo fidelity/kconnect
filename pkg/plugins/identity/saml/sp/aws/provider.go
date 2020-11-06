@@ -208,7 +208,6 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	}
 
 	for {
-		//role, err = saml2aws.PromptForAWSRoleSelection(awsAccounts)
 		role, err = p.getRoleFromPrompt(awsAccounts)
 		if err == nil {
 			break
@@ -250,9 +249,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*s
 			roleOptions = append(roleOptions, name)
 		}
 	}
-
 	sort.Strings(roleOptions)
-
 	selectedRole := ""
 	prompt := &survey.Select{
 		Message: "Select an AWS region",
