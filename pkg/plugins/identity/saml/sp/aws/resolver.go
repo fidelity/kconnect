@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 // ResolveConfiguration will resolve the values for the AWS specific config items that have no value.
@@ -131,6 +132,7 @@ func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet
 	prompt := &survey.Select{
 		Message: "Select an AWS region",
 		Options: options,
+		Filter: utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
 		return fmt.Errorf("asking for region: %w", err)

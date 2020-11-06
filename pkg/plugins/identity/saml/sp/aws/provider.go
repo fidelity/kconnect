@@ -20,8 +20,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
+	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/beevik/etree"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -38,6 +40,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
@@ -205,7 +208,8 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	}
 
 	for {
-		role, err = saml2aws.PromptForAWSRoleSelection(awsAccounts)
+		//role, err = saml2aws.PromptForAWSRoleSelection(awsAccounts)
+		role, err = p.getRoleFromPrompt(awsAccounts)
 		if err == nil {
 			break
 		}
@@ -232,6 +236,36 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 
 	return filtered
 }
+
+// Not using saml2aws.PromptForAWSRoleSelection as we want to implement custom logic
+func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*saml2aws.AWSRole, error) {
+
+	roles := map[string]*saml2aws.AWSRole{}
+	var roleOptions []string
+
+	for _, account := range accounts {
+		for _, role := range account.Roles {
+			name := fmt.Sprintf("%s / %s", account.Name, role.Name)
+			roles[name] = role
+			roleOptions = append(roleOptions, name)
+		}
+	}
+
+	sort.Strings(roleOptions)
+
+	selectedRole := ""
+	prompt := &survey.Select{
+		Message: "Select an AWS region",
+		Options: roleOptions,
+		Filter: utils.SurveyFilter,
+	}
+	if err := survey.AskOne(prompt, &selectedRole, survey.WithValidator(survey.Required)); err != nil {
+		return nil, fmt.Errorf("asking for region: %w", err)
+	}
+	return roles[selectedRole], nil
+}
+
+
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
 	sess, err := session.NewSession(&aws.Config{
