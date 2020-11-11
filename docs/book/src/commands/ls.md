@@ -70,3 +70,5 @@ kconnect ls [flags]
 
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
 
+
+> NOTE: this page is auto-generated from the cobra commands

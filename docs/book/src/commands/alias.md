@@ -53,3 +53,5 @@ kconnect alias [flags]
 * [kconnect alias ls](alias_ls.md)	 - List all the aliases currently defined
 * [kconnect alias remove](alias_remove.md)	 - Remove connection history entry aliases.
 
+
+> NOTE: this page is auto-generated from the cobra commands

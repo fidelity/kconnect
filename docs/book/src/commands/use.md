@@ -68,3 +68,5 @@ kconnect use [flags]
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
 * [kconnect use eks](use_eks.md)	 - Connect to the eks cluster provider and choose a cluster.
 
+
+> NOTE: this page is auto-generated from the cobra commands

@@ -149,6 +149,9 @@ func genMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 		buf.WriteString("\n")
 	}
 
+	buf.WriteString("\n")
+	buf.WriteString("> NOTE: this page is auto-generated from the cobra commands\n")
+
 	_, err := buf.WriteTo(w)
 	return err
 }
