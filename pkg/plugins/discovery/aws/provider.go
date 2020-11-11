@@ -60,6 +60,10 @@ func (p *eksClusterProvider) Name() string {
 	return "eks"
 }
 
+func (p *eksClusterProvider) SupportedIDs() []string {
+	return []string{"saml"}
+}
+
 // ConfigurationItems returns the configuration items for this provider
 func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := aws.SharedConfig()

@@ -48,6 +48,9 @@ type ClusterProvider interface {
 
 	// UsageExample will provide an example of the usage of this provider
 	UsageExample() string
+
+	// SupportedIDs returns a list of the supported identity providers
+	SupportedIDs() []string
 }
 
 // ConfigResolver is used to resolve the values for config items interactively.

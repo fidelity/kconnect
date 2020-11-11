@@ -28,13 +28,13 @@ its unique ID (or by a user-friendly alias) to refresh an expired access token
 for that cluster.
 
 
-```
+```bash
 kconnect [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Display a help screen with kconnect commands.
   kconnect help
@@ -73,7 +73,7 @@ kconnect [flags]
 
 ### Options
 
-```
+```bash
       --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
   -h, --help              help for kconnect
       --non-interactive   Run without interactive flag resolution

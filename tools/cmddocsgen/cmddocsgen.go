@@ -99,12 +99,12 @@ func genMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	buf.WriteString(long + "\n\n")
 
 	if cmd.Runnable() {
-		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", cmd.UseLine()))
+		buf.WriteString(fmt.Sprintf("```bash\n%s\n```\n\n", cmd.UseLine()))
 	}
 
 	if len(cmd.Example) > 0 {
 		buf.WriteString("### Examples\n\n")
-		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", cmd.Example))
+		buf.WriteString(fmt.Sprintf("```bash\n%s\n```\n\n", cmd.Example))
 	}
 
 	if err := printOptions(buf, cmd, name); err != nil {
@@ -160,7 +160,7 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 	flags := cmd.NonInheritedFlags()
 	flags.SetOutput(buf)
 	if flags.HasAvailableFlags() {
-		buf.WriteString("### Options\n\n```\n")
+		buf.WriteString("### Options\n\n```bash\n")
 		flags.PrintDefaults()
 		buf.WriteString("```\n\n")
 	}
@@ -168,7 +168,7 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 	parentFlags := cmd.InheritedFlags()
 	parentFlags.SetOutput(buf)
 	if parentFlags.HasAvailableFlags() {
-		buf.WriteString("### Options inherited from parent commands\n\n```\n")
+		buf.WriteString("### Options inherited from parent commands\n\n```bash\n")
 		parentFlags.PrintDefaults()
 		buf.WriteString("```\n\n")
 	}
@@ -178,9 +178,22 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 func printIDPProtocolOptions(buf *bytes.Buffer, cmd *cobra.Command, name string, providerName string) error {
 	buf.WriteString("### IDP Protocol Options\n\n")
 
-	for _, provider := range provider.ListIdentityProviders() {
-		buf.WriteString("#### SAML Options\n\n```\n")
-		cfg, err := provider.ConfigurationItems(providerName)
+	clusterProvider, err := provider.GetClusterProvider(providerName)
+	if err != nil {
+		return err
+	}
+
+	for _, idProviderName := range clusterProvider.SupportedIDs() {
+		idProvider, err := provider.GetIdentityProvider(idProviderName)
+		if err != nil {
+			return nil
+		}
+
+		buf.WriteString(fmt.Sprintf("#### %s Options\n\n", strings.ToUpper(idProviderName)))
+		buf.WriteString(fmt.Sprintf("Use `--idp-protocol=%s`\n\n", idProviderName))
+		buf.WriteString("```bash\n")
+
+		cfg, err := idProvider.ConfigurationItems(providerName)
 		if err != nil {
 			return err
 		}

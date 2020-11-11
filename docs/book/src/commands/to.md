@@ -22,13 +22,13 @@ KCONNECT_PASSWORD environment variable or the --password command-line flag.
 Otherwise kconnect will promot the user to enter their password.
 
 
-```
+```bash
 kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Reconnect based on an alias - aliases can be found using kconnect ls
   kconnect to uat-bu1
@@ -57,7 +57,7 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 
 ### Options
 
-```
+```bash
   -h, --help                      help for to
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
   -k, --kubeconfig string         Location of the kubeconfig to use. (default "$HOME/.kube/config")
@@ -67,7 +67,7 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.

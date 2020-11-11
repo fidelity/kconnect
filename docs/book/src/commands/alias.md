@@ -12,13 +12,13 @@ The alias command and sub-commands allow you to query and manipulate aliases for
 connection history entries.
 
 
-```
+```bash
 kconnect alias [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Add an alias to an existing connection history entry
   kconnect alias add --id 123456 --alias appdev
@@ -33,14 +33,14 @@ kconnect alias [flags]
 
 ### Options
 
-```
+```bash
   -h, --help                      help for alias
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
 ```
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.

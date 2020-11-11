@@ -12,13 +12,13 @@ Set the --all flag on this command to remove all connection history aliases from
 the user's connection history.
 
 
-```
+```bash
 kconnect alias remove [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
@@ -39,7 +39,7 @@ kconnect alias remove [flags]
 
 ### Options
 
-```
+```bash
       --alias string   Alias name for a history entry
       --all            Remove all aliases from the histiry entries
   -h, --help           help for remove
@@ -48,7 +48,7 @@ kconnect alias remove [flags]
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string             Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --non-interactive           Run without interactive flag resolution

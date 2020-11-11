@@ -18,13 +18,13 @@ The user typically only needs to use this command the first time they use
 kconnect.
 
 
-```
+```bash
 kconnect configure [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Display user's current configurations
   kconnect configure
@@ -45,7 +45,7 @@ kconnect configure [flags]
 
 ### Options
 
-```
+```bash
   -f, --file string     File or remote location to use to set the default configuration
   -h, --help            help for configure
       --output string   Controls the output format for the result. (default "yaml")
@@ -53,7 +53,7 @@ kconnect configure [flags]
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
