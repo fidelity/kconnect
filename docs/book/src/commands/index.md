@@ -89,3 +89,5 @@ kconnect [flags]
 * [kconnect use](use.md)	 - Connect to a Kubernetes cluster provider and cluster.
 * [kconnect version](version.md)	 - Display version & build information
 
+
+> NOTE: this page is auto-generated from the cobra commands

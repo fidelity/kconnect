@@ -59,21 +59,21 @@ Otherwise kconnect will promot the user to enter their password.
   # Reconnect based on an history id - history id can be found using kconnect ls
   kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
 
-  # Re-connect interactively from history list
+  # Reconnect interactively from history list
   kconnect to
 
-  # Re-connect to current cluster (this is useful for renewing credentials)
+  # Reconnect to current cluster (this is useful for renewing credentials)
   kconnect to -
   OR
   kconnect to LAST
 
-  # Re-connect to cluster used before current one
+  # Reconnect to cluster used before current one
   kconnect to LAST~1
 
-  # Re-connect based on an alias supplying a password
+  # Reconnect based on an alias supplying a password
   kconnect to uat-bu1 --password supersecret
 
-  # Re-connect based on an alias supplying a password via env var
+  # Reconnect based on an alias supplying a password via env var
   KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
  `
 )

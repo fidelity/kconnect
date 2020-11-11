@@ -59,3 +59,5 @@ kconnect alias remove [flags]
 
 * [kconnect alias](alias.md)	 - Query and manipulate connection history entry aliases.
 
+
+> NOTE: this page is auto-generated from the cobra commands

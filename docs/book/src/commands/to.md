@@ -36,10 +36,10 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
   # Reconnect based on an history id - history id can be found using kconnect ls
   kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
 
-  # Re-connect interactively from history list
+  # Reconnect interactively from history list
   kconnect to
 
-  # Re-connect to current cluster (this is useful for renewing credentials)
+  # Reconnect to current cluster (this is useful for renewing credentials)
   kconnect to -
   OR
   kconnect to LAST
@@ -52,7 +52,7 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 
   # Reconnect based on an alias supplying a password via env var
   KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
-
+ 
 ```
 
 ### Options
@@ -76,3 +76,6 @@ kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
 ### SEE ALSO
 
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
+
+
+> NOTE: this page is auto-generated from the cobra commands
