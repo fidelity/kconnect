@@ -1,13 +1,52 @@
 ## kconnect use
 
-Connect to a target environment and discover clusters for use
+Connect to a Kubernetes cluster provider and cluster.
 
 ### Synopsis
 
-Connect to a target environment and discover clusters for use
+
+Connect to a managed Kubernetes cluster provider via the configured identity 
+provider, prompting the user to enter or choose connection settings appropriate 
+to the provider and a target cluster once connected.
+
+The kconnect tool generates a kubectl configuration context with a fresh access 
+token to connect to the chosen cluster and adds a connection history entry to 
+store the chosen connection settings.  If given an alias name, kconnect will add
+a user-friendly alias to the new connection history entry.
+
+The user can then reconnect to the provider with the settings stored in the 
+connection history entry using the kconnect to command and the connection history
+entry ID or alias.  When the user reconnects using a connection history entry, 
+kconnect regenerates the kubectl configuration context and refreshes their access 
+token.
+
+The use command requires a target provider name as its first parameter.
+
+* Note: kconnect use eks requires aws-iam-authenticator.
+  [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
+
+
 
 ```
 kconnect use [flags]
+```
+
+### Examples
+
+```
+
+  # Connect to EKS and choose an available EKS cluster.
+  kconnect use eks
+
+  # Connect to an EKS cluster and create an alias for its connection history entry.
+  kconnect use eks --alias mycluster
+
+  # Reconnect to a cluster by its connection history entry alias.
+  kconnect to mycluster
+
+  # Display the user's connection history as a table.
+  kconnect ls
+
 ```
 
 ### Options
@@ -27,5 +66,5 @@ kconnect use [flags]
 ### SEE ALSO
 
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
-* [kconnect use eks](use_eks.md)	 - Connect to eks and discover clusters for use
+* [kconnect use eks](use_eks.md)	 - Connect to the eks cluster provider and choose a cluster.
 

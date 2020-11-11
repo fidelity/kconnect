@@ -30,9 +30,26 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-var (
-	examplesAdd = `  # Add an alias for a entry
+const (
+	shortDescAdd = "Add an alias to a connection history entry"
+	longDescAdd  = `
+Adds a user-friendly alias to a connection history entry.
+
+The user can then reconnect and refresh the access token for that cluster using 
+the alias instead of the connection history entry's unique ID.
+`
+	examplesAdd = `
+  # Add an alias to a connection history entry
   kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
+
+  # Connect to a cluster using the alias
+  kconnect to dev-bu-1
+
+  # List available aliases
+  kconnect alias ls
+
+  # List available history entries - includes aliases
+  kconnect ls
 `
 )
 
@@ -41,7 +58,8 @@ func addCommand() (*cobra.Command, error) { //nolint: dupl
 
 	lsCmd := &cobra.Command{
 		Use:     "add",
-		Short:   "Add an alias to a history entry",
+		Short:   shortDescAdd,
+		Long:    longDescAdd,
 		Example: examplesAdd,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)

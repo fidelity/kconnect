@@ -221,6 +221,8 @@ func (a *App) resolveAndCheckAlias(params *UseParams) error {
 		return ErrAliasAlreadyUsed
 	}
 
+	zap.S().Infof("Command to reconnect using this alias: kconnect to %s", params.Alias)
+
 	return nil
 }
 

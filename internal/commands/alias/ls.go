@@ -31,11 +31,28 @@ import (
 )
 
 var (
-	examplesLs = `  # Display all the aliases as a table
+	shortDescLs = "List all the aliases currently defined"
+	longDescLs  = `
+List all the aliases currently defined for connection history entries in the
+user's connection history.
+
+An alias is a user-friendly name for a connection history entry.
+`
+	examplesLs = `
+  # Display all the aliases as a table
   kconnect alias ls
 
-  # Display all the aliases as json
+  # Display all connection history entry aliases as a table
+  kconnect alias ls
+
+  # Display all connection history entry aliases as json
   kconnect alias ls --output json
+
+  # Connect to a cluster using a connection history entry alias
+  kconnect to ${alias}
+
+  # List all connection history entries as a table - includes aliases
+  kconnect ls
 `
 )
 
@@ -44,7 +61,8 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 
 	lsCmd := &cobra.Command{
 		Use:     "ls",
-		Short:   "List all the aliases currently defined",
+		Short:   shortDescLs,
+		Long:    longDescLs,
 		Example: examplesLs,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
