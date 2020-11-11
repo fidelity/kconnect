@@ -35,33 +35,34 @@ import (
 )
 
 var (
-	ErrMissingProvider    = errors.New("required provider name argument")
-	ErrMissingIdpProtocol = errors.New("missing idp protocol, please use --idp-protocol")
-	ErrMustBeDirectory    = errors.New("specified config directory is not a directory")
+	ErrMissingProvider       = errors.New("required provider name argument")
+	ErrMissingIdpProtocol    = errors.New("missing idp protocol, please use --idp-protocol")
+	ErrMustBeDirectory       = errors.New("specified config directory is not a directory")
+	ErrUnsuportedIdpProtocol = errors.New("unsupported idp protocol")
 )
 
 const (
 	shortDesc         = "Connect to a Kubernetes cluster provider and cluster."
 	shortDescProvider = "Connect to the %s cluster provider and choose a cluster."
 	longDescHead      = `
-Connect to a managed Kubernetes cluster provider via the configured identity 
-provider, prompting the user to enter or choose connection settings appropriate 
+Connect to a managed Kubernetes cluster provider via the configured identity
+provider, prompting the user to enter or choose connection settings appropriate
 to the provider and a target cluster once connected.
 `
 	longDescProviderHead = `
-Connect to %s via the configured identify provider, prompting the user to enter 
+Connect to %s via the configured identify provider, prompting the user to enter
 or choose connection settings and a target cluster once connected.
 `
 	longDescBody = `
-The kconnect tool generates a kubectl configuration context with a fresh access 
-token to connect to the chosen cluster and adds a connection history entry to 
+The kconnect tool generates a kubectl configuration context with a fresh access
+token to connect to the chosen cluster and adds a connection history entry to
 store the chosen connection settings.  If given an alias name, kconnect will add
 a user-friendly alias to the new connection history entry.
 
-The user can then reconnect to the provider with the settings stored in the 
+The user can then reconnect to the provider with the settings stored in the
 connection history entry using the kconnect to command and the connection history
-entry ID or alias.  When the user reconnects using a connection history entry, 
-kconnect regenerates the kubectl configuration context and refreshes their access 
+entry ID or alias.  When the user reconnects using a connection history entry,
+kconnect regenerates the kubectl configuration context and refreshes their access
 token.
 `
 	longDescFoot = `
@@ -232,6 +233,11 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 		return nil
 	}
 
+	if !isIdpSupported(idpProtocol, params.Provider) {
+		zap.S().Warnw("Unsupported IdP protocol", "allowed", params.Provider.SupportedIDs(), "used", idpProtocol)
+		return fmt.Errorf("using identity provider %s: %w", idpProtocol, ErrUnsuportedIdpProtocol)
+	}
+
 	idProvider, err := provider.GetIdentityProvider(idpProtocol)
 	if err != nil {
 		return fmt.Errorf("creating identity provider %s: %w", idpProtocol, err)
@@ -277,6 +283,18 @@ func getIdpProtocol(args []string, params *app.UseParams) (string, error) {
 
 	// look in app config
 	return config.GetValue("idp-protocol", params.Provider.Name())
+}
+
+func isIdpSupported(idProviderName string, clusterprovider provider.ClusterProvider) bool {
+	supportedIDProviders := clusterprovider.SupportedIDs()
+
+	for _, supportedIDProvider := range supportedIDProviders {
+		if supportedIDProvider == idProviderName {
+			return true
+		}
+	}
+
+	return false
 }
 
 func isInteractive(cs config.ConfigurationSet) bool {

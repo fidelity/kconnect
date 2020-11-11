@@ -11,13 +11,13 @@ The user can then reconnect and refresh the access token for that cluster using
 the alias instead of the connection history entry's unique ID.
 
 
-```
+```bash
 kconnect alias add [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Add an alias to a connection history entry
   kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
@@ -35,7 +35,7 @@ kconnect alias add [flags]
 
 ### Options
 
-```
+```bash
       --alias string   Alias name for a history entry
   -h, --help           help for add
       --id string      Id for a history entry
@@ -43,7 +43,7 @@ kconnect alias add [flags]
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string             Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --non-interactive           Run without interactive flag resolution

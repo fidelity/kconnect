@@ -5,19 +5,19 @@ Connect to a Kubernetes cluster provider and cluster.
 ### Synopsis
 
 
-Connect to a managed Kubernetes cluster provider via the configured identity 
-provider, prompting the user to enter or choose connection settings appropriate 
+Connect to a managed Kubernetes cluster provider via the configured identity
+provider, prompting the user to enter or choose connection settings appropriate
 to the provider and a target cluster once connected.
 
-The kconnect tool generates a kubectl configuration context with a fresh access 
-token to connect to the chosen cluster and adds a connection history entry to 
+The kconnect tool generates a kubectl configuration context with a fresh access
+token to connect to the chosen cluster and adds a connection history entry to
 store the chosen connection settings.  If given an alias name, kconnect will add
 a user-friendly alias to the new connection history entry.
 
-The user can then reconnect to the provider with the settings stored in the 
+The user can then reconnect to the provider with the settings stored in the
 connection history entry using the kconnect to command and the connection history
-entry ID or alias.  When the user reconnects using a connection history entry, 
-kconnect regenerates the kubectl configuration context and refreshes their access 
+entry ID or alias.  When the user reconnects using a connection history entry,
+kconnect regenerates the kubectl configuration context and refreshes their access
 token.
 
 The use command requires a target provider name as its first parameter.
@@ -27,13 +27,13 @@ The use command requires a target provider name as its first parameter.
 
 
 
-```
+```bash
 kconnect use [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Connect to EKS and choose an available EKS cluster.
   kconnect use eks
@@ -51,13 +51,13 @@ kconnect use [flags]
 
 ### Options
 
-```
+```bash
   -h, --help   help for use
 ```
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
@@ -66,6 +66,7 @@ kconnect use [flags]
 ### SEE ALSO
 
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
+* [kconnect use aks](use_aks.md)	 - Connect to the aks cluster provider and choose a cluster.
 * [kconnect use eks](use_eks.md)	 - Connect to the eks cluster provider and choose a cluster.
 
 

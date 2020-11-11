@@ -11,13 +11,13 @@ user's connection history.
 An alias is a user-friendly name for a connection history entry.
 
 
-```
+```bash
 kconnect alias ls [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Display all the aliases as a table
   kconnect alias ls
@@ -38,14 +38,14 @@ kconnect alias ls [flags]
 
 ### Options
 
-```
+```bash
   -h, --help            help for ls
       --output string   Output format for the results (default "table")
 ```
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string             Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --non-interactive           Run without interactive flag resolution

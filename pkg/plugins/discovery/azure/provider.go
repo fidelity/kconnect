@@ -61,6 +61,10 @@ func (p *aksClusterProvider) Name() string {
 	return providerName
 }
 
+func (p *aksClusterProvider) SupportedIDs() []string {
+	return []string{"aad"}
+}
+
 // ConfigurationItems returns the configuration items for this provider
 func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()

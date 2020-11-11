@@ -14,13 +14,13 @@ connection history.  The user can then reconnect using those same settings later
 via the connection history entry's ID or alias.
 
 
-```
+```bash
 kconnect ls [flags]
 ```
 
 ### Examples
 
-```
+```bash
 
   # Display all connection history entries as a table
   kconnect ls
@@ -44,7 +44,7 @@ kconnect ls [flags]
 
 ### Options
 
-```
+```bash
       --alias string               Alias name for a history entry
       --cluster-provider string    Name of a cluster provider (i.e. eks)
   -h, --help                       help for ls
@@ -60,7 +60,7 @@ kconnect ls [flags]
 
 ### Options inherited from parent commands
 
-```
+```bash
       --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.

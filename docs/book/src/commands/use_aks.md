@@ -1,11 +1,11 @@
-## kconnect use eks
+## kconnect use aks
 
-Connect to the eks cluster provider and choose a cluster.
+Connect to the aks cluster provider and choose a cluster.
 
 ### Synopsis
 
 
-Connect to eks via the configured identify provider, prompting the user to enter
+Connect to aks via the configured identify provider, prompting the user to enter
 or choose connection settings and a target cluster once connected.
 
 The kconnect tool generates a kubectl configuration context with a fresh access
@@ -19,27 +19,16 @@ entry ID or alias.  When the user reconnects using a connection history entry,
 kconnect regenerates the kubectl configuration context and refreshes their access
 token.
 
-* Note: kconnect use eks requires aws-iam-authenticator.
-  [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
-
-
 
 ```bash
-kconnect use eks [flags]
+kconnect use aks [flags]
 ```
 
 ### Examples
 
 ```bash
-
-  # Discover EKS clusters using SAML
-  kconnect use eks --idp-protocol saml
-
-  # Discover EKS clusters using SAML with a specific role
-  kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
-
-  # Discover an EKS cluster and add an alias to its connection history entry
-  kconnect use eks --alias mycluster
+  # Discover AKS clusters using Azure AD
+  kconnect use aks --idp-protocol aad
 
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
@@ -52,22 +41,21 @@ kconnect use eks [flags]
 ### Options
 
 ```bash
+      --admin                     Generate admin user kubeconfig
   -a, --alias string              Friendly name to give to give the connection
   -c, --cluster-id string         Id of the cluster to use.
-  -h, --help                      help for eks
+  -h, --help                      help for aks
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --idp-protocol string       The idp protocol to use (e.g. saml)
   -k, --kubeconfig string         Location of the kubeconfig to use. (default "$HOME/.kube/config")
       --max-history int           Sets the maximum number of history items to keep (default 100)
   -n, --namespace string          Sets namespace for context in kubeconfig
       --no-history                If set to true then no history entry will be written
-      --partition string          AWS partition to use (default "aws")
       --password string           The password to use for authentication
-      --region string             AWS region to connect to
-      --region-filter string      A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions
-      --role-arn string           ARN of the AWS role to be assumed
-      --role-filter string        A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name
+  -r, --resource-group string     The Azure resource group to use
       --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
+      --subscription-id string    The Azure subscription to use
+  -t, --tenant-id string          The Azure tenant to use
       --username string           The username used for authentication
 ```
 
@@ -81,15 +69,17 @@ kconnect use eks [flags]
 
 ### IDP Protocol Options
 
-#### SAML Options
+#### AAD Options
 
-Use `--idp-protocol=saml`
+Use `--idp-protocol=aad`
 
 ```bash
-      --idp-endpoint string   identity provider endpoint provided by your IT team
-      --idp-provider string   the name of the idp provider
-      --partition string      AWS partition to use (default "aws")
-      --region string         AWS region to connect to
+      --aad-host string       The AAD host to use (default "login.microsoftonline.com")
+      --client-id string      The azure ad client id (default "04b07795-8ddb-461a-bbee-02f9e1bf7b46")
+      --idp-protocol string   The idp protocol to use (e.g. saml). Each protocol has its own flags.
+      --password string       The password to use for authentication
+  -t, --tenant-id string      The azure tenant id
+      --username string       The username used for authentication
 ```
 
 ### SEE ALSO
