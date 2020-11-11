@@ -31,7 +31,16 @@ import (
 )
 
 var (
-	examplesRemove = `  # Remove an alias using the alis name
+	shortDescRemove = "Remove connection history entry aliases."
+	longDescRemove  = `
+Remove an alias from a single connection history entry by the entry ID or the 
+alias.
+
+Set the --all flag on this command to remove all connection history aliases from
+the user's connection history.
+`
+	examplesRemove = `
+  # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
 
   # Remove an alias using a histiry entry id
@@ -39,6 +48,12 @@ var (
 
   # Remove all aliases
   kconnect alias remove --all
+
+  # List available aliases
+  kconnect alias ls
+
+  # Query your connection history - includes aliases
+  kconnect ls
 `
 )
 
@@ -47,7 +62,8 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 
 	lsCmd := &cobra.Command{
 		Use:     "remove",
-		Short:   "Remove an alias from a history entry. Or remove all aliases.",
+		Short:   shortDescRemove,
+		Long:    longDescRemove,
 		Example: examplesRemove,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
