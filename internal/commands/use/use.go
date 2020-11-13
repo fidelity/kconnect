@@ -187,6 +187,10 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
+	if err := flags.CreateCommandFlags(providerCmd, params.Context.ConfigurationItems()); err != nil {
+		return nil, err
+	}
+
 	providerCmd.SetUsageFunc(providerUsage(clusterProvider.Name()))
 
 	return providerCmd, nil
@@ -199,7 +203,7 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
 		return fmt.Errorf("adding cluster provider config %s: %w", clusterProvider.Name(), err)
 	}
-	if _, err := cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml)"); err != nil {
+	if _, err := cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol."); err != nil {
 		return fmt.Errorf("adding idp-protocol config: %w", err)
 	}
 	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
@@ -345,12 +349,26 @@ func providerUsage(providerName string) func(cmd *cobra.Command) error {
 		usage = append(usage, "\nGlobal Flags:")
 		usage = append(usage, cmd.InheritedFlags().FlagUsages())
 
-		for _, provider := range provider.ListIdentityProviders() {
-			providerUsage, err := provider.Usage(providerName)
+		clusterProvider, err := provider.GetClusterProvider(providerName)
+		if err != nil {
+			return err
+		}
+
+		for _, idProviderName := range clusterProvider.SupportedIDs() {
+			idProvider, err := provider.GetIdentityProvider(idProviderName)
+			usage = append(usage, fmt.Sprintf("\n%s Flags:", strings.ToUpper(idProvider.Name())))
+			usage = append(usage, fmt.Sprintf("(use --idp-protocol=%s)\n", idProvider.Name()))
+
+			cfg, err := idProvider.ConfigurationItems(providerName)
 			if err != nil {
 				return err
 			}
-			usage = append(usage, providerUsage)
+
+			fs, err := flags.CreateFlagsFromConfig(cfg)
+			if err != nil {
+				return err
+			}
+			usage = append(usage, fs.FlagUsages())
 		}
 
 		cmd.Println(strings.Join(usage, "\n"))
