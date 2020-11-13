@@ -191,13 +191,14 @@ func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken
 		Scope:        token.Scope,
 	}
 
-	if token.ExpiresOn != "" {
+	switch {
+	case token.ExpiresOn != "":
 		expiresSeconds, err := token.ExpiresOn.Int64()
 		if err != nil {
 			return nil, fmt.Errorf("getting ExpiresOn: %w", err)
 		}
 		id.Expires = time.Unix(expiresSeconds, 0)
-	} else if token.ExpiresIn != "" {
+	case token.ExpiresIn != "":
 		expiresInSeconds := token.ExpiresIn.String()
 
 		numSeconds, err := strconv.Atoi(expiresInSeconds)
@@ -205,7 +206,7 @@ func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken
 			return nil, fmt.Errorf("converting ExpiresIn: %w", err)
 		}
 		id.Expires = time.Now().Add(time.Second * time.Duration(numSeconds)).UTC()
-	} else {
+	default:
 		return nil, ErrNoExpiryTime
 	}
 
