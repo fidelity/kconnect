@@ -81,13 +81,23 @@ func (p *aksClusterProvider) resolveSubscription(name string, cfg config.Configu
 	}
 	sort.Strings(options)
 
-	selectedSubscription := ""
-	prompt := &survey.Select{
-		Message: "Select an Azure subscription",
-		Options: options,
+	if len(options) == 0 {
+		return ErrNoSubscriptions
 	}
-	if err := survey.AskOne(prompt, &selectedSubscription, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for subscription: %w", err)
+
+	selectedSubscription := ""
+	if len(options) == 1 {
+		p.logger.Debug("only 1 subscription, automatically selected")
+		selectedSubscription = options[0]
+	} else {
+
+		prompt := &survey.Select{
+			Message: "Select an Azure subscription",
+			Options: options,
+		}
+		if err := survey.AskOne(prompt, &selectedSubscription, survey.WithValidator(survey.Required)); err != nil {
+			return fmt.Errorf("asking for subscription: %w", err)
+		}
 	}
 
 	subscriptionID := subs[selectedSubscription]
