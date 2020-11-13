@@ -19,8 +19,10 @@ package aad
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/azure/identity"
@@ -32,6 +34,7 @@ import (
 
 var (
 	ErrAddingCommonCfg = errors.New("adding common identity config")
+	ErrNoExpiryTime    = errors.New("token has no expiry time")
 )
 
 func init() {
@@ -51,9 +54,9 @@ type aadIdentityProvider struct {
 type aadConfig struct {
 	provider.IdentityProviderConfig
 
-	TenantID string           `json:"tenant-id"`
-	ClientID string           `json:"client-id"`
-	AADHost  identity.AADHost `json:"aad-host"`
+	TenantID string           `json:"tenant-id" validate:"required"`
+	ClientID string           `json:"client-id" validate:"required"`
+	AADHost  identity.AADHost `json:"aad-host" validate:"required"`
 }
 
 func (p *aadIdentityProvider) Name() string {
@@ -71,6 +74,10 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		return nil, fmt.Errorf("unmarshalling config into use aadconfig: %w", err)
 	}
 
+	if err := p.validateConfig(cfg); err != nil {
+		return nil, err
+	}
+
 	authCfg := &identity.AuthenticationConfig{
 		Authority: &identity.AuthorityConfig{
 			Tenant:       cfg.TenantID,
@@ -83,7 +90,7 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 	}
 
 	httpClient := khttp.NewHTTPClient()
-	endpointResolver := identity.NewOIDCEndpointsResolver(httpClient)
+	endpointResolver := identity.NewOAuthEndpointsResolver(httpClient)
 	endpoints, err := endpointResolver.Resolve(authCfg.Authority)
 	if err != nil {
 		return nil, fmt.Errorf("getting endpoints: %w", err)
@@ -114,14 +121,18 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		}
 
 	case identity.AccountTypeManaged:
-		token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg)
+		token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg, "https://management.azure.com/")
 		if err != nil {
 			return nil, err //TODO: specific error
 		}
 	case identity.AccountTypeUnknown: //TODO: need to check other parts
-		token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg)
-		if err != nil {
-			return nil, err //TODO: specific error
+		if userRealm.CloudInstanceName == "microsoftonline.com" && userRealm.CloudAudienceURN == "urn:federation:MicrosoftOnline" {
+			token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg, "https://management.azure.com/")
+			if err != nil {
+				return nil, err //TODO: specific error
+			}
+		} else {
+			return nil, identity.ErrUnknownAccountType
 		}
 	default:
 		return nil, identity.ErrUnknownAccountType
@@ -175,11 +186,31 @@ func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken
 		Scope:        token.Scope,
 	}
 
-	expiresSeconds, err := token.ExpiresOn.Int64()
-	if err != nil {
-		return nil, fmt.Errorf("getting ExpiresOn: %w", err)
+	if token.ExpiresOn != "" {
+		expiresSeconds, err := token.ExpiresOn.Int64()
+		if err != nil {
+			return nil, fmt.Errorf("getting ExpiresOn: %w", err)
+		}
+		id.Expires = time.Unix(expiresSeconds, 0)
+	} else if token.ExpiresIn != "" {
+		expiresInSeconds := token.ExpiresIn.String()
+
+		numSeconds, err := strconv.Atoi(expiresInSeconds)
+		if err != nil {
+			return nil, fmt.Errorf("converting ExpiresIn: %w", err)
+		}
+		id.Expires = time.Now().Add(time.Second * time.Duration(numSeconds)).UTC()
+	} else {
+		return nil, ErrNoExpiryTime
 	}
-	id.Expires = time.Unix(expiresSeconds, 0)
 
 	return id, nil
+}
+
+func (p *aadIdentityProvider) validateConfig(cfg *aadConfig) error {
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return fmt.Errorf("validating aad config: %w", err)
+	}
+	return nil
 }

@@ -61,4 +61,7 @@ require (
 
 )
 
-replace github.com/versent/saml2aws => ./third_party/saml2aws
+replace (
+    github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
+    github.com/versent/saml2aws => ./third_party/saml2aws
+)

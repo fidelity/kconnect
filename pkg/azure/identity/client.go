@@ -49,8 +49,6 @@ func (c *AzureADClient) GetUserRealm(cfg *AuthenticationConfig) (*UserRealm, err
 		return nil, fmt.Errorf("unmarshalling user realm: %w", err)
 	}
 
-	//TODO: add validation???
-
 	return userRealm, nil
 }
 
@@ -133,14 +131,14 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 	return token, err
 }
 
-func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig) (*OauthToken, error) {
+func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig, resource string) (*OauthToken, error) {
 
 	params := map[string]string{
 		"grant_type":  "password",
 		"username":    cfg.Username,
 		"password":    cfg.Password,
 		"client_id":   cfg.ClientID,
-		"scope":       "openid offline_access profile",
+		"resource":    resource,
 		"client_info": "1",
 	}
 
@@ -152,6 +150,14 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 	resp, err := c.httpClient.Post(cfg.Endpoints.TokenEndpoint, body, headers)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.ResponseCode() != http.StatusOK {
+		oidcResp := &OIDCErrorResponse{}
+		if err := json.Unmarshal([]byte(resp.Body()), oidcResp); err != nil {
+			return nil, fmt.Errorf("unmarshalling oidc error response: %w", err)
+		}
+		return nil, oidcResp
 	}
 
 	token := &OauthToken{}

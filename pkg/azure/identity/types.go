@@ -12,7 +12,7 @@ type Client interface {
 	GetMex(federationMetadataURL string) (*wstrust.MexDocument, error)
 	GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error)
 	GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*OauthToken, error)
-	GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig) (*OauthToken, error)
+	GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig, resource string) (*OauthToken, error)
 }
 
 type AuthorityConfig struct {
@@ -33,6 +33,7 @@ type AuthenticationConfig struct {
 type Endpoints struct {
 	AuthorizationEndpoint string
 	TokenEndpoint         string
+	DeviceCodeEndpoint    string
 }
 
 //UserRealm is used to represent the details of a user
@@ -99,4 +100,19 @@ type OauthToken struct {
 	AccessToken  string      `json:"access_token"`
 	RefreshToken string      `json:"refresh_token"`
 	IDToken      string      `json:"id_token"`
+}
+
+// OIDCErrorResponse represents an error message from the Azure AD OIDC service
+type OIDCErrorResponse struct {
+	ErrorType        string `json:"error"`
+	ErrorDescription string `json:"error_description"`
+	ErrorCodes       []int  `json:"error_codes"`
+	Timestamp        string `json:"timestamp"`
+	CorrelationID    string `json:"correlation_id"`
+	TraceID          string `json:"trace_id"`
+	ErrorURI         string `json:"error_uri"`
+}
+
+func (r *OIDCErrorResponse) Error() string {
+	return r.ErrorDescription
 }

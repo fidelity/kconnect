@@ -134,6 +134,16 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		Short:   fmt.Sprintf(shortDescProvider, clusterProvider.Name()),
 		Long:    providerLongDesc,
 		Example: providerUsageExample,
+		AdditionalSetupE: func(cmd *cobra.Command, args []string) error {
+			if err := setupIdpProtocol(os.Args, params); err != nil {
+				return fmt.Errorf("additional command setup: %w", err)
+			}
+
+			if err := flags.CreateCommandFlags(cmd, params.Context.ConfigurationItems()); err != nil {
+				return err
+			}
+			return nil
+		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
@@ -175,14 +185,6 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 
 	if err := addConfig(params.Context.ConfigurationItems(), params.Provider); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
-	}
-
-	if err := setupIdpProtocol(os.Args, params); err != nil {
-		return nil, fmt.Errorf("additional command setup: %w", err)
-	}
-
-	if err := flags.CreateCommandFlags(providerCmd, params.Context.ConfigurationItems()); err != nil {
-		return nil, err
 	}
 
 	providerCmd.SetUsageFunc(providerUsage(clusterProvider.Name()))

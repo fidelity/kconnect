@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
@@ -14,6 +16,12 @@ type EndpointsResolver interface {
 
 func NewOIDCEndpointsResolver(httpClient khttp.Client) EndpointsResolver {
 	return &oidcEndpointsResolver{
+		httpClient: httpClient,
+	}
+}
+
+func NewOAuthEndpointsResolver(httpClient khttp.Client) EndpointsResolver {
+	return &oauthEndpointsResolver{
 		httpClient: httpClient,
 	}
 }
@@ -69,7 +77,40 @@ func (r *oidcEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, error
 	endpoints := &Endpoints{
 		AuthorizationEndpoint: oidcResp.AuthorizationEndpoint,
 		TokenEndpoint:         oidcResp.TokenEndpoint,
+		DeviceCodeEndpoint:    strings.Replace(oidcResp.TokenEndpoint, "token", "devicecode", -1),
 	}
 
 	return endpoints, nil
+}
+
+type oauthEndpointsResolver struct {
+	httpClient khttp.Client
+}
+
+func (r *oauthEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, error) {
+	template := "oauth2/%s%s"
+	api := "?api-version=1.0"
+
+	u, err := url.Parse(cfg.AuthorityURI)
+	if err != nil {
+		return nil, err
+	}
+	authorizeURL, err := u.Parse(fmt.Sprintf(template, "authorize", api))
+	if err != nil {
+		return nil, err
+	}
+	tokenURL, err := u.Parse(fmt.Sprintf(template, "token", api))
+	if err != nil {
+		return nil, err
+	}
+	deviceCodeURL, err := u.Parse(fmt.Sprintf(template, "devicecode", api))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Endpoints{
+		AuthorizationEndpoint: authorizeURL.String(),
+		TokenEndpoint:         tokenURL.String(),
+		DeviceCodeEndpoint:    deviceCodeURL.String(),
+	}, nil
 }
