@@ -10,6 +10,9 @@ const (
 	MaxHistoryItems = 100
 	// DefaultUIPageSize specifies the default number of items to display to a user
 	DefaultUIPageSize = 10
+
+	UsernameConfigItem = "username"
+	PasswordConfigItem = "password"
 )
 
 func AppDirectory() string {

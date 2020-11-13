@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/resolve"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
@@ -48,11 +49,12 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 	if err := p.resolveRegion("region", cfg); err != nil {
 		return fmt.Errorf("resolving region: %w", err)
 	}
-	if err := p.resolveUsername("username", cfg); err != nil {
-		return fmt.Errorf("resolving username: %w", err)
-	}
-	if err := p.resolvePassword("password", cfg); err != nil {
+	if err := resolve.Password(cfg); err != nil {
 		return fmt.Errorf("resolving password: %w", err)
+	}
+
+	if err := resolve.Username(cfg); err != nil {
+		return fmt.Errorf("resolving username: %w", err)
 	}
 
 	return nil
@@ -141,48 +143,6 @@ func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet
 	if err := cfg.SetValue(name, region); err != nil {
 		p.logger.Errorw("failed setting region config", "region", region, "error", err.Error())
 		return fmt.Errorf("setting region config: %w", err)
-	}
-
-	return nil
-}
-
-func (p *ServiceProvider) resolveUsername(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
-	}
-
-	username := ""
-	prompt := &survey.Input{
-		Message: "Enter your username",
-	}
-	if err := survey.AskOne(prompt, &username, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for username name: %w", err)
-	}
-
-	if err := cfg.SetValue(name, username); err != nil {
-		p.logger.Errorw("failed setting username config", "username", username, "error", err.Error())
-		return fmt.Errorf("setting username config: %w", err)
-	}
-
-	return nil
-}
-
-func (p *ServiceProvider) resolvePassword(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
-	}
-
-	password := ""
-	prompt := &survey.Password{
-		Message: "Enter your password",
-	}
-	if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for password name: %w", err)
-	}
-
-	if err := cfg.SetValue(name, password); err != nil {
-		p.logger.Errorw("failed setting password config", "error", err.Error())
-		return fmt.Errorf("setting password config: %w", err)
 	}
 
 	return nil
