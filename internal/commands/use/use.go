@@ -356,6 +356,9 @@ func providerUsage(providerName string) func(cmd *cobra.Command) error {
 
 		for _, idProviderName := range clusterProvider.SupportedIDs() {
 			idProvider, err := provider.GetIdentityProvider(idProviderName)
+			if err != nil {
+				return err
+			}
 			usage = append(usage, fmt.Sprintf("\n%s Flags:", strings.ToUpper(idProvider.Name())))
 			usage = append(usage, fmt.Sprintf("(use --idp-protocol=%s)\n", idProvider.Name()))
 

@@ -10,6 +10,11 @@ import (
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
 
+const (
+	OAuth2Template     = "oauth2/%s%s"
+	VersionQueryString = "?api-version=1.0"
+)
+
 type EndpointsResolver interface {
 	Resolve(cfg *AuthorityConfig) (*Endpoints, error)
 }
@@ -88,22 +93,19 @@ type oauthEndpointsResolver struct {
 }
 
 func (r *oauthEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, error) {
-	template := "oauth2/%s%s"
-	api := "?api-version=1.0"
-
 	u, err := url.Parse(cfg.AuthorityURI)
 	if err != nil {
 		return nil, err
 	}
-	authorizeURL, err := u.Parse(fmt.Sprintf(template, "authorize", api))
+	authorizeURL, err := u.Parse(fmt.Sprintf(OAuth2Template, "authorize", VersionQueryString))
 	if err != nil {
 		return nil, err
 	}
-	tokenURL, err := u.Parse(fmt.Sprintf(template, "token", api))
+	tokenURL, err := u.Parse(fmt.Sprintf(OAuth2Template, "token", VersionQueryString))
 	if err != nil {
 		return nil, err
 	}
-	deviceCodeURL, err := u.Parse(fmt.Sprintf(template, "devicecode", api))
+	deviceCodeURL, err := u.Parse(fmt.Sprintf(OAuth2Template, "devicecode", VersionQueryString))
 	if err != nil {
 		return nil, err
 	}
