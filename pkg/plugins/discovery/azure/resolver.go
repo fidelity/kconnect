@@ -19,14 +19,13 @@ package azure
 import (
 	"context"
 	"fmt"
-	"sort"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-11-01/subscriptions"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
@@ -47,65 +46,32 @@ func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *aksClusterProvider) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
-	if err := p.setup(config, identity); err != nil {
+func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
+	if err := p.setup(cfg, identity); err != nil {
 		return fmt.Errorf("setting up aks provider: %w", err)
 	}
 	p.logger.Debug("resolving Azure configuration items")
 
-	if err := p.resolveSubscription("subscription-id", config); err != nil {
-		return fmt.Errorf("resolving subscription-id: %w", err)
+	if err := resolve.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure AAD host", true, p.subscriptionOptions); err != nil {
+		return fmt.Errorf("resolving %s: %w", SubscriptionIDConfigItem, err)
 	}
 
 	return nil
 }
 
-func (p *aksClusterProvider) resolveSubscription(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
-	}
-
+func (p *aksClusterProvider) subscriptionOptions() (map[string]string, error) {
 	client := subscriptions.NewClient()
 	client.Authorizer = p.authorizer
 
 	res, err := client.List(context.TODO())
 	if err != nil {
-		return fmt.Errorf("getting subscription list: %w", err)
+		return nil, fmt.Errorf("getting subscription list: %w", err)
 	}
 
 	subs := make(map[string]string)
-	options := []string{}
 	for _, sub := range res.Values() {
 		subs[*sub.DisplayName] = *sub.SubscriptionID
-		options = append(options, *sub.DisplayName)
-	}
-	sort.Strings(options)
-
-	if len(options) == 0 {
-		return ErrNoSubscriptions
 	}
 
-	selectedSubscription := ""
-	if len(options) == 1 {
-		p.logger.Debug("only 1 subscription, automatically selected")
-		selectedSubscription = options[0]
-	} else {
-
-		prompt := &survey.Select{
-			Message: "Select an Azure subscription",
-			Options: options,
-		}
-		if err := survey.AskOne(prompt, &selectedSubscription, survey.WithValidator(survey.Required)); err != nil {
-			return fmt.Errorf("asking for subscription: %w", err)
-		}
-	}
-
-	subscriptionID := subs[selectedSubscription]
-
-	if err := cfg.SetValue(name, subscriptionID); err != nil {
-		return fmt.Errorf("setting subscription-id config: %w", err)
-	}
-	p.logger.Debugw("selected subscription", "name", selectedSubscription, "id", subscriptionID)
-
-	return nil
+	return subs, nil
 }

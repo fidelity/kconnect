@@ -69,16 +69,16 @@ func (p *aksClusterProvider) SupportedIDs() []string {
 func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
 
-	cs.String("tenant-id", "", "The Azure tenant to use")              //nolint: errcheck
-	cs.String("subscription-id", "", "The Azure subscription to use")  //nolint: errcheck
-	cs.String("resource-group", "", "The Azure resource group to use") //nolint: errcheck
-	cs.Bool("admin", false, "Generate admin user kubeconfig")          //nolint: errcheck
+	cs.String(TenantIDConfigItem, "", "The Azure tenant to use")              //nolint: errcheck
+	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use")  //nolint: errcheck
+	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use") //nolint: errcheck
+	cs.Bool("admin", false, "Generate admin user kubeconfig")                 //nolint: errcheck
 
-	cs.SetRequired("tenant-id") //nolint: errcheck
+	cs.SetRequired(TenantIDConfigItem) //nolint: errcheck
 
-	cs.SetShort("resource-group", "r") //nolint: errcheck
-	cs.SetShort("tenant-id", "t")      //nolint: errcheck
-	cs.SetShort("subscription", "s")   //nolint: errcheck
+	cs.SetShort(ResourceGroupConfigItem, "r")  //nolint: errcheck
+	cs.SetShort(TenantIDConfigItem, "t")       //nolint: errcheck
+	cs.SetShort(SubscriptionIDConfigItem, "s") //nolint: errcheck
 
 	return cs
 }
