@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html" class="active"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/renew.html"><strong aria-hidden="true">4.4.</strong> renew</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html" class="active"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -165,31 +165,32 @@
                     <main>
                         <h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
 <p>Once you have <a href="installation.html">installed</a> kconnect you can see a list of the commands available by running:</p>
-<pre><code class="language-bash">kconnect
+<pre><code class="language-bash">kconnect help
 </code></pre>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
 <p>The general workflow for using kconnect is the following:</p>
 <ul>
 <li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>
 <li><code>kconnect use</code> - connect to a cluster for the first time - <strong>only the first time</strong></li>
-<li><code>kconnect to</code> - use to re-connect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
+<li><code>kconnect to</code> - use to reconnect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
 </ul>
 <h2><a class="header" href="#creating-and-importing-configuration" id="creating-and-importing-configuration">Creating and importing configuration</a></h2>
-<p>Before you use kconnect to help connect to a Kubernetes cluster you may want to import a configuration with your (or your organisations) defaults so that you don’t have to supply all the flags.</p>
+<p>Before using <code>kconnect</code> to connect to a Kubernetes cluster you may want to import an idetitiy provider configuration with your (or your organisations) defaults so that you don’t have to supply all connection settings each time you connect to a new cluster.</p>
 <p>You will need to create a configuration file (see example <a href="https://github.com/fidelity/kconnect/blob/main/examples/config.yaml">here</a>). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).</p>
-<p>The configuration file can then be imported using the following:</p>
+<p>Each new user in your organization can then import the default configurations in this file using the <code>kconnect configure</code> command with the <code>-f</code> flag:</p>
 <pre><code class="language-bash">kconnect configure -f https://raw.githubusercontent.com/fidelity/kconnect/main/examples/config.yaml
 </code></pre>
-<p>You can check the contents of your local configuration:</p>
+<p>Once the user has created their local configuration file, they should be able to display their configuration settings.</p>
 <pre><code class="language-bash">kconnect configure
 </code></pre>
 <h2><a class="header" href="#first-time-connection-to-a-cluster" id="first-time-connection-to-a-cluster">First time connection to a cluster</a></h2>
 <p>When discovering and connecting to a cluster for the first time you can do the following:</p>
 <pre><code class="language-bash">kconnect use eks --idp-protocol saml
 </code></pre>
-<p>This will guide you interactively setting the flags and selecting a cluster. It also gives you the option to set a easy to remember alias.</p>
+<p>This will guide you interactively setting the flags and selecting a cluster. It also gives you the option to set an easy-to-remember alias.</p>
 <p>NOTE: only saml is supported at present for IdP.</p>
-<h2><a class="header" href="#re-connecting-to-a-cluster" id="re-connecting-to-a-cluster">Re-connecting to a cluster</a></h2>
-<p>If you’ve previously connected to a cluster you can re-connect to it using the alias (if you set one):</p>
+<h2><a class="header" href="#reconnecting-to-a-cluster" id="reconnecting-to-a-cluster">Reconnecting to a cluster</a></h2>
+<p>If you’ve previously connected to a cluster you can reconnect to it using the alias (if you set one):</p>
 <pre><code class="language-bash">kconnect to dev-bu-1
 </code></pre>
 <p>Or using the history id (which can be found by using <code>kconnect ls</code>):</p>

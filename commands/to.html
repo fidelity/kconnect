@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>renew - kconnect - The Kubernetes Connection Manager CLI</title>
+        <title>to - kconnect - The Kubernetes Connection Manager CLI</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="../commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="../commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/renew.html" class="active"><strong aria-hidden="true">4.4.</strong> renew</a></li><li class="chapter-item expanded "><a href="../commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="../commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="../commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/to.html" class="active"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="../commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -163,21 +163,58 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h2><a class="header" href="#kconnect-renew" id="kconnect-renew">kconnect renew</a></h2>
-<p>Reconnect to last cluster</p>
+                        <h2><a class="header" href="#kconnect-to" id="kconnect-to">kconnect to</a></h2>
+<p>Reconnect to a connection history entry.</p>
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
-<p>Reconnect to last cluster</p>
-<pre><code>kconnect renew [flags]
+<p>Reconnect to a cluster in the connection history by its entry ID or alias.</p>
+<p>The kconnect tool creates an entry in the user’s connection history with all the
+connection settings each time it generates a new kubectl configuration context
+for a Kubernetes cluster.  The user can then reconnect to the same cluster and
+refresh their access token or regenerate the kubectl configuration context using
+the connection history entry’s ID or alias.</p>
+<p>The to command also accepts - or LAST as proxy references to the most recent
+connection history entry, or LAST~N for the Nth previous entry.</p>
+<p>Although kconnect does not save the user’s password in the connection history,
+the user can avoid having to enter their password interactively by setting the
+KCONNECT_PASSWORD environment variable or the --password command-line flag.
+Otherwise kconnect will promot the user to enter their password.</p>
+<pre><code class="language-bash">kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
+</code></pre>
+<h3><a class="header" href="#examples" id="examples">Examples</a></h3>
+<pre><code class="language-bash">
+  # Reconnect based on an alias - aliases can be found using kconnect ls
+  kconnect to uat-bu1
+
+  # Reconnect based on an history id - history id can be found using kconnect ls
+  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Reconnect interactively from history list
+  kconnect to
+
+  # Reconnect to current cluster (this is useful for renewing credentials)
+  kconnect to -
+  OR
+  kconnect to LAST
+
+  # Reconnect to cluster used before current one
+  kconnect to LAST~1
+
+  # Reconnect based on an alias supplying a password
+  kconnect to uat-bu1 --password supersecret
+
+  # Reconnect based on an alias supplying a password via env var
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
+ 
 </code></pre>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
-<pre><code>  -h, --help                      help for renew
+<pre><code class="language-bash">  -h, --help                      help for to
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
   -k, --kubeconfig string         Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
       --password string           Password to use
       --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -185,6 +222,9 @@
 <ul>
 <li><a href="index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 
                     </main>
 

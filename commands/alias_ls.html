@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="../commands/alias_ls.html" class="active"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="../commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/renew.html"><strong aria-hidden="true">4.4.</strong> renew</a></li><li class="chapter-item expanded "><a href="../commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="../commands/alias_ls.html" class="active"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="../commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="../commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -166,31 +166,46 @@
                         <h2><a class="header" href="#kconnect-alias-ls" id="kconnect-alias-ls">kconnect alias ls</a></h2>
 <p>List all the aliases currently defined</p>
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
-<p>List all the aliases currently defined</p>
-<pre><code>kconnect alias ls [flags]
+<p>List all the aliases currently defined for connection history entries in the
+user’s connection history.</p>
+<p>An alias is a user-friendly name for a connection history entry.</p>
+<pre><code class="language-bash">kconnect alias ls [flags]
 </code></pre>
 <h3><a class="header" href="#examples" id="examples">Examples</a></h3>
-<pre><code>  # Display all the aliases as a table
+<pre><code class="language-bash">
+  # Display all the aliases as a table
   kconnect alias ls
 
-  # Display all the aliases as json
+  # Display all connection history entry aliases as a table
+  kconnect alias ls
+
+  # Display all connection history entry aliases as json
   kconnect alias ls --output json
+
+  # Connect to a cluster using a connection history entry alias
+  kconnect to ${alias}
+
+  # List all connection history entries as a table - includes aliases
+  kconnect ls
 
 </code></pre>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
-<pre><code>  -h, --help            help for ls
+<pre><code class="language-bash">  -h, --help            help for ls
       --output string   Output format for the results (default &quot;table&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
-<pre><code>      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also" id="see-also">SEE ALSO</a></h3>
 <ul>
-<li><a href="alias.html">kconnect alias</a>	 - Query and manipulate aliases for your connection history.</li>
+<li><a href="alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 
                     </main>
 

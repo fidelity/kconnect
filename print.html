@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/renew.html"><strong aria-hidden="true">4.4.</strong> renew</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -184,6 +184,9 @@
 <p>For installation, getting started and other documentation head over to the <a href="https://fidelity.github.io/kconnect/">projects documentation site</a> or look in the <a href="/docs">/docs</a> directory.</p>
 <h2><a class="header" href="#contributions" id="contributions">Contributions</a></h2>
 <p>Contributions are very welcome. Please read the <a href="CONTRIBUTING.html">contributing guide</a> or see the docs.</p>
+<h2><a class="header" href="#acknowledgements" id="acknowledgements">Acknowledgements</a></h2>
+<p>For the SAML identity provider we rely heavily on the <a href="https://github.com/Versent/saml2aws">saml2aws</a> project by Versent. For the Azure AD provider we have taken inspiration from the <a href="https://github.com/AzureAD/microsoft-authentication-library-for-go">Microsoft Authentication Library for Go</a> and have directly used their wstrust package (see <a href="pkg/azure/wstruct">pkg/azure/wstrust</a>). </p>
+<p>Thanks to both these projects for making the implementation easier.</p>
 <h1><a class="header" href="#installation" id="installation">Installation</a></h1>
 <ul>
 <li><a href="installation.html#mac">Mac OSX</a></li>
@@ -191,6 +194,7 @@
 <li><a href="installation.html#windows">Windows</a></li>
 <li><a href="installation.html#docker">Docker</a></li>
 </ul>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
 <h2><a class="header" href="#mac" id="mac">Mac</a></h2>
 <p>To install on OSX you can use homebrew:</p>
 <pre><code class="language-bash">brew install fidelity/tap/kconnect
@@ -205,35 +209,36 @@
 <h2><a class="header" href="#docker" id="docker">Docker</a></h2>
 <p>You can also use kconnect via Docker by using the images we publish to Docker Hub:</p>
 <pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
-docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-protocol saml
+docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml
 </code></pre>
 <h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
 <p>Once you have <a href="installation.html">installed</a> kconnect you can see a list of the commands available by running:</p>
-<pre><code class="language-bash">kconnect
+<pre><code class="language-bash">kconnect help
 </code></pre>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
 <p>The general workflow for using kconnect is the following:</p>
 <ul>
 <li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>
 <li><code>kconnect use</code> - connect to a cluster for the first time - <strong>only the first time</strong></li>
-<li><code>kconnect to</code> - use to re-connect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
+<li><code>kconnect to</code> - use to reconnect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
 </ul>
 <h2><a class="header" href="#creating-and-importing-configuration" id="creating-and-importing-configuration">Creating and importing configuration</a></h2>
-<p>Before you use kconnect to help connect to a Kubernetes cluster you may want to import a configuration with your (or your organisations) defaults so that you don’t have to supply all the flags.</p>
+<p>Before using <code>kconnect</code> to connect to a Kubernetes cluster you may want to import an idetitiy provider configuration with your (or your organisations) defaults so that you don’t have to supply all connection settings each time you connect to a new cluster.</p>
 <p>You will need to create a configuration file (see example <a href="https://github.com/fidelity/kconnect/blob/main/examples/config.yaml">here</a>). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).</p>
-<p>The configuration file can then be imported using the following:</p>
+<p>Each new user in your organization can then import the default configurations in this file using the <code>kconnect configure</code> command with the <code>-f</code> flag:</p>
 <pre><code class="language-bash">kconnect configure -f https://raw.githubusercontent.com/fidelity/kconnect/main/examples/config.yaml
 </code></pre>
-<p>You can check the contents of your local configuration:</p>
+<p>Once the user has created their local configuration file, they should be able to display their configuration settings.</p>
 <pre><code class="language-bash">kconnect configure
 </code></pre>
 <h2><a class="header" href="#first-time-connection-to-a-cluster" id="first-time-connection-to-a-cluster">First time connection to a cluster</a></h2>
 <p>When discovering and connecting to a cluster for the first time you can do the following:</p>
 <pre><code class="language-bash">kconnect use eks --idp-protocol saml
 </code></pre>
-<p>This will guide you interactively setting the flags and selecting a cluster. It also gives you the option to set a easy to remember alias.</p>
+<p>This will guide you interactively setting the flags and selecting a cluster. It also gives you the option to set an easy-to-remember alias.</p>
 <p>NOTE: only saml is supported at present for IdP.</p>
-<h2><a class="header" href="#re-connecting-to-a-cluster" id="re-connecting-to-a-cluster">Re-connecting to a cluster</a></h2>
-<p>If you’ve previously connected to a cluster you can re-connect to it using the alias (if you set one):</p>
+<h2><a class="header" href="#reconnecting-to-a-cluster" id="reconnecting-to-a-cluster">Reconnecting to a cluster</a></h2>
+<p>If you’ve previously connected to a cluster you can reconnect to it using the alias (if you set one):</p>
 <pre><code class="language-bash">kconnect to dev-bu-1
 </code></pre>
 <p>Or using the history id (which can be found by using <code>kconnect ls</code>):</p>
@@ -245,108 +250,216 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
 <h2><a class="header" href="#kconnect" id="kconnect">kconnect</a></h2>
 <p>The Kubernetes Connection Manager CLI</p>
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
-<p>The Kubernetes Connection Manager CLI</p>
-<pre><code>kconnect [flags]
+<p>The kconnect tool uses a pre-configured Identity Provider to log in to one or
+more managed Kubernetes cluster providers, discovers the list of clusters 
+visible to your authenticated user and options, and generates a kubectl 
+configutation context for the selected cluster.</p>
+<p>Most kubectl contexts include an authentication token which kubectl sends to 
+Kubernetes with each request rather than a username and password to establish 
+your identity.  Authentication tokens typically expire after some time.  The 
+user must then to log in again to the managed Kubernetes service provider and 
+regenerate the kubectl context for that cluster connection in order to refresh 
+the access token.</p>
+<p>The kconnect tool makes this much easier by automating the login and kubectl 
+context regeneration process, and by allowing the user to repeat previously 
+successful connections.</p>
+<p>Each time kconnect creates a new connection context, the kconnect tool saves the
+information for that connection in the user’s connection history list.  The user
+can then display their connection history entries and reconnect to any entry by 
+its unique ID (or by a user-friendly alias) to refresh an expired access token 
+for that cluster.</p>
+<pre><code class="language-bash">kconnect [flags]
+</code></pre>
+<h3><a class="header" href="#examples" id="examples">Examples</a></h3>
+<pre><code class="language-bash">
+  # Display a help screen with kconnect commands.
+  kconnect help
+
+  # Configure the default identity provider and connection profile for your user.
+  #
+  # Use this command to set up kconnect the first time you use it on a new system.
+  #
+  kconnect configure -f FILE_OR_URL
+
+  # Create a kubectl confirguration context for an AWS EKS cluster.
+  #
+  # Use this command the first time you connect to a new cluster or a new context.
+  #
+  kconnect use eks
+
+  # Display connection history entries.
+  #
+  kconnect ls
+
+  # Add an alias to a connection history entry.
+  #
+  kconnect alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
+
+  # Reconnect and refresh the token for an aliased connection history entry.
+  #
+  # Use this to reconnect to a provider and refresh an expired access token.
+  #
+  kconnect to MYALIAS
+
+  # Display connection history entry aliases.
+  #
+  kconnect alias ls
+
 </code></pre>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
   -h, --help              help for kconnect
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also" id="see-also">SEE ALSO</a></h3>
 <ul>
-<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate aliases for your connection history.</li>
-<li><a href="commands/configure.html">kconnect configure</a>	 - Set and view your default kconnect configuration. If no flags are supplied your config is displayed.</li>
-<li><a href="commands/ls.html">kconnect ls</a>	 - Query your connection history</li>
-<li><a href="commands/to.html">kconnect to</a>	 - Re-connect to a previously connected cluster using your history</li>
-<li><a href="commands/use.html">kconnect use</a>	 - Connect to a target environment and discover clusters for use</li>
+<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
+<li><a href="commands/configure.html">kconnect configure</a>	 - Set and view your kconnect configuration.</li>
+<li><a href="commands/ls.html">kconnect ls</a>	 - Query the user’s connection history</li>
+<li><a href="commands/to.html">kconnect to</a>	 - Reconnect to a connection history entry.</li>
+<li><a href="commands/use.html">kconnect use</a>	 - Connect to a Kubernetes cluster provider and cluster.</li>
 <li><a href="commands/version.html">kconnect version</a>	 - Display version &amp; build information</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-alias" id="kconnect-alias">kconnect alias</a></h2>
-<p>Query and manipulate aliases for your connection history.</p>
+<p>Query and manipulate connection history entry aliases.</p>
 <h3><a class="header" href="#synopsis-1" id="synopsis-1">Synopsis</a></h3>
-<p>Query and manipulate aliases for your connection history.</p>
-<pre><code>kconnect alias [flags]
+<p>An alias is a user-friendly name for a connection history entry, otherwise 
+referred to by its entry ID. </p>
+<p>The alias command and sub-commands allow you to query and manipulate aliases for
+connection history entries.</p>
+<pre><code class="language-bash">kconnect alias [flags]
+</code></pre>
+<h3><a class="header" href="#examples-1" id="examples-1">Examples</a></h3>
+<pre><code class="language-bash">
+  # Add an alias to an existing connection history entry
+  kconnect alias add --id 123456 --alias appdev
+
+  # List available connection history entry aliases
+  kconnect alias ls
+
+  # Remove an alias from a connection history entry
+  kconnect alias remove --alias appdev
+
 </code></pre>
 <h3><a class="header" href="#options-1" id="options-1">Options</a></h3>
-<pre><code>  -h, --help                      help for alias
+<pre><code class="language-bash">  -h, --help                      help for alias
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-1" id="see-also-1">SEE ALSO</a></h3>
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
-<li><a href="commands/alias_add.html">kconnect alias add</a>	 - Add an alias to a history entry</li>
+<li><a href="commands/alias_add.html">kconnect alias add</a>	 - Add an alias to a connection history entry</li>
 <li><a href="commands/alias_ls.html">kconnect alias ls</a>	 - List all the aliases currently defined</li>
-<li><a href="commands/alias_remove.html">kconnect alias remove</a>	 - Remove an alias from a history entry. Or remove all aliases.</li>
+<li><a href="commands/alias_remove.html">kconnect alias remove</a>	 - Remove connection history entry aliases.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-alias-add" id="kconnect-alias-add">kconnect alias add</a></h2>
-<p>Add an alias to a history entry</p>
+<p>Add an alias to a connection history entry</p>
 <h3><a class="header" href="#synopsis-2" id="synopsis-2">Synopsis</a></h3>
-<p>Add an alias to a history entry</p>
-<pre><code>kconnect alias add [flags]
+<p>Adds a user-friendly alias to a connection history entry.</p>
+<p>The user can then reconnect and refresh the access token for that cluster using 
+the alias instead of the connection history entry’s unique ID.</p>
+<pre><code class="language-bash">kconnect alias add [flags]
 </code></pre>
-<h3><a class="header" href="#examples" id="examples">Examples</a></h3>
-<pre><code>  # Add an alias for a entry
+<h3><a class="header" href="#examples-2" id="examples-2">Examples</a></h3>
+<pre><code class="language-bash">
+  # Add an alias to a connection history entry
   kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
+
+  # Connect to a cluster using the alias
+  kconnect to dev-bu-1
+
+  # List available aliases
+  kconnect alias ls
+
+  # List available history entries - includes aliases
+  kconnect ls
 
 </code></pre>
 <h3><a class="header" href="#options-2" id="options-2">Options</a></h3>
-<pre><code>      --alias string   Alias name for a history entry
+<pre><code class="language-bash">      --alias string   Alias name for a history entry
   -h, --help           help for add
       --id string      Id for a history entry
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-1" id="options-inherited-from-parent-commands-1">Options inherited from parent commands</a></h3>
-<pre><code>      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-2" id="see-also-2">SEE ALSO</a></h3>
 <ul>
-<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate aliases for your connection history.</li>
+<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-alias-ls" id="kconnect-alias-ls">kconnect alias ls</a></h2>
 <p>List all the aliases currently defined</p>
 <h3><a class="header" href="#synopsis-3" id="synopsis-3">Synopsis</a></h3>
-<p>List all the aliases currently defined</p>
-<pre><code>kconnect alias ls [flags]
+<p>List all the aliases currently defined for connection history entries in the
+user’s connection history.</p>
+<p>An alias is a user-friendly name for a connection history entry.</p>
+<pre><code class="language-bash">kconnect alias ls [flags]
 </code></pre>
-<h3><a class="header" href="#examples-1" id="examples-1">Examples</a></h3>
-<pre><code>  # Display all the aliases as a table
+<h3><a class="header" href="#examples-3" id="examples-3">Examples</a></h3>
+<pre><code class="language-bash">
+  # Display all the aliases as a table
   kconnect alias ls
 
-  # Display all the aliases as json
+  # Display all connection history entry aliases as a table
+  kconnect alias ls
+
+  # Display all connection history entry aliases as json
   kconnect alias ls --output json
+
+  # Connect to a cluster using a connection history entry alias
+  kconnect to ${alias}
+
+  # List all connection history entries as a table - includes aliases
+  kconnect ls
 
 </code></pre>
 <h3><a class="header" href="#options-3" id="options-3">Options</a></h3>
-<pre><code>  -h, --help            help for ls
+<pre><code class="language-bash">  -h, --help            help for ls
       --output string   Output format for the results (default &quot;table&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-2" id="options-inherited-from-parent-commands-2">Options inherited from parent commands</a></h3>
-<pre><code>      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-3" id="see-also-3">SEE ALSO</a></h3>
 <ul>
-<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate aliases for your connection history.</li>
+<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-alias-remove" id="kconnect-alias-remove">kconnect alias remove</a></h2>
-<p>Remove an alias from a history entry. Or remove all aliases.</p>
+<p>Remove connection history entry aliases.</p>
 <h3><a class="header" href="#synopsis-4" id="synopsis-4">Synopsis</a></h3>
-<p>Remove an alias from a history entry. Or remove all aliases.</p>
-<pre><code>kconnect alias remove [flags]
+<p>Remove an alias from a single connection history entry by the entry ID or the 
+alias.</p>
+<p>Set the --all flag on this command to remove all connection history aliases from
+the user’s connection history.</p>
+<pre><code class="language-bash">kconnect alias remove [flags]
 </code></pre>
-<h3><a class="header" href="#examples-2" id="examples-2">Examples</a></h3>
-<pre><code>  # Remove an alias using the alis name
+<h3><a class="header" href="#examples-4" id="examples-4">Examples</a></h3>
+<pre><code class="language-bash">
+  # Remove an alias using the alias name
   kconnect alias remove --alias dev-bu-1
 
   # Remove an alias using a histiry entry id
@@ -355,53 +468,70 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
   # Remove all aliases
   kconnect alias remove --all
 
+  # List available aliases
+  kconnect alias ls
+
+  # Query your connection history - includes aliases
+  kconnect ls
+
 </code></pre>
 <h3><a class="header" href="#options-4" id="options-4">Options</a></h3>
-<pre><code>      --alias string   Alias name for a history entry
+<pre><code class="language-bash">      --alias string   Alias name for a history entry
       --all            Remove all aliases from the histiry entries
   -h, --help           help for remove
       --id string      Id for a history entry
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-3" id="options-inherited-from-parent-commands-3">Options inherited from parent commands</a></h3>
-<pre><code>      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-4" id="see-also-4">SEE ALSO</a></h3>
 <ul>
-<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate aliases for your connection history.</li>
+<li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-configure" id="kconnect-configure">kconnect configure</a></h2>
-<p>Set and view your default kconnect configuration. If no flags are supplied your config is displayed.</p>
+<p>Set and view your kconnect configuration.</p>
 <h3><a class="header" href="#synopsis-5" id="synopsis-5">Synopsis</a></h3>
-<p>Set and view your default kconnect configuration. If no flags are supplied your config is displayed.</p>
-<pre><code>kconnect configure [flags]
+<p>The configure command creates kconnect configuration files and displays 
+previously-defined configurations in a user-friendly display format.</p>
+<p>If run with no flags, the command displays the configurations stored in the 
+current user’s $HOME/.kconnect/config.yaml file.</p>
+<p>The configure command can create a set of default configurations for a new 
+system or a new user via the -f flag and a local filename or remote URL.</p>
+<p>The user typically only needs to use this command the first time they use 
+kconnect.</p>
+<pre><code class="language-bash">kconnect configure [flags]
 </code></pre>
-<h3><a class="header" href="#examples-3" id="examples-3">Examples</a></h3>
-<pre><code>  # Display the current configuration
+<h3><a class="header" href="#examples-5" id="examples-5">Examples</a></h3>
+<pre><code class="language-bash">
+  # Display user's current configurations
   kconnect configure
 
-  # Display the configuration as json
+  # Display the user's configurations as json
   kconnect configure --output json
 
-  # Set the configuration from a local file
+  # Set the user's configurations from a local file
   kconnect configure -f ./defaults.yaml
 
-  # Set the configuration from a remote location via HTTP
+  # Set the user's configurations from a remote location via HTTP
   kconnect configure -f https://mycompany.com/config.yaml
 
-  # Set the congigiration from stdin
+  # Set the user's configurations from stdin
   cat ./config.yaml | kconnect configure -f -
 
 </code></pre>
 <h3><a class="header" href="#options-5" id="options-5">Options</a></h3>
-<pre><code>  -f, --file string     File or remote location to use to set the default configuration
+<pre><code class="language-bash">  -f, --file string     File or remote location to use to set the default configuration
   -h, --help            help for configure
       --output string   Controls the output format for the result. (default &quot;yaml&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-4" id="options-inherited-from-parent-commands-4">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -409,28 +539,43 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-ls" id="kconnect-ls">kconnect ls</a></h2>
-<p>Query your connection history</p>
+<p>Query the user’s connection history</p>
 <h3><a class="header" href="#synopsis-6" id="synopsis-6">Synopsis</a></h3>
-<p>Query your connection history</p>
-<pre><code>kconnect ls [flags]
+<p>Query and display the user’s connection history entries, including entry IDs and
+aliases.</p>
+<p>Each time kconnect creates a new kubectl context to connect to a Kubernetes 
+cluster, it saves the settings for the new connection as an entry in the user’s 
+connection history.  The user can then reconnect using those same settings later 
+via the connection history entry’s ID or alias.</p>
+<pre><code class="language-bash">kconnect ls [flags]
 </code></pre>
-<h3><a class="header" href="#examples-4" id="examples-4">Examples</a></h3>
-<pre><code>  # Display all the history as a table
+<h3><a class="header" href="#examples-6" id="examples-6">Examples</a></h3>
+<pre><code class="language-bash">
+  # Display all connection history entries as a table
   kconnect ls
 
-  # Display the history as yaml
+  # Display all connection history entries as YAML
   kconnect ls --output yaml
 
-  # Get the history for a specific entry id
+  # Display a specific connection history entry by entry id
   kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
 
-  # Get the history entries for eks
+  # Display a specific connection history entry by its alias
+  kconnect ls --alias mydev
+
+  # Display all connection history entries for the EKS mamaged cluster provider
   kconnect ls --cluster-provider eks
+
+  # Reconnect using the connection history entry alias
+  kconnect to mydev
 
 </code></pre>
 <h3><a class="header" href="#options-6" id="options-6">Options</a></h3>
-<pre><code>      --alias string               Alias name for a history entry
+<pre><code class="language-bash">      --alias string               Alias name for a history entry
       --cluster-provider string    Name of a cluster provider (i.e. eks)
   -h, --help                       help for ls
       --history-location string    Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
@@ -443,7 +588,7 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
       --provider-id string         Provider specific for a cluster
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-5" id="options-inherited-from-parent-commands-5">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -451,21 +596,61 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 </ul>
-<h2><a class="header" href="#kconnect-renew" id="kconnect-renew">kconnect renew</a></h2>
-<p>Reconnect to last cluster</p>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
+<h2><a class="header" href="#kconnect-to" id="kconnect-to">kconnect to</a></h2>
+<p>Reconnect to a connection history entry.</p>
 <h3><a class="header" href="#synopsis-7" id="synopsis-7">Synopsis</a></h3>
-<p>Reconnect to last cluster</p>
-<pre><code>kconnect renew [flags]
+<p>Reconnect to a cluster in the connection history by its entry ID or alias.</p>
+<p>The kconnect tool creates an entry in the user’s connection history with all the
+connection settings each time it generates a new kubectl configuration context
+for a Kubernetes cluster.  The user can then reconnect to the same cluster and
+refresh their access token or regenerate the kubectl configuration context using
+the connection history entry’s ID or alias.</p>
+<p>The to command also accepts - or LAST as proxy references to the most recent
+connection history entry, or LAST~N for the Nth previous entry.</p>
+<p>Although kconnect does not save the user’s password in the connection history,
+the user can avoid having to enter their password interactively by setting the
+KCONNECT_PASSWORD environment variable or the --password command-line flag.
+Otherwise kconnect will promot the user to enter their password.</p>
+<pre><code class="language-bash">kconnect to [historyid/alias/-/LAST/LAST~N] [flags]
+</code></pre>
+<h3><a class="header" href="#examples-7" id="examples-7">Examples</a></h3>
+<pre><code class="language-bash">
+  # Reconnect based on an alias - aliases can be found using kconnect ls
+  kconnect to uat-bu1
+
+  # Reconnect based on an history id - history id can be found using kconnect ls
+  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+
+  # Reconnect interactively from history list
+  kconnect to
+
+  # Reconnect to current cluster (this is useful for renewing credentials)
+  kconnect to -
+  OR
+  kconnect to LAST
+
+  # Reconnect to cluster used before current one
+  kconnect to LAST~1
+
+  # Reconnect based on an alias supplying a password
+  kconnect to uat-bu1 --password supersecret
+
+  # Reconnect based on an alias supplying a password via env var
+  KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
+ 
 </code></pre>
 <h3><a class="header" href="#options-7" id="options-7">Options</a></h3>
-<pre><code>  -h, --help                      help for renew
+<pre><code class="language-bash">  -h, --help                      help for to
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
   -k, --kubeconfig string         Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
       --password string           Password to use
       --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-6" id="options-inherited-from-parent-commands-6">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -473,48 +658,110 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-use" id="kconnect-use">kconnect use</a></h2>
-<p>Connect to a target environment and discover clusters for use</p>
+<p>Connect to a Kubernetes cluster provider and cluster.</p>
 <h3><a class="header" href="#synopsis-8" id="synopsis-8">Synopsis</a></h3>
-<p>Connect to a target environment and discover clusters for use</p>
-<pre><code>kconnect use [flags]
+<p>Connect to a managed Kubernetes cluster provider via the configured identity
+provider, prompting the user to enter or choose connection settings appropriate
+to the provider and a target cluster once connected.</p>
+<p>The kconnect tool generates a kubectl configuration context with a fresh access
+token to connect to the chosen cluster and adds a connection history entry to
+store the chosen connection settings.  If given an alias name, kconnect will add
+a user-friendly alias to the new connection history entry.</p>
+<p>The user can then reconnect to the provider with the settings stored in the
+connection history entry using the kconnect to command and the connection history
+entry ID or alias.  When the user reconnects using a connection history entry,
+kconnect regenerates the kubectl configuration context and refreshes their access
+token.</p>
+<p>The use command requires a target provider name as its first parameter.</p>
+<ul>
+<li>Note: kconnect use eks requires aws-iam-authenticator.
+<a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></li>
+</ul>
+<pre><code class="language-bash">kconnect use [flags]
+</code></pre>
+<h3><a class="header" href="#examples-8" id="examples-8">Examples</a></h3>
+<pre><code class="language-bash">
+  # Connect to EKS and choose an available EKS cluster.
+  kconnect use eks
+
+  # Connect to an EKS cluster and create an alias for its connection history entry.
+  kconnect use eks --alias mycluster
+
+  # Reconnect to a cluster by its connection history entry alias.
+  kconnect to mycluster
+
+  # Display the user's connection history as a table.
+  kconnect ls
+
 </code></pre>
 <h3><a class="header" href="#options-8" id="options-8">Options</a></h3>
-<pre><code>  -h, --help   help for use
+<pre><code class="language-bash">  -h, --help   help for use
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-7" id="options-inherited-from-parent-commands-7">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-8" id="see-also-8">SEE ALSO</a></h3>
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
-<li><a href="commands/use_eks.html">kconnect use eks</a>	 - Connect to eks and discover clusters for use</li>
+<li><a href="commands/use_aks.html">kconnect use aks</a>	 - Connect to the aks cluster provider and choose a cluster.</li>
+<li><a href="commands/use_eks.html">kconnect use eks</a>	 - Connect to the eks cluster provider and choose a cluster.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-use-eks" id="kconnect-use-eks">kconnect use eks</a></h2>
-<p>Connect to eks and discover clusters for use</p>
+<p>Connect to the eks cluster provider and choose a cluster.</p>
 <h3><a class="header" href="#synopsis-9" id="synopsis-9">Synopsis</a></h3>
-<p>Connect to eks and discover clusters for use</p>
-<pre><code>kconnect use eks [flags]
+<p>Connect to eks via the configured identify provider, prompting the user to enter
+or choose connection settings and a target cluster once connected.</p>
+<p>The kconnect tool generates a kubectl configuration context with a fresh access
+token to connect to the chosen cluster and adds a connection history entry to
+store the chosen connection settings.  If given an alias name, kconnect will add
+a user-friendly alias to the new connection history entry.</p>
+<p>The user can then reconnect to the provider with the settings stored in the
+connection history entry using the kconnect to command and the connection history
+entry ID or alias.  When the user reconnects using a connection history entry,
+kconnect regenerates the kubectl configuration context and refreshes their access
+token.</p>
+<ul>
+<li>Note: kconnect use eks requires aws-iam-authenticator.
+<a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></li>
+</ul>
+<pre><code class="language-bash">kconnect use eks [flags]
 </code></pre>
-<h3><a class="header" href="#examples-5" id="examples-5">Examples</a></h3>
-<pre><code>  # Discover EKS clusters using SAML
+<h3><a class="header" href="#examples-9" id="examples-9">Examples</a></h3>
+<pre><code class="language-bash">
+  # Discover EKS clusters using SAML
   kconnect use eks --idp-protocol saml
 
   # Discover EKS clusters using SAML with a specific role
   kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
 
+  # Discover an EKS cluster and add an alias to its connection history entry
+  kconnect use eks --alias mycluster
+
+  # Reconnect to a cluster by its connection history entry alias.
+  kconnect to mycluster
+
+  # Display the user's connection history as a table.
+  kconnect ls
+
 </code></pre>
 <h3><a class="header" href="#options-9" id="options-9">Options</a></h3>
-<pre><code>  -a, --alias string              Friendly name to give to give the connection
+<pre><code class="language-bash">  -a, --alias string              Friendly name to give to give the connection
   -c, --cluster-id string         Id of the cluster to use.
   -h, --help                      help for eks
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
-      --idp-protocol string       The idp protocol to use (e.g. saml)
+      --idp-protocol string       The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
   -k, --kubeconfig string         Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
       --max-history int           Sets the maximum number of history items to keep (default 100)
-      --namespace string          Sets namespace for context in kubeconfig
+  -n, --namespace string          Sets namespace for context in kubeconfig
       --no-history                If set to true then no history entry will be written
       --partition string          AWS partition to use (default &quot;aws&quot;)
       --password string           The password to use for authentication
@@ -526,32 +773,36 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
       --username string           The username used for authentication
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-8" id="options-inherited-from-parent-commands-8">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#idp-protocol-options" id="idp-protocol-options">IDP Protocol Options</a></h3>
 <h4><a class="header" href="#saml-options" id="saml-options">SAML Options</a></h4>
-<pre><code>      --idp-endpoint string   identity provider endpoint provided by your IT team
+<p>Use <code>--idp-protocol=saml</code></p>
+<pre><code class="language-bash">      --idp-endpoint string   identity provider endpoint provided by your IT team
       --idp-provider string   the name of the idp provider
       --partition string      AWS partition to use (default &quot;aws&quot;)
       --region string         AWS region to connect to
 </code></pre>
 <h3><a class="header" href="#see-also-9" id="see-also-9">SEE ALSO</a></h3>
 <ul>
-<li><a href="commands/use.html">kconnect use</a>	 - Connect to a target environment and discover clusters for use</li>
+<li><a href="commands/use.html">kconnect use</a>	 - Connect to a Kubernetes cluster provider and cluster.</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-version" id="kconnect-version">kconnect version</a></h2>
 <p>Display version &amp; build information</p>
 <h3><a class="header" href="#synopsis-10" id="synopsis-10">Synopsis</a></h3>
 <p>Display version &amp; build information</p>
-<pre><code>kconnect version [flags]
+<pre><code class="language-bash">kconnect version [flags]
 </code></pre>
 <h3><a class="header" href="#options-10" id="options-10">Options</a></h3>
-<pre><code>  -h, --help   help for version
+<pre><code class="language-bash">  -h, --help   help for version
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-9" id="options-inherited-from-parent-commands-9">Options inherited from parent commands</a></h3>
-<pre><code>      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --non-interactive   Run without interactive flag resolution
   -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -559,6 +810,9 @@ docker run -v ~/.kconnect:/home/nonroot/.kconnect kconnect:test use eks --idp-pr
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 </ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <p>Thank you for considering to contribute to kconnect 🎉👍</p>
 <p>This document will provide help on how to go about this. You can contribute in the following ways:</p>
 <ul>
