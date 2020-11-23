@@ -44,9 +44,10 @@ func newAKSProvider() *aksClusterProvider {
 
 type aksClusterProviderConfig struct {
 	provider.ClusterProviderConfig
-	SubscriptionID *string `json:"subscription-id"`
-	ResourceGroup  *string `json:"resource-group"`
-	Admin          bool    `json:"admin"`
+	SubscriptionID   *string `json:"subscription-id"`
+	SubscriptionName *string `json:"subscription-name"`
+	ResourceGroup    *string `json:"resource-group"`
+	Admin            bool    `json:"admin"`
 }
 
 type aksClusterProvider struct {
@@ -68,12 +69,12 @@ func (p *aksClusterProvider) SupportedIDs() []string {
 func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
 
-	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use")  //nolint: errcheck
-	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use") //nolint: errcheck
-	cs.Bool("admin", false, "Generate admin user kubeconfig")                 //nolint: errcheck
+	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use (specified by ID)")     //nolint: errcheck
+	cs.String(SubscriptionNameConfigItem, "", "The Azure subscription to use (specified by name)") //nolint: errcheck
+	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use")                      //nolint: errcheck
+	cs.Bool(AdminConfigItem, false, "Generate admin user kubeconfig")                              //nolint: errcheck
 
-	cs.SetShort(ResourceGroupConfigItem, "r")  //nolint: errcheck
-	cs.SetShort(SubscriptionIDConfigItem, "s") //nolint: errcheck
+	cs.SetShort(ResourceGroupConfigItem, "r") //nolint: errcheck
 
 	return cs
 }
