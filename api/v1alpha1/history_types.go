@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"math/rand"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/oklog/ulid"
@@ -106,7 +107,7 @@ func NewHistoryEntry() *HistoryEntry {
 			Kind:       "HistoryEntry",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              id.String(),
+			Name:              strings.ToLower(id.String()),
 			CreationTimestamp: created,
 			Generation:        1,
 		},
