@@ -14,4 +14,5 @@
   - [use](./commands/use.md)
     - [eks](./commands/use_eks.md)
   - [version](./commands/version.md)
+- [Releasing kconnect](./release.md)
 - [Contributing](./contributing.md)

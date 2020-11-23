@@ -10,10 +10,12 @@ kconnect is a CLI utility that can be used to discover and securely access Kuber
 
 Based on the authentication mechanism chosen the CLI will discover Kubernetes clusters you are allowed to access in a target hosting environment (i.e. EKS, AKS, Rancher) and generate a kubeconfig for a chosen cluster.
 
+**Currently supported platforms: EKS, AKS (with Rancher coming soon)**
+
 ## Features
 
-- Authenticate using SAML against a number of IdP
-- Discover EKS clusters
+- Authenticate using SAML or Azure Active Directory 
+- Discover EKS & AKS clusters
 - Generate a kubeconfig for a cluster
 - Query history of connected servers
 - Regenerate the kubeconfig from your history by using an id or an alias
