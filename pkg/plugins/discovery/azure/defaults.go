@@ -17,9 +17,11 @@ limitations under the License.
 package azure
 
 const (
-	TenantIDConfigItem       = "tenant-id"
-	ClientIDConfigItem       = "client-id"
-	AADHostConfigItem        = "aad-host"
-	SubscriptionIDConfigItem = "subscription-id"
-	ResourceGroupConfigItem  = "resource-group"
+	TenantIDConfigItem         = "tenant-id"
+	ClientIDConfigItem         = "client-id"
+	AADHostConfigItem          = "aad-host"
+	SubscriptionIDConfigItem   = "subscription-id"
+	SubscriptionNameConfigItem = "subscription-name"
+	ResourceGroupConfigItem    = "resource-group"
+	AdminConfigItem            = "admin"
 )

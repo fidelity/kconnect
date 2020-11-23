@@ -52,9 +52,45 @@ func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provi
 	}
 	p.logger.Debug("resolving Azure configuration items")
 
-	if err := resolve.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure AAD host", true, p.subscriptionOptions); err != nil {
+	if cfg.ExistsWithValue(SubscriptionIDConfigItem) && cfg.ExistsWithValue(SubscriptionNameConfigItem) {
+		return ErrSubscriptionNameOrID
+	}
+
+	if err := p.resolveSubscripionName(cfg); err != nil {
+		return fmt.Errorf("resolving subscription name: %w", err)
+	}
+
+	if err := resolve.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
 		return fmt.Errorf("resolving %s: %w", SubscriptionIDConfigItem, err)
 	}
+
+	return nil
+}
+
+func (p *aksClusterProvider) resolveSubscripionName(cfg config.ConfigurationSet) error {
+	if !cfg.ExistsWithValue(SubscriptionNameConfigItem) {
+		return nil
+	}
+
+	cfgItem := cfg.Get(SubscriptionNameConfigItem)
+	subscriptionName := cfgItem.Value.(string)
+
+	options, err := p.subscriptionOptions()
+	if err != nil {
+		return fmt.Errorf("getting subscriptions: %w", err)
+	}
+	id, ok := options[subscriptionName]
+	if !ok {
+		return fmt.Errorf("looking up subscription %s: %w", subscriptionName, err)
+	}
+
+	if err := cfg.SetValue(SubscriptionIDConfigItem, id); err != nil {
+		return fmt.Errorf("setting %s config item: %w", SubscriptionIDConfigItem, err)
+	}
+
+	// If we have subscription id then ignore subscription id for history
+	idCfgItem := cfg.Get(SubscriptionIDConfigItem)
+	idCfgItem.HistoryIgnore = true
 
 	return nil
 }
