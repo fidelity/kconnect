@@ -12,6 +12,7 @@
   - [ls](./commands/ls.md)
   - [to](./commands/to.md)
   - [use](./commands/use.md)
+    - [aks](./commands/use_aks.md)
     - [eks](./commands/use_eks.md)
   - [version](./commands/version.md)
 - [Releasing kconnect](./release.md)
