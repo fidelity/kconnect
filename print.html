@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.1.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -171,10 +171,11 @@
 <h2><a class="header" href="#what-is-kconnect" id="what-is-kconnect">What is kconnect?</a></h2>
 <p>kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments.</p>
 <p>Based on the authentication mechanism chosen the CLI will discover Kubernetes clusters you are allowed to access in a target hosting environment (i.e. EKS, AKS, Rancher) and generate a kubeconfig for a chosen cluster.</p>
+<p><strong>Currently supported platforms: EKS, AKS (with Rancher coming soon)</strong></p>
 <h2><a class="header" href="#features" id="features">Features</a></h2>
 <ul>
-<li>Authenticate using SAML against a number of IdP</li>
-<li>Discover EKS clusters</li>
+<li>Authenticate using SAML or Azure Active Directory </li>
+<li>Discover EKS &amp; AKS clusters</li>
 <li>Generate a kubeconfig for a cluster</li>
 <li>Query history of connected servers</li>
 <li>Regenerate the kubeconfig from your history by using an id or an alias</li>
@@ -813,6 +814,42 @@ token.</p>
 <blockquote>
 <p>NOTE: this page is auto-generated from the cobra commands</p>
 </blockquote>
+<h1><a class="header" href="#releasing-kconnect" id="releasing-kconnect">Releasing kconnect</a></h1>
+<p>The release of <em>kconnect</em> is done using <a href="https://goreleaser.com/">goreleaser</a> which is orchestrated using Githib Actions.</p>
+<h2><a class="header" href="#process" id="process">Process</a></h2>
+<p>The following steps are required to do a release:</p>
+<ol>
+<li>Merge any PRs into the <strong>main</strong> branch that contain features, bug fixes and other changes that you want to include in the release.</li>
+<li>We use <a href="https://semver.org/">Semver 2.0</a> for the release numbering. You will need to decide what the next release number will be based on the changes and whether it will be a <em>“pre-release”</em>:
+<ul>
+<li><em>Normal release</em>: it will follow the MAJOR.MINOR.PATCH format, for example 0.3.0</li>
+<li><em>Pre-release</em>: it will follow the MAJOR.MINOR.PATCH-rc.RCNUMBER format, for example 0.3.0-rc.1</li>
+</ul>
+</li>
+<li>Locally on your machine get the latest <strong>main</strong> branch code:</li>
+</ol>
+<pre><code class="language-bash">git checkout main
+git pull
+</code></pre>
+<ol start="4">
+<li>Tag the main branch with the release number previously determined:</li>
+</ol>
+<pre><code class="language-bash">git tag -a 0.3.0 -m &quot;0.3.0&quot;
+</code></pre>
+<ol start="5">
+<li>Push the new tag to GitHub:</li>
+</ol>
+<pre><code class="language-bash">git push origin 0.3.0
+</code></pre>
+<ol start="6">
+<li>Go to GitHub and check on the <strong>goreleaser</strong> <a href="https://github.com/fidelity/kconnect/actions?query=workflow%3Agoreleaser">action</a>. This action is what does the actual release.</li>
+<li>Once the <strong>goreleaser</strong> action completes go to the <a href="https://github.com/fidelity/kconnect/releases">releases on GitHub</a> and check the release is available.</li>
+<li>Click <strong>Edit</strong> next to the release and tidy up the <strong>Changelog</strong> entries. If there are any breaking changes then a new markdown section should be added to the top that documents this.</li>
+</ol>
+<h2><a class="header" href="#implementation" id="implementation">Implementation</a></h2>
+<p>We use <a href="https://goreleaser.com/">goreleaser</a> to do the majority of the build, packaging and release. The <a href="https://github.com/fidelity/kconnect/blob/main/.goreleaser.yml">.goreleaser.yml</a> configuration file drives this.</p>
+<p>The <strong>goreleaser</strong> GitHub Action that kicks off goreleaser on tagging the main branch is located <a href="https://github.com/fidelity/kconnect/blob/main/.github/workflows/release.yml">here</a>.</p>
+<p>There is an additional GitHub workflow thats used to publish the docs to GitHub pages and that’s located <a href="https://github.com/fidelity/kconnect/blob/main/.github/workflows/release-docs.yml">here</a>.</p>
 <p>Thank you for considering to contribute to kconnect 🎉👍</p>
 <p>This document will provide help on how to go about this. You can contribute in the following ways:</p>
 <ul>
