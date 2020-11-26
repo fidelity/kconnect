@@ -25,3 +25,5 @@ hack/tools/share
 
 .vscode/
 
+.DS_Store
+
