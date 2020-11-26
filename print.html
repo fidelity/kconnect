@@ -172,9 +172,10 @@
 <p>kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments.</p>
 <p>Based on the authentication mechanism chosen the CLI will discover Kubernetes clusters you are allowed to access in a target hosting environment (i.e. EKS, AKS, Rancher) and generate a kubeconfig for a chosen cluster.</p>
 <p><strong>Currently supported platforms: EKS, AKS (with Rancher coming soon)</strong></p>
+<img src="docs/book/src/images/kconnectfrontpage.gif" alt="kconnect demo">
 <h2><a class="header" href="#features" id="features">Features</a></h2>
 <ul>
-<li>Authenticate using SAML or Azure Active Directory </li>
+<li>Authenticate using SAML or Azure Active Directory</li>
 <li>Discover EKS &amp; AKS clusters</li>
 <li>Generate a kubeconfig for a cluster</li>
 <li>Query history of connected servers</li>
@@ -186,7 +187,7 @@
 <h2><a class="header" href="#contributions" id="contributions">Contributions</a></h2>
 <p>Contributions are very welcome. Please read the <a href="CONTRIBUTING.html">contributing guide</a> or see the docs.</p>
 <h2><a class="header" href="#acknowledgements" id="acknowledgements">Acknowledgements</a></h2>
-<p>For the SAML identity provider we rely heavily on the <a href="https://github.com/Versent/saml2aws">saml2aws</a> project by Versent. For the Azure AD provider we have taken inspiration from the <a href="https://github.com/AzureAD/microsoft-authentication-library-for-go">Microsoft Authentication Library for Go</a> and have directly used their wstrust package (see <a href="pkg/azure/wstruct">pkg/azure/wstrust</a>). </p>
+<p>For the SAML identity provider we rely heavily on the <a href="https://github.com/Versent/saml2aws">saml2aws</a> project by Versent. For the Azure AD provider we have taken inspiration from the <a href="https://github.com/AzureAD/microsoft-authentication-library-for-go">Microsoft Authentication Library for Go</a> and have directly used their wstrust package (see <a href="pkg/azure/wstruct">pkg/azure/wstrust</a>).</p>
 <p>Thanks to both these projects for making the implementation easier.</p>
 <h1><a class="header" href="#installation" id="installation">Installation</a></h1>
 <ul>
