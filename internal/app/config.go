@@ -80,9 +80,10 @@ func AddKubeconfigConfigItems(cs config.ConfigurationSet) error {
 }
 
 type CommonConfig struct {
-	ConfigFile  string `json:"config"`
-	Verbosity   int    `json:"verbosity"`
-	Interactive bool   `json:"non-interactive"`
+	ConfigFile          string `json:"config"`
+	Verbosity           int    `json:"verbosity"`
+	Interactive         bool   `json:"non-interactive"`
+	DisableVersionCheck bool   `json:"no-version-check"`
 }
 
 func AddCommonConfigItems(cs config.ConfigurationSet) error {
@@ -95,10 +96,14 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution"); err != nil {
 		return fmt.Errorf("adding non-interactive config: %w", err)
 	}
-	cs.SetShort("verbosity", "v")          //nolint
-	cs.SetHistoryIgnore("config")          //nolint
-	cs.SetHistoryIgnore("verbosity")       //nolint
-	cs.SetHistoryIgnore("non-interactive") //nolint
+	if _, err := cs.Bool("no-version-check", false, "If set to true kconnect will not check for a newer version"); err != nil {
+		return fmt.Errorf("adding non-version-check config: %w", err)
+	}
+	cs.SetShort("verbosity", "v")           //nolint
+	cs.SetHistoryIgnore("config")           //nolint
+	cs.SetHistoryIgnore("verbosity")        //nolint
+	cs.SetHistoryIgnore("non-interactive")  //nolint
+	cs.SetHistoryIgnore("no-version-check") //nolint
 	return nil
 }
 
