@@ -25,16 +25,33 @@ import (
 
 // ConfigurationSpec represents the configuration of kconnect
 type ConfigurationSpec struct {
-	Global    map[string]string            `json:"global,omitempty"`
+	// Global holds global configuration in the form of key:value pairs
+	Global map[string]string `json:"global,omitempty"`
+	// Providers holds provider specific configuration valies in the form of
+	// key:value pairs per provider name. Values specified here will
+	// overwrite an global config of the same name.
 	Providers map[string]map[string]string `json:"providers,omitempty"`
-
+	// ImportedFrom holds where this configuration was originally imported from
 	ImportedFrom *string `json:"importedFrom,omitempty"`
+	// VersionCheck holds details of the last version cehck
+	VersionCheck *VersionCheck `json:"versionCheck,omitempty"`
 }
 
 // AppDefaults represents the default values for the kconnect app
 type AppDefaults struct {
 	Name string
 	Args map[string]string `json:"args,omitempty"`
+}
+
+// VersionCheck represents version information from a check
+type VersionCheck struct {
+	// LastChecked holds the date/time the last check was made to see
+	// if there was a newer version available
+	LastChecked metav1.Time `json:"lastVersionCheck"`
+	// LatestReleaseVersion holds the latest release version of kconnect thats been retrieved from GitHub
+	LatestReleaseVersion *string `json:"latestReleaseVersion,omitempty"`
+	// LatestReleaseURL holds the URL for latest release version of kconnect thats been retrieved from GitHub
+	LatestReleaseURL *string `json:"latestReleaseURL,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -54,7 +71,9 @@ func NewConfiguration() *Configuration {
 			APIVersion: SchemeGroupVersion.String(),
 			Kind:       "Configuration",
 		},
-		Spec: ConfigurationSpec{},
+		Spec: ConfigurationSpec{
+			VersionCheck: &VersionCheck{},
+		},
 	}
 }
 

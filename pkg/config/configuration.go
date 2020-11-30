@@ -133,6 +133,10 @@ func (a *appConfiguration) Get() (*kconnectv1alpha.Configuration, error) {
 		return nil, fmt.Errorf("decoding config file: %w", err)
 	}
 
+	if appConfiguration.Spec.VersionCheck == nil {
+		appConfiguration.Spec.VersionCheck = &kconnectv1alpha.VersionCheck{}
+	}
+
 	return appConfiguration, nil
 
 }

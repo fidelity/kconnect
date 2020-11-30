@@ -15,10 +15,13 @@ require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.35.2
 	github.com/beevik/etree v1.1.0
+	github.com/blang/semver v3.5.0+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.10.1
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
+	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.10
@@ -62,6 +65,6 @@ require (
 )
 
 replace (
-    github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
-    github.com/versent/saml2aws => ./third_party/saml2aws
+	github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
+	github.com/versent/saml2aws => ./third_party/saml2aws
 )
