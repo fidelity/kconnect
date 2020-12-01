@@ -30,6 +30,7 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.0 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.7.0
@@ -48,6 +49,7 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/tools v0.0.0-20201103235415-b653051172e4 // indirect
+	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.19.1
 	k8s.io/apimachinery v0.19.1
@@ -62,6 +64,6 @@ require (
 )
 
 replace (
-    github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
-    github.com/versent/saml2aws => ./third_party/saml2aws
+	github.com/spf13/cobra => github.com/richardcase/cobra v1.0.1-0.20200717133916-3a09287ba25e
+	github.com/versent/saml2aws => ./third_party/saml2aws
 )
