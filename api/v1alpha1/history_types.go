@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	htime "github.com/fidelity/kconnect/pkg/history/time"
 	"github.com/oklog/ulid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -194,39 +195,53 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 				Name: "User",
 				Type: "string",
 			},
+			{
+				Name: "Time left",
+				Type: "String",
+			},
 		},
 	}
 
 	for _, entry := range l.Items {
 		username := entry.Spec.Flags["username"]
 		var row metav1.TableRow
+		currentContextIndicator := ""
 		if entry.Name == currentContextID {
-			row = metav1.TableRow{
-				Cells: []interface{}{
-					">",
-					entry.ObjectMeta.Name,
-					*entry.Spec.Alias,
-					entry.Spec.Provider,
-					entry.Spec.ProviderID,
-					entry.Spec.Identity,
-					username},
-			}
-		} else {
-			row = metav1.TableRow{
-				Cells: []interface{}{
-					"",
-					entry.ObjectMeta.Name,
-					*entry.Spec.Alias,
-					entry.Spec.Provider,
-					entry.Spec.ProviderID,
-					entry.Spec.Identity,
-					username},
-			}
+			currentContextIndicator = ">"
+		}
 
+		timeLeft := getTimeLeft(&entry)
+
+		row = metav1.TableRow{
+			Cells: []interface{}{
+				currentContextIndicator,
+				entry.ObjectMeta.Name,
+				*entry.Spec.Alias,
+				entry.Spec.Provider,
+				entry.Spec.ProviderID,
+				entry.Spec.Identity,
+				username,
+				timeLeft},
 		}
 
 		table.Rows = append(table.Rows, row)
 	}
 
 	return table
+}
+
+func getTimeLeft(entry *HistoryEntry) string {
+
+	var expiresTime time.Time
+	var err error
+	if entry.Spec.Provider == "eks" && entry.Spec.Identity == "saml" {
+		expiresTime, err = htime.GetExpireTimeFromAWSCredentials(entry.Spec.Flags["aws-profile"])
+		if err != nil {
+			return ""
+		}
+	} else {
+		return "NA"
+	}
+	//TODO - other variations e.g. AKS
+	return htime.GetRemainingTime(expiresTime)
 }
