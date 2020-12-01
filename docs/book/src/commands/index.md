@@ -6,25 +6,25 @@ The Kubernetes Connection Manager CLI
 
 
 The kconnect tool uses a pre-configured Identity Provider to log in to one or
-more managed Kubernetes cluster providers, discovers the list of clusters 
-visible to your authenticated user and options, and generates a kubectl 
+more managed Kubernetes cluster providers, discovers the list of clusters
+visible to your authenticated user and options, and generates a kubectl
 configutation context for the selected cluster.
 
-Most kubectl contexts include an authentication token which kubectl sends to 
-Kubernetes with each request rather than a username and password to establish 
-your identity.  Authentication tokens typically expire after some time.  The 
-user must then to log in again to the managed Kubernetes service provider and 
-regenerate the kubectl context for that cluster connection in order to refresh 
+Most kubectl contexts include an authentication token which kubectl sends to
+Kubernetes with each request rather than a username and password to establish
+your identity.  Authentication tokens typically expire after some time.  The
+user must then to log in again to the managed Kubernetes service provider and
+regenerate the kubectl context for that cluster connection in order to refresh
 the access token.
 
-The kconnect tool makes this much easier by automating the login and kubectl 
-context regeneration process, and by allowing the user to repeat previously 
+The kconnect tool makes this much easier by automating the login and kubectl
+context regeneration process, and by allowing the user to repeat previously
 successful connections.
 
 Each time kconnect creates a new connection context, the kconnect tool saves the
 information for that connection in the user's connection history list.  The user
-can then display their connection history entries and reconnect to any entry by 
-its unique ID (or by a user-friendly alias) to refresh an expired access token 
+can then display their connection history entries and reconnect to any entry by
+its unique ID (or by a user-friendly alias) to refresh an expired access token
 for that cluster.
 
 
@@ -74,10 +74,11 @@ kconnect [flags]
 ### Options
 
 ```bash
-      --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
-  -h, --help              help for kconnect
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+      --config string      Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
+  -h, --help               help for kconnect
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 ```
 
 ### SEE ALSO
