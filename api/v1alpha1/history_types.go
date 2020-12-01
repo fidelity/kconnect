@@ -202,7 +202,7 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 		},
 	}
 
-	for _, entry := range l.Items {
+	for i, entry := range l.Items {
 		username := entry.Spec.Flags["username"]
 		var row metav1.TableRow
 		currentContextIndicator := ""
@@ -210,7 +210,7 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 			currentContextIndicator = ">"
 		}
 
-		timeLeft := getTimeLeft(&entry)
+		timeLeft := getTimeLeft(&l.Items[i])
 
 		row = metav1.TableRow{
 			Cells: []interface{}{
