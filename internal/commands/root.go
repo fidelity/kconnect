@@ -240,7 +240,7 @@ func reportNewerVersion() error {
 	var latestSemver semver.Version
 	checkTime := time.Now().UTC()
 	checkDiff := checkTime.Sub(cfg.Spec.VersionCheck.LastChecked.Time)
-	if checkDiff > versionCheckInterval {
+	if checkDiff > versionCheckInterval { //nolint:nestif
 		latestRelease, err := appver.GetLatestRelease()
 		if err != nil {
 			return fmt.Errorf("getting latest release: %w", err)
