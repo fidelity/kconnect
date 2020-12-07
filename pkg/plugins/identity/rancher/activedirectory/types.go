@@ -14,14 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package activedirectory
 
-import (
-	// Initialize the identity plugins
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aws/iam"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/aad"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/env"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/rancher/activedirectory"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/static/token"
-)
+import "encoding/json"
+
+type loginRequest struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+}
+
+type loginResponse struct { //TODO: add additional fields
+	Type   string      `json:"type"`
+	Name   string      `json:"name"`
+	Token  string      `json:"token"`
+	UserID string      `json:"userId"`
+	TTL    json.Number `json:"ttl"`
+}

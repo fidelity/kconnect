@@ -24,14 +24,16 @@ import (
 )
 
 // NewIdentityStore will create a new AWS identity store
-func NewIdentityStore(profile string) (provider.IdentityStore, error) {
+func NewIdentityStore(profile, idProviderName string) (provider.IdentityStore, error) {
 	return &awsIdentityStore{
 		configProvider: awsconfig.NewSharedCredentials(profile),
+		idProviderName: idProviderName,
 	}, nil
 }
 
 type awsIdentityStore struct {
 	configProvider *awsconfig.CredentialsProvider
+	idProviderName string
 }
 
 func (s *awsIdentityStore) CredsExists() (bool, error) {

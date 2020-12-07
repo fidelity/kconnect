@@ -81,7 +81,7 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Info("running `ls` command")
+			zap.S().Debug("running `ls` command")
 			params := &app.HistoryQueryInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {

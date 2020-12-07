@@ -20,7 +20,9 @@ entry ID or alias.  When the user reconnects using a connection history entry,
 kconnect regenerates the kubectl configuration context and refreshes their access
 token.
 
-The use command requires a target provider name as its first parameter.
+The use command requires a target provider name as its first parameter. If no
+value is supplied for --idp-protocol the first supported protocol for the
+specified cluster provider.
 
 * Note: kconnect use eks requires aws-iam-authenticator.
   [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
@@ -69,6 +71,7 @@ kconnect use [flags]
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
 * [kconnect use aks](use_aks.md)	 - Connect to the aks cluster provider and choose a cluster.
 * [kconnect use eks](use_eks.md)	 - Connect to the eks cluster provider and choose a cluster.
+* [kconnect use rancher](use_rancher.md)	 - Connect to the rancher cluster provider and choose a cluster.
 
 
 > NOTE: this page is auto-generated from the cobra commands

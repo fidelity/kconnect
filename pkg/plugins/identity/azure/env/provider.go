@@ -77,7 +77,7 @@ func (p *envIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		return nil, fmt.Errorf("getting authorizer: %w", err)
 	}
 
-	id := identity.NewAuthorizerIdentity("", authorizer)
+	id := identity.NewAuthorizerIdentity("", ProviderName, authorizer)
 
 	return id, nil
 }

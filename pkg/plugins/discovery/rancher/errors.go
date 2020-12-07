@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package rancher
 
-import (
-	// Initialize the identity plugins
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aws/iam"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/aad"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/env"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/rancher/activedirectory"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/static/token"
+import "errors"
+
+var (
+	ErrGetClusterDetail   = errors.New("error querying cluster cluster detail")
+	ErrGettingClusters    = errors.New("error querying clusters")
+	ErrNoKubeconfigAction = errors.New("no generate kubeconfig action found")
+	ErrGettingKubeconfig  = errors.New("error getting kubeconfig from api")
 )

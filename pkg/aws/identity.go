@@ -30,6 +30,8 @@ type Identity struct {
 	PrincipalARN     string
 	Expires          time.Time
 	Region           string
+
+	IDProviderName string
 }
 
 func (i *Identity) Type() string {
@@ -43,4 +45,8 @@ func (i *Identity) Name() string {
 func (i *Identity) IsExpired() bool {
 	now := time.Now().UTC()
 	return now.After(i.Expires)
+}
+
+func (i *Identity) IdentityProviderName() string {
+	return i.IDProviderName
 }
