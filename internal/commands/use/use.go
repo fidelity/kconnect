@@ -66,7 +66,9 @@ kconnect regenerates the kubectl configuration context and refreshes their acces
 token.
 `
 	longDescFoot = `
-The use command requires a target provider name as its first parameter.
+The use command requires a target provider name as its first parameter. If no
+value is supplied for --idp-protocol the first supported protocol for the
+specified cluster provider.
 `
 	eksDescNote = `
 * Note: kconnect use eks requires aws-iam-authenticator.
@@ -162,7 +164,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 			return preRun(params)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Infow("running `use` command", "provider", clusterProvider.Name())
+			zap.S().Debugw("running `use` command", "provider", clusterProvider.Name())
 
 			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
@@ -235,6 +237,7 @@ func setupIdpProtocol(args []string, params *app.UseParams) error {
 	if err != nil {
 		return fmt.Errorf("getting idp-protocol: %w", err)
 	}
+
 	if idpProtocol == "" {
 		return nil
 	}
@@ -288,7 +291,17 @@ func getIdpProtocol(args []string, params *app.UseParams) (string, error) {
 	}
 
 	// look in app config
-	return config.GetValue("idp-protocol", params.Provider.Name())
+	idProtocol, err := config.GetValue("idp-protocol", params.Provider.Name())
+	if err != nil {
+		return "", fmt.Errorf("getting idp-protocol from config: %w", err)
+	}
+	// Default to the first supported provider if empty
+	if idProtocol == "" {
+		supportedIDProviders := params.Provider.SupportedIDs()
+		idProtocol = supportedIDProviders[0]
+	}
+
+	return idProtocol, nil
 }
 
 func isIdpSupported(idProviderName string, clusterprovider provider.ClusterProvider) bool {

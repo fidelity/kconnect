@@ -14,14 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package rancher
 
 import (
-	// Initialize the identity plugins
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aws/iam"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/aad"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/env"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/rancher/activedirectory"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/static/token"
+	"fmt"
+
+	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/resolve"
 )
+
+// ResolveCommon will interactively resolve the common configuration for rancher
+func ResolveCommon(cfg config.ConfigurationSet) error {
+	if err := resolve.Input(cfg, APIEndpointConfigName, "Enter the Rancher API endpoint", true); err != nil {
+		return fmt.Errorf("resolving %s: %w", APIEndpointConfigName, err)
+	}
+
+	return nil
+}

@@ -33,13 +33,17 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
+const (
+	ProviderName = "aad"
+)
+
 var (
 	ErrAddingCommonCfg = errors.New("adding common identity config")
 	ErrNoExpiryTime    = errors.New("token has no expiry time")
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin("aad", newProvider()); err != nil {
+	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newProvider()); err != nil {
 		zap.S().Fatalw("failed to register Azure AD identity provider plugin", "error", err)
 	}
 }
@@ -61,7 +65,7 @@ type aadConfig struct {
 }
 
 func (p *aadIdentityProvider) Name() string {
-	return "aad"
+	return ProviderName
 }
 
 // Authenticate will authenticate a user and return details of
@@ -178,17 +182,18 @@ func (p *aadIdentityProvider) Usage(clusterProvider string) (string, error) {
 
 func (p *aadIdentityProvider) ensureLogger() {
 	if p.logger == nil {
-		p.logger = zap.S().With("provider", "aad")
+		p.logger = zap.S().With("provider", ProviderName)
 	}
 }
 
 func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken) (*oidc.Identity, error) {
 	id := &oidc.Identity{
-		AccessToken:  token.AccessToken,
-		IDToken:      token.IDToken,
-		RefreshToken: token.RefreshToken,
-		Resource:     token.Resource,
-		Scope:        token.Scope,
+		AccessToken:    token.AccessToken,
+		IDToken:        token.IDToken,
+		RefreshToken:   token.RefreshToken,
+		Resource:       token.Resource,
+		Scope:          token.Scope,
+		IDProviderName: ProviderName,
 	}
 
 	switch {

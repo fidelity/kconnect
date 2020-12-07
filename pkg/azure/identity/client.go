@@ -30,6 +30,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/azure/wstrust"
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
@@ -89,11 +90,8 @@ func (c *AzureADClient) GetMex(federationMetadataURL string) (*wstrust.MexDocume
 func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error) {
 	envelopeBody := c.createEnvelope(cfg, endpoint)
 
-	headers := make(map[string]string)
-	headers["Accept"] = "application/json"
-	headers["Cache-Control"] = "no-cache"
+	headers := defaults.Headers(defaults.WithNoCache(), defaults.WithAcceptJSON())
 	headers["Content-Type"] = "application/soap+xml"
-	headers["User-Agent"] = "kconnect/0.2.1" //TODO: add to common headers
 	headers["return-client-request-id"] = "true"
 
 	switch endpoint.EndpointVersion {

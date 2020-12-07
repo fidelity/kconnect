@@ -20,16 +20,18 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 )
 
-func NewAuthorizerIdentity(name string, authorizer autorest.Authorizer) *AuthorizerIdentity {
+func NewAuthorizerIdentity(name, idProviderName string, authorizer autorest.Authorizer) *AuthorizerIdentity {
 	return &AuthorizerIdentity{
-		name:       name,
-		authorizer: authorizer,
+		name:           name,
+		authorizer:     authorizer,
+		idProviderName: idProviderName,
 	}
 }
 
 type AuthorizerIdentity struct {
-	authorizer autorest.Authorizer
-	name       string
+	authorizer     autorest.Authorizer
+	name           string
+	idProviderName string
 }
 
 func (a *AuthorizerIdentity) Type() string {
@@ -47,4 +49,8 @@ func (a *AuthorizerIdentity) IsExpired() bool {
 
 func (a *AuthorizerIdentity) Authorizer() autorest.Authorizer {
 	return a.authorizer
+}
+
+func (a *AuthorizerIdentity) IdentityProviderName() string {
+	return a.idProviderName
 }

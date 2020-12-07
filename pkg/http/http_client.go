@@ -25,6 +25,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	MediaTypeJSON = "application/json"
+)
+
 // NewHTTPClient creates a new http client
 func NewHTTPClient() Client {
 	client := &http.Client{}

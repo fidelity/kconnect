@@ -39,7 +39,7 @@ func (p *aksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 
 	discoverOutput := &provider.DiscoverOutput{
 		ClusterProviderName:  "aks",
-		IdentityProviderName: "aad", //TODO: get this from the identity
+		IdentityProviderName: identity.IdentityProviderName(),
 		Clusters:             make(map[string]*provider.Cluster),
 	}
 	for _, v := range clusters {

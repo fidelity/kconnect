@@ -36,8 +36,6 @@ import (
 )
 
 var (
-	ProviderName = "saml"
-
 	ErrNoClusterProvider  = errors.New("no cluster provider on the context")
 	ErrUnsuportedProvider = errors.New("cluster provider not supported")
 	ErrNoSAMLAssertions   = errors.New("no SAML assertions")
@@ -49,6 +47,7 @@ var (
 )
 
 const (
+	ProviderName   = "saml"
 	defaultSession = 3600
 )
 
@@ -215,18 +214,18 @@ func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	return nil
 }
 
-func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
+func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, clusterProviderName string) (provider.IdentityStore, error) {
 	var store provider.IdentityStore
 	var err error
 
-	switch providerName {
+	switch clusterProviderName {
 	case "eks":
 		if !ctx.ConfigurationItems().ExistsWithValue("aws-profile") {
 			return nil, kaws.ErrNoProfile
 		}
 		profileCfg := ctx.ConfigurationItems().Get("aws-profile")
 		profile := profileCfg.Value.(string)
-		store, err = kaws.NewIdentityStore(profile)
+		store, err = kaws.NewIdentityStore(profile, ProviderName)
 	default:
 		return nil, ErrUnsuportedProvider
 	}
@@ -259,6 +258,6 @@ func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
 
 func (p *samlIdentityProvider) ensureLogger() {
 	if p.logger == nil {
-		p.logger = zap.S().With("provider", "saml")
+		p.logger = zap.S().With("provider", ProviderName)
 	}
 }
