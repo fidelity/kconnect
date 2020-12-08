@@ -30,6 +30,12 @@ kconnect use aks [flags]
   # Discover AKS clusters using Azure AD
   kconnect use aks --idp-protocol aad
 
+  # Discover AKS clusters using file based credentials
+  export AZURE_TENANT_ID="123455"
+  export AZURE_CLIENT_ID="76849"
+  export AZURE_CLIENT_SECRET="supersecret"
+  kconnect use aks --idp-protocol az-env
+
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
@@ -81,6 +87,14 @@ Use `--idp-protocol=aad`
       --password string       The password to use for authentication
   -t, --tenant-id string      The azure tenant id
       --username string       The username used for authentication
+```
+
+#### AZ-ENV Options
+
+Use `--idp-protocol=az-env`
+
+```bash
+      --use-file   Use file based authorization
 ```
 
 ### SEE ALSO
