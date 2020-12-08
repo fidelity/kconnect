@@ -67,10 +67,6 @@ func (p *iamIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 	p.ensureLogger()
 	p.logger.Info("using aws iam for authentication")
 
-	if err := p.resolveConfig(ctx); err != nil {
-		return nil, fmt.Errorf("resolving config: %w", err)
-	}
-
 	cfg := &providerConfig{}
 	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into providerConfig: %w", err)
@@ -137,20 +133,6 @@ func (p *iamIdentityProvider) validateConfig(cfg *providerConfig) error {
 	if cfg.AccessKey == "" && cfg.SecretKey != "" {
 		return ErrAccessAndSecretRequired
 	}
-
-	return nil
-}
-
-func (p *iamIdentityProvider) resolveConfig(ctx *provider.Context) error {
-	if !ctx.IsInteractive() {
-		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-	}
-
-	//TODO: add resolution here
-
-	// if err := resolve.Input(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
-	// 	return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
-	// }
 
 	return nil
 }
