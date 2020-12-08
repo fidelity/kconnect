@@ -18,15 +18,12 @@ package aws
 
 import (
 	"fmt"
-	"sort"
-	"strings"
 
 	survey "github.com/AlecAivazis/survey/v2"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 
+	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/resolve"
-	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 // ResolveConfiguration will resolve the values for the AWS specific config items that have no value.
@@ -43,10 +40,10 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 		return fmt.Errorf("resolving idp-endpoint: %w", err)
 	}
 
-	if err := p.resolvePartition("partition", cfg); err != nil {
+	if err := kaws.ResolvePartition(cfg); err != nil {
 		return fmt.Errorf("resolving partition: %w", err)
 	}
-	if err := p.resolveRegion("region", cfg); err != nil {
+	if err := kaws.ResolveRegion(cfg); err != nil {
 		return fmt.Errorf("resolving region: %w", err)
 	}
 	if err := resolve.Password(cfg); err != nil {
@@ -55,94 +52,6 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 
 	if err := resolve.Username(cfg); err != nil {
 		return fmt.Errorf("resolving username: %w", err)
-	}
-
-	return nil
-}
-
-func (p *ServiceProvider) resolvePartition(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
-	}
-
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
-
-	options := []string{}
-	for _, partition := range partitions {
-		options = append(options, partition.ID())
-	}
-	sort.Slice(options, func(i, j int) bool { return options[i] < options[j] })
-
-	partitionID := ""
-	prompt := &survey.Select{
-		Message: "Select the AWS partition",
-		Options: options,
-	}
-	if err := survey.AskOne(prompt, &partitionID, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for partition: %w", err)
-	}
-
-	if err := cfg.SetValue(name, partitionID); err != nil {
-		p.logger.Errorw("failed setting partition config", "partition", partitionID, "error", err.Error())
-		return fmt.Errorf("setting partition config: %w", err)
-	}
-
-	return nil
-}
-
-func (p *ServiceProvider) resolveRegion(name string, cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(name) {
-		return nil
-	}
-
-	partitionCfg := cfg.Get("partition")
-	if partitionCfg == nil {
-		return ErrNoPartitionSupplied
-	}
-	partitionID := partitionCfg.Value.(string)
-
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
-
-	var partition endpoints.Partition
-	for _, p := range partitions {
-		if p.ID() == partitionID {
-			partition = p
-			break
-		}
-	}
-	if partition.ID() == "" {
-		return fmt.Errorf("finding partition with id %s: %w", partitionID, ErrPartitionNotFound)
-	}
-
-	regionFilter := ""
-	regionFilterCfg := cfg.Get("region-filter")
-	if regionFilterCfg != nil {
-		regionFilter = regionFilterCfg.Value.(string)
-	}
-
-	options := []string{}
-	for _, region := range partition.Regions() {
-		if regionFilter == "" || strings.Contains(region.ID(), regionFilter) {
-			options = append(options, region.ID())
-		}
-	}
-	sort.Slice(options, func(i, j int) bool { return options[i] < options[j] })
-
-	region := ""
-	prompt := &survey.Select{
-		Message: "Select an AWS region",
-		Options: options,
-		Filter:  utils.SurveyFilter,
-	}
-	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for region: %w", err)
-	}
-
-	if err := cfg.SetValue(name, region); err != nil {
-		p.logger.Errorw("failed setting region config", "region", region, "error", err.Error())
-		return fmt.Errorf("setting region config: %w", err)
 	}
 
 	return nil

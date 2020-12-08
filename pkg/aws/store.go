@@ -19,19 +19,12 @@ package aws
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/versent/saml2aws/pkg/awsconfig"
 )
 
 // NewIdentityStore will create a new AWS identity store
-func NewIdentityStore(cfg config.ConfigurationSet) (provider.IdentityStore, error) {
-	if !cfg.ExistsWithValue("aws-profile") {
-		return nil, ErrNoProfile
-	}
-	profileCfg := cfg.Get("aws-profile")
-	profile := profileCfg.Value.(string)
-
+func NewIdentityStore(profile string) (provider.IdentityStore, error) {
 	return &awsIdentityStore{
 		configProvider: awsconfig.NewSharedCredentials(profile),
 	}, nil
@@ -50,7 +43,7 @@ func (s *awsIdentityStore) Save(identity provider.Identity) error {
 	if !ok {
 		return fmt.Errorf("expected AWSIdentity but got a %T: %w", identity, ErrUnexpectedIdentity)
 	}
-	awsCreds := mapIdentityToCreds(awsIdentity)
+	awsCreds := MapIdentityToCreds(awsIdentity)
 
 	return s.configProvider.Save(awsCreds)
 }
@@ -60,7 +53,7 @@ func (s *awsIdentityStore) Load() (provider.Identity, error) {
 	if err != nil {
 		return nil, fmt.Errorf("loading credentials: %w", err)
 	}
-	awsID := mapCredsToIdentity(creds, s.configProvider.Profile)
+	awsID := MapCredsToIdentity(creds, s.configProvider.Profile)
 
 	return awsID, nil
 }

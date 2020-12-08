@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package aws
 
-import (
-	// Initialize the identity plugins
-	//_ "github.com/fidelity/kconnect/pkg/plugins/identity/empty" - don't include this provider
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aad"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
-	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aws/iam"
+import "errors"
+
+var (
+	ErrNoProfile           = errors.New("no profile supplied")
+	ErrUnexpectedIdentity  = errors.New("unexpected identity type")
+	ErrNoPartitionSupplied = errors.New("no AWS partition supplied")
+	ErrPartitionNotFound   = errors.New("AWS partition not found")
 )

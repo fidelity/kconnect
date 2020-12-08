@@ -24,7 +24,6 @@ import (
 
 	"github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
-	awssp "github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -49,7 +48,7 @@ type eksClusteProviderConfig struct {
 // EKSClusterProvider will discover EKS clusters in AWS
 type eksClusterProvider struct {
 	config    *eksClusteProviderConfig
-	identity  *awssp.Identity
+	identity  *aws.Identity
 	eksClient eksiface.EKSAPI
 
 	logger *zap.SugaredLogger
@@ -61,7 +60,7 @@ func (p *eksClusterProvider) Name() string {
 }
 
 func (p *eksClusterProvider) SupportedIDs() []string {
-	return []string{"saml"}
+	return []string{"aws-iam", "saml"}
 }
 
 // ConfigurationItems returns the configuration items for this provider
@@ -88,18 +87,19 @@ func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Iden
 	}
 	p.config = cfg
 
-	awsID, ok := identity.(*awssp.Identity)
+	awsID, ok := identity.(*aws.Identity)
 	if !ok {
 		return ErrNotAWSIdentity
 	}
 	p.identity = awsID
 
-	p.logger.Debugw("creating AWS session", "region", *p.config.Region, "profile", awsID.ProfileName)
-	session, err := aws.NewSession(*p.config.Region, awsID.ProfileName)
+	p.logger.Debugw("creating AWS session", "region", *p.config.Region)
+	sess, err := aws.NewSession(p.identity.Region, p.identity.ProfileName, p.identity.AWSAccessKey, p.identity.AWSSecretKey, p.identity.AWSSessionToken)
 	if err != nil {
-		return fmt.Errorf("getting aws session: %w", err)
+		return fmt.Errorf("creating aws session: %w", err)
 	}
-	p.eksClient = aws.NewEKSClient(session)
+
+	p.eksClient = aws.NewEKSClient(sess)
 
 	return nil
 }
