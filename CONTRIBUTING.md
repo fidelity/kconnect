@@ -72,8 +72,8 @@ git submodule update --init --recursive
 make build
 ```
 
-9. Commit and push your branch. We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for the commits and PRs. If the PR is a work in progress ensure that you prefix the title with WIP:.
-10. Create a pull request
+9. Commit and push your branch. We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for the commits and PRs. .
+10. Create a pull request. If the PR is a work in progress ensure that that **PR is created as a draft**.
 11. Check that the PR checks pass
 
-Once a PR has been created it will be reviwed by one of the maintainers of kconnect.
+Once a PR has been created it will be reviewed by one of the maintainers of kconnect.
