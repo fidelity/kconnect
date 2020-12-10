@@ -82,6 +82,19 @@ kconnect use eks [flags]
 
 ### IDP Protocol Options
 
+#### AWS-IAM Options
+
+Use `--idp-protocol=aws-iam`
+
+```bash
+      --access-key string      AWS access key to use
+      --partition string       AWS partition to use (default "aws")
+      --profile string         AWS profile to use
+      --region string          AWS region to connect to
+      --secret-key string      AWS secret key to use
+      --session-token string   AWS session token to use
+```
+
 #### SAML Options
 
 Use `--idp-protocol=saml`

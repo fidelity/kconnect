@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The kconnect Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package identity
 
 import (
@@ -14,6 +30,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/azure/wstrust"
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
@@ -73,11 +90,8 @@ func (c *AzureADClient) GetMex(federationMetadataURL string) (*wstrust.MexDocume
 func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error) {
 	envelopeBody := c.createEnvelope(cfg, endpoint)
 
-	headers := make(map[string]string)
-	headers["Accept"] = "application/json"
-	headers["Cache-Control"] = "no-cache"
+	headers := defaults.Headers(defaults.WithNoCache(), defaults.WithAcceptJSON())
 	headers["Content-Type"] = "application/soap+xml"
-	headers["User-Agent"] = "kconnect/0.2.1" //TODO: add to common headers
 	headers["return-client-request-id"] = "true"
 
 	switch endpoint.EndpointVersion {

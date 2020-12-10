@@ -27,3 +27,5 @@ hack/tools/share
 
 .DS_Store
 
+client_credentials.json
+

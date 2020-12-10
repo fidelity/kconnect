@@ -50,14 +50,10 @@ const (
 )
 
 var (
-	ErrUnexpectedIdentity     = errors.New("unexpected identity type")
 	ErrNoRegion               = errors.New("no region found")
-	ErrNoProfile              = errors.New("no profile supplied")
 	ErrNoRolesFound           = errors.New("no aws roles found")
 	ErrNotAccounts            = errors.New("no accounts available")
 	ErrMissingResponseElement = errors.New("missing response element")
-	ErrNoPartitionSupplied    = errors.New("no AWS partition supplied")
-	ErrPartitionNotFound      = errors.New("AWS partition not found")
 )
 
 type awsProviderConfig struct {
@@ -146,7 +142,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("setting profile name: %w", err)
 	}
 
-	awsIdentity := mapCredsToIdentity(awsCreds, profileName)
+	awsIdentity := kaws.MapCredsToIdentity(awsCreds, profileName)
 	return awsIdentity, nil
 }
 
@@ -359,28 +355,5 @@ func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
 func (p *ServiceProvider) ensureLogger() {
 	if p.logger == nil {
 		p.logger = zap.S().With("provider", "saml", "sp", "aws")
-	}
-}
-
-func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {
-	return &Identity{
-		AWSAccessKey:     creds.AWSAccessKey,
-		AWSSecretKey:     creds.AWSSecretKey,
-		AWSSecurityToken: creds.AWSSecurityToken,
-		AWSSessionToken:  creds.AWSSessionToken,
-		Expires:          creds.Expires,
-		PrincipalARN:     creds.PrincipalARN,
-		ProfileName:      profileName,
-	}
-}
-
-func mapIdentityToCreds(awsIdentity *Identity) *awsconfig.AWSCredentials {
-	return &awsconfig.AWSCredentials{
-		AWSAccessKey:     awsIdentity.AWSAccessKey,
-		AWSSecretKey:     awsIdentity.AWSSecretKey,
-		AWSSecurityToken: awsIdentity.AWSSecurityToken,
-		AWSSessionToken:  awsIdentity.AWSSessionToken,
-		Expires:          awsIdentity.Expires,
-		PrincipalARN:     awsIdentity.PrincipalARN,
 	}
 }

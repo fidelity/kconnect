@@ -21,17 +21,39 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
+const (
+	RegionConfigItem       = "region"
+	PartitionConfigItem    = "partition"
+	ProfileConfigItem      = "profile"
+	AccessKeyConfigItem    = "access-key"
+	SecretKeyConfigItem    = "secret-key"
+	SessionTokenConfigItem = "session-token"
+)
+
 // SharedConfig will return shared configuration items for AWS based cluster and identity providers
 func SharedConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String("partition", endpoints.AwsPartition().ID(), "AWS partition to use")      //nolint: errcheck
-	cs.String("region", "", "AWS region to connect to")                                //nolint: errcheck
+	AddPartitionConfig(cs)
+	AddRegionConfig(cs)
 	cs.String("static-profile", "", "AWS profile to use. Only for advanced use cases") //nolint: errcheck
-
-	cs.SetRequired("region")    //nolint: errcheck
-	cs.SetRequired("partition") //nolint: errcheck
-
-	cs.SetHidden("static-profile") //nolint: errcheck
+	cs.SetHidden("static-profile")                                                     //nolint: errcheck
 
 	return cs
+}
+
+func AddRegionConfig(cs config.ConfigurationSet) {
+	cs.String(RegionConfigItem, "", "AWS region to connect to") //nolint: errcheck
+	cs.SetRequired(RegionConfigItem)                            //nolint: errcheck
+}
+
+func AddPartitionConfig(cs config.ConfigurationSet) {
+	cs.String(PartitionConfigItem, endpoints.AwsPartition().ID(), "AWS partition to use") //nolint: errcheck
+	cs.SetRequired(ProfileConfigItem)                                                     //nolint: errcheck
+}
+
+func AddIAMConfigs(cs config.ConfigurationSet) {
+	cs.String(ProfileConfigItem, "", "AWS profile to use")            //nolint: errcheck
+	cs.String(AccessKeyConfigItem, "", "AWS access key to use")       //nolint: errcheck
+	cs.String(SecretKeyConfigItem, "", "AWS secret key to use")       //nolint: errcheck
+	cs.String(SessionTokenConfigItem, "", "AWS session token to use") //nolint: errcheck
 }

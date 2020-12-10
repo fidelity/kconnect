@@ -23,6 +23,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest"
 
+	azid "github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -52,7 +53,7 @@ type aksClusterProviderConfig struct {
 
 type aksClusterProvider struct {
 	config     *aksClusterProviderConfig
-	authorizer *autorest.BearerAuthorizer
+	authorizer autorest.Authorizer
 
 	logger *zap.SugaredLogger
 }
@@ -62,7 +63,7 @@ func (p *aksClusterProvider) Name() string {
 }
 
 func (p *aksClusterProvider) SupportedIDs() []string {
-	return []string{"aad"}
+	return []string{"aad", "az-env"}
 }
 
 // ConfigurationItems returns the configuration items for this provider
@@ -92,14 +93,19 @@ func (p *aksClusterProvider) setup(cs config.ConfigurationSet, identity provider
 	}
 	p.config = cfg
 
-	id, ok := identity.(*oidc.Identity)
-	if !ok {
-		return ErrNotOIDCIdentity
+	// TODO: should we just return a AuthorizerIdentity from the aad provider?
+	switch identity.(type) { //nolint:gocritic,gosimple
+	case *oidc.Identity:
+		id := identity.(*oidc.Identity)
+		p.logger.Debugw("creating bearer authorizer")
+		bearerAuth := autorest.NewBearerAuthorizer(id)
+		p.authorizer = bearerAuth
+	case *azid.AuthorizerIdentity:
+		id := identity.(*azid.AuthorizerIdentity)
+		p.authorizer = id.Authorizer()
+	default:
+		return ErrUnsupportedIdentity
 	}
-
-	p.logger.Debugw("creating bearer authorizer")
-	bearerAuth := autorest.NewBearerAuthorizer(id)
-	p.authorizer = bearerAuth
 
 	return nil
 }
@@ -114,5 +120,11 @@ func (p *aksClusterProvider) ensureLogger() {
 func (p *aksClusterProvider) UsageExample() string {
 	return `  # Discover AKS clusters using Azure AD
   kconnect use aks --idp-protocol aad
+
+  # Discover AKS clusters using file based credentials
+  export AZURE_TENANT_ID="123455"
+  export AZURE_CLIENT_ID="76849"
+  export AZURE_CLIENT_SECRET="supersecret"
+  kconnect use aks --idp-protocol az-env
 `
 }
