@@ -206,7 +206,7 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	}
 
 	for {
-		role, err = p.getRoleFromPrompt(awsAccounts)
+		role, err = p.getRoleFromPrompt(awsAccounts, roleFilter)
 		if err == nil {
 			break
 		}
@@ -223,11 +223,17 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 
 	filtered := []*saml2aws.AWSAccount{}
 	for _, account := range accounts {
+		filteredAccount := &saml2aws.AWSAccount{
+			Name:  account.Name,
+			Roles: []*saml2aws.AWSRole{},
+		}
 		for _, awsRole := range account.Roles {
 			if strings.Contains(awsRole.RoleARN, roleFilter) {
-				filtered = append(filtered, account)
-				break
+				filteredAccount.Roles = append(filteredAccount.Roles, awsRole)
 			}
+		}
+		if len(filteredAccount.Roles) > 0 {
+			filtered = append(filtered, filteredAccount)
 		}
 	}
 
@@ -235,18 +241,24 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 }
 
 // Not using saml2aws.PromptForAWSRoleSelection as we want to implement custom logic
-func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*saml2aws.AWSRole, error) {
+func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, roleFilter string) (*saml2aws.AWSRole, error) {
 
 	roles := map[string]*saml2aws.AWSRole{}
 	var roleOptions []string
 
 	for _, account := range accounts {
 		for _, role := range account.Roles {
-			name := fmt.Sprintf("%s / %s", account.Name, role.Name)
-			roles[name] = role
-			roleOptions = append(roleOptions, name)
+			if roleFilter == "" || strings.Contains(role.RoleARN, roleFilter) {
+				name := fmt.Sprintf("%s / %s", account.Name, role.Name)
+				roles[name] = role
+				roleOptions = append(roleOptions, name)
+			}
 		}
 	}
+	if len(roleOptions) == 0 {
+		return roles[roleOptions[0]], nil
+	}
+
 	sort.Strings(roleOptions)
 	selectedRole := ""
 	prompt := &survey.Select{
@@ -259,7 +271,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*s
 			fmt.Println("Received interrupt, exiting..")
 			os.Exit(0)
 		}
-		return nil, fmt.Errorf("asking for region: %w", err)
+		return nil, fmt.Errorf("asking for role: %w", err)
 	}
 	return roles[selectedRole], nil
 }
