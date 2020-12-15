@@ -31,9 +31,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	//"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	"github.com/fidelity/kconnect/internal/commands/configure"
+	"github.com/fidelity/kconnect/internal/commands/logout"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
@@ -185,6 +187,12 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating alias command: %w", err)
 	}
 	rootCmd.AddCommand(aliasCmd)
+
+	logoutCmd, err := logout.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating logout command: %w", err)
+	}
+	rootCmd.AddCommand(logoutCmd)
 
 	cobra.OnInitialize(initConfig)
 

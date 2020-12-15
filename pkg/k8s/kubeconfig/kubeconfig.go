@@ -64,6 +64,20 @@ func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
 	return nil
 }
 
+func Read(path string) (*api.Config, error) {
+
+	pathOptions := clientcmd.NewDefaultPathOptions()
+	if path != "" {
+		pathOptions.LoadingRules.ExplicitPath = path
+	}
+
+	existingConfig, err := pathOptions.GetStartingConfig()
+	if err != nil {
+		return nil, fmt.Errorf("getting existing kubeconfig: %w", err)
+	}
+	return existingConfig, nil
+}
+
 func GetCurrentContext(path string) (*api.Context, error) {
 
 	pathOptions := clientcmd.NewDefaultPathOptions()
