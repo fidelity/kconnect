@@ -52,7 +52,7 @@ type Endpoints struct {
 	DeviceCodeEndpoint    string
 }
 
-//UserRealm is used to represent the details of a user
+// UserRealm is used to represent the details of a user
 type UserRealm struct {
 	AccountType           AccountType `json:"account_type"`
 	DomainName            string      `json:"domain_name"`
@@ -109,7 +109,7 @@ type RequestedSecurityToken struct {
 type OauthToken struct {
 	Type         string      `json:"token_type"`
 	Scope        string      `json:"scope"`
-	ExpiresIn    json.Number `json:"expires_in"` //seconds
+	ExpiresIn    json.Number `json:"expires_in"` // seconds
 	ExpiresOn    json.Number `json:"expires_on"`
 	NotBefore    json.Number `json:"not_before"`
 	Resource     string      `json:"resource"`

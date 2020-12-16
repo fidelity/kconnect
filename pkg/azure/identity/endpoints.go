@@ -98,7 +98,7 @@ func (r *oidcEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, error
 	endpoints := &Endpoints{
 		AuthorizationEndpoint: oidcResp.AuthorizationEndpoint,
 		TokenEndpoint:         oidcResp.TokenEndpoint,
-		DeviceCodeEndpoint:    strings.Replace(oidcResp.TokenEndpoint, "token", "devicecode", -1),
+		DeviceCodeEndpoint:    strings.ReplaceAll(oidcResp.TokenEndpoint, "token", "devicecode"),
 	}
 
 	return endpoints, nil

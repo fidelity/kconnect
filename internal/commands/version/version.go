@@ -25,7 +25,7 @@ import (
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-//Command creates the version cobra command
+// Command creates the version cobra command
 func Command() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
