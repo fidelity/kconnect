@@ -61,6 +61,12 @@ MDBOOK_TABULATE := $(TOOLS_BIN_DIR)/mdbook-tabulate
 build: # Build the CLI binary
 	CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).commitHash=$(git_commit) -X $(version_pkg).buildDate=$(build_date)" .
 
+.PHONY: build-cross
+build-cross: # Build the CLI binary for linux/mac/windows
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).commitHash=$(git_commit) -X $(version_pkg).buildDate=$(build_date)" -o out/kconnect_osx .
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).commitHash=$(git_commit) -X $(version_pkg).buildDate=$(build_date)" -o out/kconnect_linux .
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X $(version_pkg).commitHash=$(git_commit) -X $(version_pkg).buildDate=$(build_date)" -o out/kconnect_windows.exe .
+
 .PHONY: generate
 generate: $(MOCKGEN) $(CONTROLLER_GEN) $(CONVERSION_GEN)  # Generate code for the api definitions
 	go generate
