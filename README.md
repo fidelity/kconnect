@@ -16,8 +16,8 @@ Based on the authentication mechanism chosen the CLI will discover Kubernetes cl
 
 ## Features
 
-- Authenticate using SAML or Azure Active Directory
-- Discover EKS & AKS clusters
+- Authenticate using SAML, Azure Active Directory, AWS IAM, Rancher Token
+- Discover clusters in EKS, AKS and Rancher
 - Generate a kubeconfig for a cluster
 - Query history of connected servers
 - Regenerate the kubeconfig from your history by using an id or an alias
