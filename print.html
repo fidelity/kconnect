@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li><li class="chapter-item expanded "><a href="commands/use_rancher.html"><strong aria-hidden="true">4.5.3.</strong> rancher</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -175,8 +175,8 @@
 <img src="docs/book/src/images/kconnectfrontpage.gif" alt="kconnect demo">
 <h2><a class="header" href="#features" id="features">Features</a></h2>
 <ul>
-<li>Authenticate using SAML or Azure Active Directory</li>
-<li>Discover EKS &amp; AKS clusters</li>
+<li>Authenticate using SAML, Azure Active Directory, AWS IAM, Rancher Token</li>
+<li>Discover clusters in EKS, AKS and Rancher</li>
 <li>Generate a kubeconfig for a cluster</li>
 <li>Query history of connected servers</li>
 <li>Regenerate the kubeconfig from your history by using an id or an alias</li>
@@ -253,22 +253,22 @@ docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-prot
 <p>The Kubernetes Connection Manager CLI</p>
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
 <p>The kconnect tool uses a pre-configured Identity Provider to log in to one or
-more managed Kubernetes cluster providers, discovers the list of clusters 
-visible to your authenticated user and options, and generates a kubectl 
+more managed Kubernetes cluster providers, discovers the list of clusters
+visible to your authenticated user and options, and generates a kubectl
 configutation context for the selected cluster.</p>
-<p>Most kubectl contexts include an authentication token which kubectl sends to 
-Kubernetes with each request rather than a username and password to establish 
-your identity.  Authentication tokens typically expire after some time.  The 
-user must then to log in again to the managed Kubernetes service provider and 
-regenerate the kubectl context for that cluster connection in order to refresh 
+<p>Most kubectl contexts include an authentication token which kubectl sends to
+Kubernetes with each request rather than a username and password to establish
+your identity.  Authentication tokens typically expire after some time.  The
+user must then to log in again to the managed Kubernetes service provider and
+regenerate the kubectl context for that cluster connection in order to refresh
 the access token.</p>
-<p>The kconnect tool makes this much easier by automating the login and kubectl 
-context regeneration process, and by allowing the user to repeat previously 
+<p>The kconnect tool makes this much easier by automating the login and kubectl
+context regeneration process, and by allowing the user to repeat previously
 successful connections.</p>
 <p>Each time kconnect creates a new connection context, the kconnect tool saves the
 information for that connection in the user’s connection history list.  The user
-can then display their connection history entries and reconnect to any entry by 
-its unique ID (or by a user-friendly alias) to refresh an expired access token 
+can then display their connection history entries and reconnect to any entry by
+its unique ID (or by a user-friendly alias) to refresh an expired access token
 for that cluster.</p>
 <pre><code class="language-bash">kconnect [flags]
 </code></pre>
@@ -309,10 +309,11 @@ for that cluster.</p>
 
 </code></pre>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-  -h, --help              help for kconnect
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+  -h, --help               help for kconnect
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also" id="see-also">SEE ALSO</a></h3>
 <ul>
@@ -352,9 +353,10 @@ connection history entries.</p>
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-1" id="see-also-1">SEE ALSO</a></h3>
 <ul>
@@ -397,6 +399,7 @@ the alias instead of the connection history entry’s unique ID.</p>
 <h3><a class="header" href="#options-inherited-from-parent-commands-1" id="options-inherited-from-parent-commands-1">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --no-version-check          If set to true kconnect will not check for a newer version
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -440,6 +443,7 @@ user’s connection history.</p>
 <h3><a class="header" href="#options-inherited-from-parent-commands-2" id="options-inherited-from-parent-commands-2">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --no-version-check          If set to true kconnect will not check for a newer version
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -486,6 +490,7 @@ the user’s connection history.</p>
 <h3><a class="header" href="#options-inherited-from-parent-commands-3" id="options-inherited-from-parent-commands-3">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --no-version-check          If set to true kconnect will not check for a newer version
       --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
@@ -533,9 +538,10 @@ kconnect.</p>
       --output string   Controls the output format for the result. (default &quot;yaml&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-4" id="options-inherited-from-parent-commands-4">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-5" id="see-also-5">SEE ALSO</a></h3>
 <ul>
@@ -590,9 +596,10 @@ via the connection history entry’s ID or alias.</p>
       --provider-id string         Provider specific for a cluster
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-5" id="options-inherited-from-parent-commands-5">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-6" id="see-also-6">SEE ALSO</a></h3>
 <ul>
@@ -652,9 +659,10 @@ Otherwise kconnect will promot the user to enter their password.</p>
       --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-6" id="options-inherited-from-parent-commands-6">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-7" id="see-also-7">SEE ALSO</a></h3>
 <ul>
@@ -678,7 +686,9 @@ connection history entry using the kconnect to command and the connection histor
 entry ID or alias.  When the user reconnects using a connection history entry,
 kconnect regenerates the kubectl configuration context and refreshes their access
 token.</p>
-<p>The use command requires a target provider name as its first parameter.</p>
+<p>The use command requires a target provider name as its first parameter. If no
+value is supplied for --idp-protocol the first supported protocol for the
+specified cluster provider.</p>
 <ul>
 <li>Note: kconnect use eks requires aws-iam-authenticator.
 <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></li>
@@ -704,15 +714,17 @@ token.</p>
 <pre><code class="language-bash">  -h, --help   help for use
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-7" id="options-inherited-from-parent-commands-7">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-8" id="see-also-8">SEE ALSO</a></h3>
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 <li><a href="commands/use_aks.html">kconnect use aks</a>	 - Connect to the aks cluster provider and choose a cluster.</li>
 <li><a href="commands/use_eks.html">kconnect use eks</a>	 - Connect to the eks cluster provider and choose a cluster.</li>
+<li><a href="commands/use_rancher.html">kconnect use rancher</a>	 - Connect to the rancher cluster provider and choose a cluster.</li>
 </ul>
 <blockquote>
 <p>NOTE: this page is auto-generated from the cobra commands</p>
@@ -737,6 +749,12 @@ token.</p>
 <pre><code class="language-bash">  # Discover AKS clusters using Azure AD
   kconnect use aks --idp-protocol aad
 
+  # Discover AKS clusters using file based credentials
+  export AZURE_TENANT_ID=&quot;123455&quot;
+  export AZURE_CLIENT_ID=&quot;76849&quot;
+  export AZURE_CLIENT_SECRET=&quot;supersecret&quot;
+  kconnect use aks --idp-protocol az-env
+
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
@@ -748,6 +766,7 @@ token.</p>
 <pre><code class="language-bash">      --admin                      Generate admin user kubeconfig
   -a, --alias string               Friendly name to give to give the connection
   -c, --cluster-id string          Id of the cluster to use.
+      --cluster-name string        The name of the AKS cluster
   -h, --help                       help for aks
       --history-location string    Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
@@ -763,9 +782,10 @@ token.</p>
       --username string            The username used for authentication
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-8" id="options-inherited-from-parent-commands-8">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#idp-protocol-options" id="idp-protocol-options">IDP Protocol Options</a></h3>
 <h4><a class="header" href="#aad-options" id="aad-options">AAD Options</a></h4>
@@ -776,6 +796,10 @@ token.</p>
       --password string       The password to use for authentication
   -t, --tenant-id string      The azure tenant id
       --username string       The username used for authentication
+</code></pre>
+<h4><a class="header" href="#az-env-options" id="az-env-options">AZ-ENV Options</a></h4>
+<p>Use <code>--idp-protocol=az-env</code></p>
+<pre><code class="language-bash">      --use-file   Use file based authorization
 </code></pre>
 <h3><a class="header" href="#see-also-9" id="see-also-9">SEE ALSO</a></h3>
 <ul>
@@ -842,11 +866,21 @@ token.</p>
       --username string           The username used for authentication
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-9" id="options-inherited-from-parent-commands-9">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#idp-protocol-options-1" id="idp-protocol-options-1">IDP Protocol Options</a></h3>
+<h4><a class="header" href="#aws-iam-options" id="aws-iam-options">AWS-IAM Options</a></h4>
+<p>Use <code>--idp-protocol=aws-iam</code></p>
+<pre><code class="language-bash">      --access-key string      AWS access key to use
+      --partition string       AWS partition to use (default &quot;aws&quot;)
+      --profile string         AWS profile to use
+      --region string          AWS region to connect to
+      --secret-key string      AWS secret key to use
+      --session-token string   AWS session token to use
+</code></pre>
 <h4><a class="header" href="#saml-options" id="saml-options">SAML Options</a></h4>
 <p>Use <code>--idp-protocol=saml</code></p>
 <pre><code class="language-bash">      --idp-endpoint string   identity provider endpoint provided by your IT team
@@ -861,21 +895,93 @@ token.</p>
 <blockquote>
 <p>NOTE: this page is auto-generated from the cobra commands</p>
 </blockquote>
+<h2><a class="header" href="#kconnect-use-rancher" id="kconnect-use-rancher">kconnect use rancher</a></h2>
+<p>Connect to the rancher cluster provider and choose a cluster.</p>
+<h3><a class="header" href="#synopsis-11" id="synopsis-11">Synopsis</a></h3>
+<p>Connect to rancher via the configured identify provider, prompting the user to enter
+or choose connection settings and a target cluster once connected.</p>
+<p>The kconnect tool generates a kubectl configuration context with a fresh access
+token to connect to the chosen cluster and adds a connection history entry to
+store the chosen connection settings.  If given an alias name, kconnect will add
+a user-friendly alias to the new connection history entry.</p>
+<p>The user can then reconnect to the provider with the settings stored in the
+connection history entry using the kconnect to command and the connection history
+entry ID or alias.  When the user reconnects using a connection history entry,
+kconnect regenerates the kubectl configuration context and refreshes their access
+token.</p>
+<pre><code class="language-bash">kconnect use rancher [flags]
+</code></pre>
+<h3><a class="header" href="#examples-11" id="examples-11">Examples</a></h3>
+<pre><code class="language-bash">  # Discover Rancher clusters using Active Directory
+  kconnect use rancher --idp-protocol rancher-ad
+
+  # Discover clusters via Rancher using a API key
+  kconnect use rancher --idp-protocol static-token --token ABCDEF
+
+  # Reconnect to a cluster by its connection history entry alias.
+  kconnect to mycluster
+
+  # Display the user's connection history as a table.
+  kconnect ls
+
+</code></pre>
+<h3><a class="header" href="#options-11" id="options-11">Options</a></h3>
+<pre><code class="language-bash">  -a, --alias string              Friendly name to give to give the connection
+      --api-endpoint string       The Rancher API endpoint
+  -c, --cluster-id string         Id of the cluster to use.
+  -h, --help                      help for rancher
+      --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --idp-protocol string       The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
+  -k, --kubeconfig string         Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
+      --max-history int           Sets the maximum number of history items to keep (default 100)
+  -n, --namespace string          Sets namespace for context in kubeconfig
+      --no-history                If set to true then no history entry will be written
+      --password string           The password to use for authentication
+      --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
+      --username string           The username used for authentication
+</code></pre>
+<h3><a class="header" href="#options-inherited-from-parent-commands-10" id="options-inherited-from-parent-commands-10">Options inherited from parent commands</a></h3>
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+</code></pre>
+<h3><a class="header" href="#idp-protocol-options-2" id="idp-protocol-options-2">IDP Protocol Options</a></h3>
+<h4><a class="header" href="#static-token-options" id="static-token-options">STATIC-TOKEN Options</a></h4>
+<p>Use <code>--idp-protocol=static-token</code></p>
+<pre><code class="language-bash">      --idp-protocol string   The idp protocol to use (e.g. saml). Each protocol has its own flags.
+      --token string          the token to use for authentication
+</code></pre>
+<h4><a class="header" href="#rancher-ad-options" id="rancher-ad-options">RANCHER-AD Options</a></h4>
+<p>Use <code>--idp-protocol=rancher-ad</code></p>
+<pre><code class="language-bash">      --api-endpoint string   The Rancher API endpoint
+      --idp-protocol string   The idp protocol to use (e.g. saml). Each protocol has its own flags.
+      --password string       The password to use for authentication
+      --username string       The username used for authentication
+</code></pre>
+<h3><a class="header" href="#see-also-11" id="see-also-11">SEE ALSO</a></h3>
+<ul>
+<li><a href="commands/use.html">kconnect use</a>	 - Connect to a Kubernetes cluster provider and cluster.</li>
+</ul>
+<blockquote>
+<p>NOTE: this page is auto-generated from the cobra commands</p>
+</blockquote>
 <h2><a class="header" href="#kconnect-version" id="kconnect-version">kconnect version</a></h2>
 <p>Display version &amp; build information</p>
-<h3><a class="header" href="#synopsis-11" id="synopsis-11">Synopsis</a></h3>
+<h3><a class="header" href="#synopsis-12" id="synopsis-12">Synopsis</a></h3>
 <p>Display version &amp; build information</p>
 <pre><code class="language-bash">kconnect version [flags]
 </code></pre>
-<h3><a class="header" href="#options-11" id="options-11">Options</a></h3>
+<h3><a class="header" href="#options-12" id="options-12">Options</a></h3>
 <pre><code class="language-bash">  -h, --help   help for version
 </code></pre>
-<h3><a class="header" href="#options-inherited-from-parent-commands-10" id="options-inherited-from-parent-commands-10">Options inherited from parent commands</a></h3>
-<pre><code class="language-bash">      --config string     Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+<h3><a class="header" href="#options-inherited-from-parent-commands-11" id="options-inherited-from-parent-commands-11">Options inherited from parent commands</a></h3>
+<pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
-<h3><a class="header" href="#see-also-11" id="see-also-11">SEE ALSO</a></h3>
+<h3><a class="header" href="#see-also-12" id="see-also-12">SEE ALSO</a></h3>
 <ul>
 <li><a href="commands/index.html">kconnect</a>	 - The Kubernetes Connection Manager CLI</li>
 </ul>
@@ -951,20 +1057,20 @@ git pull
 <pre><code class="language-bash">git checkout -b &lt;feature-name&gt;
 </code></pre>
 <ol start="4">
+<li>Use <code>git submodule</code> for saml2aws third party dependency</li>
+</ol>
+<pre><code class="language-bash">git submodule update --init --recursive
+</code></pre>
+<ol start="5">
 <li>Make the change, including any additional tests</li>
 <li>Run the tests:</li>
 </ol>
 <pre><code class="language-bash">make test
 </code></pre>
-<ol start="6">
+<ol start="7">
 <li>Check for linting errors:</li>
 </ol>
 <pre><code class="language-bash">make lint
-</code></pre>
-<ol start="7">
-<li>Use <code>git submodule</code> for saml2aws third party dependency</li>
-</ol>
-<pre><code class="language-bash">git submodule update --init --recursive
 </code></pre>
 <ol start="8">
 <li>Build and manually test kconnect locally:</li>
@@ -972,11 +1078,11 @@ git pull
 <pre><code class="language-bash">make build
 </code></pre>
 <ol start="9">
-<li>Commit and push your branch. We follow <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> for the commits and PRs. If the PR is a work in progress ensure that you prefix the title with WIP:.</li>
-<li>Create a pull request</li>
+<li>Commit and push your branch. We follow <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> for the commits and PRs. .</li>
+<li>Create a pull request. If the PR is a work in progress ensure that that <strong>PR is created as a draft</strong>.</li>
 <li>Check that the PR checks pass</li>
 </ol>
-<p>Once a PR has been created it will be reviwed by one of the maintainers of kconnect.</p>
+<p>Once a PR has been created it will be reviewed by one of the maintainers of kconnect.</p>
 
                     </main>
 

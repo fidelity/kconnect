@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html" class="active"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li><li class="chapter-item expanded "><a href="commands/use_rancher.html"><strong aria-hidden="true">4.5.3.</strong> rancher</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html" class="active"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -196,20 +196,20 @@
 <pre><code class="language-bash">git checkout -b &lt;feature-name&gt;
 </code></pre>
 <ol start="4">
+<li>Use <code>git submodule</code> for saml2aws third party dependency</li>
+</ol>
+<pre><code class="language-bash">git submodule update --init --recursive
+</code></pre>
+<ol start="5">
 <li>Make the change, including any additional tests</li>
 <li>Run the tests:</li>
 </ol>
 <pre><code class="language-bash">make test
 </code></pre>
-<ol start="6">
+<ol start="7">
 <li>Check for linting errors:</li>
 </ol>
 <pre><code class="language-bash">make lint
-</code></pre>
-<ol start="7">
-<li>Use <code>git submodule</code> for saml2aws third party dependency</li>
-</ol>
-<pre><code class="language-bash">git submodule update --init --recursive
 </code></pre>
 <ol start="8">
 <li>Build and manually test kconnect locally:</li>
@@ -217,11 +217,11 @@
 <pre><code class="language-bash">make build
 </code></pre>
 <ol start="9">
-<li>Commit and push your branch. We follow <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> for the commits and PRs. If the PR is a work in progress ensure that you prefix the title with WIP:.</li>
-<li>Create a pull request</li>
+<li>Commit and push your branch. We follow <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> for the commits and PRs. .</li>
+<li>Create a pull request. If the PR is a work in progress ensure that that <strong>PR is created as a draft</strong>.</li>
 <li>Check that the PR checks pass</li>
 </ol>
-<p>Once a PR has been created it will be reviwed by one of the maintainers of kconnect.</p>
+<p>Once a PR has been created it will be reviewed by one of the maintainers of kconnect.</p>
 
                     </main>
 
