@@ -47,23 +47,23 @@ When choosing an issue to work on its preferable that you choose a issue that is
 git checkout -b <feature-name>
 ```
 
-4. Make the change, including any additional tests
-5. Run the tests:
+4. Use `git submodule` for saml2aws third party dependency
+
+```bash
+git submodule update --init --recursive
+```
+
+5. Make the change, including any additional tests
+6. Run the tests:
 
 ```bash
 make test
 ```
 
-6. Check for linting errors:
+7. Check for linting errors:
 
 ```bash
 make lint
-```
-
-7. Use `git submodule` for saml2aws third party dependency
-
-```bash
-git submodule update --init --recursive
 ```
 
 8. Build and manually test kconnect locally:
