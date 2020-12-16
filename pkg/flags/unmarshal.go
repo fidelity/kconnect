@@ -148,7 +148,7 @@ func unmarshallFlag(flag *pflag.Flag, out reflect.Value) error {
 
 	flagValueStr := flag.Value.String()
 
-	switch fieldT.Kind() {
+	switch fieldT.Kind() { //nolint: exhaustive
 	case reflect.String:
 		out.SetString(flagValueStr)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

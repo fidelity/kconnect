@@ -145,10 +145,7 @@ func (t *TokenIdentity) Name() string {
 }
 
 func (t *TokenIdentity) IsExpired() bool {
-	//TODO: handle properly
-	//now := time.Now().UTC()
-	//return now.After(i.Expires)
-
+	// TODO: handle properly
 	return false
 }
 

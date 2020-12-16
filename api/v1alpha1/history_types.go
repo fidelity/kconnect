@@ -97,7 +97,7 @@ func NewHistoryEntryList() *HistoryEntryList {
 
 func NewHistoryEntry() *HistoryEntry {
 	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0) //nolint: gosec
 	id := ulid.MustNew(ulid.Timestamp(t), entropy)
 
 	created := metav1.Now()
@@ -242,6 +242,6 @@ func getTimeLeft(entry *HistoryEntry) string {
 	} else {
 		return "NA"
 	}
-	//TODO - other variations e.g. AKS
+	// TODO - other variations e.g. AKS
 	return htime.GetRemainingTime(expiresTime)
 }

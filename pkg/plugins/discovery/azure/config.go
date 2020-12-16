@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
+	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -50,8 +51,7 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *provide
 		return nil, fmt.Errorf("parsing cluster id: %w", err)
 	}
 
-	client := containerservice.NewManagedClustersClient(resourceID.SubscriptionID)
-	client.Authorizer = p.authorizer
+	client := azclient.NewContainerClient(resourceID.SubscriptionID, p.authorizer)
 
 	var credentialList containerservice.CredentialResults
 	if p.config.Admin {
