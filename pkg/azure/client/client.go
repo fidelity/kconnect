@@ -26,13 +26,15 @@ import (
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-var ()
+const (
+	userAgentTemplate = "kconnect.fidelity.github.com/%s"
+)
 
 // NewContainerClient will create a new Azure container services client
 func NewContainerClient(subscriptionID string, authorizer autorest.Authorizer) containerservice.ManagedClustersClient {
 	azclient := containerservice.NewManagedClustersClient(subscriptionID)
 	azclient.Authorizer = authorizer
-	azclient.UserAgent = fmt.Sprintf("kconnect.fidelity.github.com/%s", version.Get().String())
+	azclient.UserAgent = fmt.Sprintf(userAgentTemplate, version.Get().String())
 
 	return azclient
 }
@@ -41,7 +43,7 @@ func NewContainerClient(subscriptionID string, authorizer autorest.Authorizer) c
 func NewSubscriptionsClient(authorizer autorest.Authorizer) subscriptions.Client {
 	subClient := subscriptions.NewClient()
 	subClient.Authorizer = authorizer
-	subClient.UserAgent = fmt.Sprintf("kconnect.fidelity.github.com/%s", version.Get().String())
+	subClient.UserAgent = fmt.Sprintf(userAgentTemplate, version.Get().String())
 
 	return subClient
 }

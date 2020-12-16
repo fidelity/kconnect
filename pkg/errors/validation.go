@@ -46,7 +46,7 @@ func (e *ValidationFailed) setup() {
 }
 
 func IsValidationFailed(err error) bool {
-	if _, ok := err.(*ValidationFailed); ok {
+	if _, ok := err.(*ValidationFailed); ok { //nolint: errorlint
 		return true
 	}
 
