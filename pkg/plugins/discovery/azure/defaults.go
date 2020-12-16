@@ -24,4 +24,5 @@ const (
 	SubscriptionNameConfigItem = "subscription-name"
 	ResourceGroupConfigItem    = "resource-group"
 	AdminConfigItem            = "admin"
+	ClusterNameConfigItem      = "cluster-name"
 )

@@ -20,8 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-11-01/subscriptions"
-
+	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/provider"
@@ -96,8 +95,7 @@ func (p *aksClusterProvider) resolveSubscripionName(cfg config.ConfigurationSet)
 }
 
 func (p *aksClusterProvider) subscriptionOptions() (map[string]string, error) {
-	client := subscriptions.NewClient()
-	client.Authorizer = p.authorizer
+	client := azclient.NewSubscriptionsClient(p.authorizer)
 
 	res, err := client.List(context.TODO())
 	if err != nil {
