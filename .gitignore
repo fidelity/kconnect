@@ -24,6 +24,7 @@ hack/tools/share
 *.swp
 
 .vscode/
+.idea/
 
 .DS_Store
 

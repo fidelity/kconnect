@@ -48,6 +48,9 @@ require (
 	github.com/tidwall/pretty v1.0.1 // indirect
 	github.com/versent/saml2aws v1.8.5-0.20200622110128-d94772688a70
 	github.com/worr/saml2aws v2.15.0+incompatible
+	go.opentelemetry.io/otel v0.15.0
+	go.opentelemetry.io/otel/exporters/stdout v0.15.0
+	go.opentelemetry.io/otel/sdk v0.15.0
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
