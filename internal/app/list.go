@@ -17,7 +17,6 @@ limitations under the License.
 package app
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -95,19 +94,10 @@ func (a *App) getCurrentContextID(kubecfg string) (string, error) {
 	if currentContext == nil || currentContext.Extensions == nil {
 		return "", nil
 	}
-	kconnectExtension, ok := currentContext.Extensions["kconnect"]
-	if !ok {
-		return "", nil
-	}
-	b, err := json.Marshal(kconnectExtension)
+	currentContextHistoryReference, err := v1alpha1.GetHistoryReferenceFromContext(currentContext)
 	if err != nil {
-		return "", fmt.Errorf("marshalling json: %w", err)
+		return "", err
 	}
-	kconnectExtensionObj := v1alpha1.HistoryReference{}
-	err = json.Unmarshal(b, &kconnectExtensionObj)
-	if err != nil {
-		return "", fmt.Errorf("unmarshalling json: %w", err)
-	}
-	currentContexID := kconnectExtensionObj.EntryID
+	currentContexID := currentContextHistoryReference.EntryID
 	return currentContexID, nil
 }
