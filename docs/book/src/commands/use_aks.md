@@ -30,6 +30,12 @@ kconnect use aks [flags]
   # Discover AKS clusters using Azure AD
   kconnect use aks --idp-protocol aad
 
+  # Discover AKS clusters using file based credentials
+  export AZURE_TENANT_ID="123455"
+  export AZURE_CLIENT_ID="76849"
+  export AZURE_CLIENT_SECRET="supersecret"
+  kconnect use aks --idp-protocol az-env
+
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
@@ -44,6 +50,7 @@ kconnect use aks [flags]
       --admin                      Generate admin user kubeconfig
   -a, --alias string               Friendly name to give to give the connection
   -c, --cluster-id string          Id of the cluster to use.
+      --cluster-name string        The name of the AKS cluster
   -h, --help                       help for aks
       --history-location string    Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
@@ -62,9 +69,10 @@ kconnect use aks [flags]
 ### Options inherited from parent commands
 
 ```bash
-      --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+      --config string      Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 ```
 
 ### IDP Protocol Options
@@ -80,6 +88,14 @@ Use `--idp-protocol=aad`
       --password string       The password to use for authentication
   -t, --tenant-id string      The azure tenant id
       --username string       The username used for authentication
+```
+
+#### AZ-ENV Options
+
+Use `--idp-protocol=az-env`
+
+```bash
+      --use-file   Use file based authorization
 ```
 
 ### SEE ALSO

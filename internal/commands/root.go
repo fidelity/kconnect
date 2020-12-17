@@ -20,12 +20,16 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/blang/semver"
 	"go.uber.org/zap"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
@@ -35,37 +39,39 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
 	"github.com/fidelity/kconnect/internal/defaults"
+	appver "github.com/fidelity/kconnect/internal/version"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 )
 
 var (
-	cfg config.ConfigurationSet
+	cfg                  config.ConfigurationSet
+	versionCheckInterval time.Duration = 1440 * time.Minute
 )
 
 const (
 	shortDesc = "The Kubernetes Connection Manager CLI"
 	longDesc  = `
 The kconnect tool uses a pre-configured Identity Provider to log in to one or
-more managed Kubernetes cluster providers, discovers the list of clusters 
-visible to your authenticated user and options, and generates a kubectl 
+more managed Kubernetes cluster providers, discovers the list of clusters
+visible to your authenticated user and options, and generates a kubectl
 configutation context for the selected cluster.
 
-Most kubectl contexts include an authentication token which kubectl sends to 
-Kubernetes with each request rather than a username and password to establish 
-your identity.  Authentication tokens typically expire after some time.  The 
-user must then to log in again to the managed Kubernetes service provider and 
-regenerate the kubectl context for that cluster connection in order to refresh 
+Most kubectl contexts include an authentication token which kubectl sends to
+Kubernetes with each request rather than a username and password to establish
+your identity.  Authentication tokens typically expire after some time.  The
+user must then to log in again to the managed Kubernetes service provider and
+regenerate the kubectl context for that cluster connection in order to refresh
 the access token.
 
-The kconnect tool makes this much easier by automating the login and kubectl 
-context regeneration process, and by allowing the user to repeat previously 
+The kconnect tool makes this much easier by automating the login and kubectl
+context regeneration process, and by allowing the user to repeat previously
 successful connections.
 
 Each time kconnect creates a new connection context, the kconnect tool saves the
 information for that connection in the user's connection history list.  The user
-can then display their connection history entries and reconnect to any entry by 
-its unique ID (or by a user-friendly alias) to refresh an expired access token 
+can then display their connection history entries and reconnect to any entry by
+its unique ID (or by a user-friendly alias) to refresh an expired access token
 for that cluster.
 `
 	examples = `
@@ -106,6 +112,8 @@ for that cluster.
 
 // RootCmd creates the root kconnect command
 func RootCmd() (*cobra.Command, error) {
+	cfg = config.NewConfigurationSet()
+
 	rootCmd := &cobra.Command{
 		Use:     "kconnect",
 		Short:   shortDesc,
@@ -121,13 +129,25 @@ func RootCmd() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
+		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+			params := &app.CommonConfig{}
+			if err := config.Unmarshall(cfg, params); err != nil {
+				return fmt.Errorf("unmarshalling config into to params: %w", err)
+			}
+			if !params.DisableVersionCheck {
+				if err := reportNewerVersion(); err != nil {
+					return fmt.Errorf("reporting newer version: %w", err)
+				}
+			}
+
+			return nil
+		},
 	}
 
 	if err := ensureAppDirectory(); err != nil {
 		return nil, fmt.Errorf("ensuring app directory exists: %w", err)
 	}
 
-	cfg = config.NewConfigurationSet()
 	if err := app.AddCommonConfigItems(cfg); err != nil {
 		return nil, fmt.Errorf("adding common configuration: %w", err)
 	}
@@ -190,6 +210,68 @@ func ensureAppDirectory() error {
 
 	if err := os.Mkdir(appDir, os.ModePerm); err != nil {
 		return fmt.Errorf("making app folder directory %s: %w", appDir, err)
+	}
+
+	return nil
+}
+
+func reportNewerVersion() error {
+	appCfg, err := config.NewAppConfiguration()
+	if err != nil {
+		return fmt.Errorf("creating app configuration: %w", err)
+	}
+
+	cfg, err := appCfg.Get()
+	if err != nil {
+		return fmt.Errorf("getting configuration: %w", err)
+	}
+
+	v := appver.Get()
+	if v.Version == "" {
+		// Running a local build so set the version number
+		v.Version = "0.0.0"
+	}
+
+	currentSemver, err := semver.Parse(v.Version)
+	if err != nil {
+		return fmt.Errorf("parsing current version %s: %w", v.Version, err)
+	}
+
+	var latestSemver semver.Version
+	checkTime := time.Now().UTC()
+	checkDiff := checkTime.Sub(cfg.Spec.VersionCheck.LastChecked.Time)
+	if checkDiff > versionCheckInterval { //nolint:nestif
+		latestRelease, err := appver.GetLatestRelease()
+		if err != nil {
+			return fmt.Errorf("getting latest release: %w", err)
+		}
+
+		latestSemver, err = semver.Parse(*latestRelease.Version)
+		if err != nil {
+			return fmt.Errorf("parsing latest release version %s: %w", *latestRelease.Version, err)
+		}
+
+		if latestSemver.GT(currentSemver) {
+			cfg.Spec.VersionCheck.LatestReleaseVersion = latestRelease.Version
+			cfg.Spec.VersionCheck.LatestReleaseURL = latestRelease.URL
+		}
+
+		cfg.Spec.VersionCheck.LastChecked = metav1.NewTime(checkTime)
+		if err := appCfg.Save(cfg); err != nil {
+			return fmt.Errorf("saving app configuration: %w", err)
+		}
+	} else {
+		zap.S().Debugw("latest version not retrieved as check interval not exceeded", "diffMins", checkDiff.Minutes(), "savedVersion", cfg.Spec.VersionCheck.LatestReleaseVersion)
+		latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
+		if err != nil {
+			return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
+		}
+	}
+
+	if latestSemver.GT(currentSemver) {
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintf(os.Stderr, "\033[33mNew kconnect version available: v%s -> v%s\033[0m\n", currentSemver.String(), latestSemver.String())
+		fmt.Fprintf(os.Stderr, "\033[33mVisit %s for more details\033[0m\n", *cfg.Spec.VersionCheck.LatestReleaseURL)
 	}
 
 	return nil

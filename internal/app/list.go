@@ -88,8 +88,6 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 }
 
 func (a *App) getCurrentContextID(kubecfg string) (string, error) {
-
-	//get context
 	currentContext, err := kubeconfig.GetCurrentContext(kubecfg)
 	if err != nil {
 		return "", err

@@ -50,14 +50,10 @@ const (
 )
 
 var (
-	ErrUnexpectedIdentity     = errors.New("unexpected identity type")
 	ErrNoRegion               = errors.New("no region found")
-	ErrNoProfile              = errors.New("no profile supplied")
 	ErrNoRolesFound           = errors.New("no aws roles found")
 	ErrNotAccounts            = errors.New("no accounts available")
 	ErrMissingResponseElement = errors.New("missing response element")
-	ErrNoPartitionSupplied    = errors.New("no AWS partition supplied")
-	ErrPartitionNotFound      = errors.New("AWS partition not found")
 )
 
 type awsProviderConfig struct {
@@ -146,7 +142,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("setting profile name: %w", err)
 	}
 
-	awsIdentity := mapCredsToIdentity(awsCreds, profileName)
+	awsIdentity := kaws.MapCredsToIdentity(awsCreds, profileName)
 	return awsIdentity, nil
 }
 
@@ -210,7 +206,7 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	}
 
 	for {
-		role, err = p.getRoleFromPrompt(awsAccounts)
+		role, err = p.getRoleFromPrompt(awsAccounts, roleFilter)
 		if err == nil {
 			break
 		}
@@ -227,11 +223,17 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 
 	filtered := []*saml2aws.AWSAccount{}
 	for _, account := range accounts {
+		filteredAccount := &saml2aws.AWSAccount{
+			Name:  account.Name,
+			Roles: []*saml2aws.AWSRole{},
+		}
 		for _, awsRole := range account.Roles {
 			if strings.Contains(awsRole.RoleARN, roleFilter) {
-				filtered = append(filtered, account)
-				break
+				filteredAccount.Roles = append(filteredAccount.Roles, awsRole)
 			}
+		}
+		if len(filteredAccount.Roles) > 0 {
+			filtered = append(filtered, filteredAccount)
 		}
 	}
 
@@ -239,18 +241,24 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 }
 
 // Not using saml2aws.PromptForAWSRoleSelection as we want to implement custom logic
-func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*saml2aws.AWSRole, error) {
+func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, roleFilter string) (*saml2aws.AWSRole, error) {
 
 	roles := map[string]*saml2aws.AWSRole{}
 	var roleOptions []string
 
 	for _, account := range accounts {
 		for _, role := range account.Roles {
-			name := fmt.Sprintf("%s / %s", account.Name, role.Name)
-			roles[name] = role
-			roleOptions = append(roleOptions, name)
+			if roleFilter == "" || strings.Contains(role.RoleARN, roleFilter) {
+				name := fmt.Sprintf("%s / %s", account.Name, role.Name)
+				roles[name] = role
+				roleOptions = append(roleOptions, name)
+			}
 		}
 	}
+	if len(roleOptions) == 0 {
+		return roles[roleOptions[0]], nil
+	}
+
 	sort.Strings(roleOptions)
 	selectedRole := ""
 	prompt := &survey.Select{
@@ -263,7 +271,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount) (*s
 			fmt.Println("Received interrupt, exiting..")
 			os.Exit(0)
 		}
-		return nil, fmt.Errorf("asking for region: %w", err)
+		return nil, fmt.Errorf("asking for role: %w", err)
 	}
 	return roles[selectedRole], nil
 }
@@ -359,28 +367,5 @@ func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
 func (p *ServiceProvider) ensureLogger() {
 	if p.logger == nil {
 		p.logger = zap.S().With("provider", "saml", "sp", "aws")
-	}
-}
-
-func mapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {
-	return &Identity{
-		AWSAccessKey:     creds.AWSAccessKey,
-		AWSSecretKey:     creds.AWSSecretKey,
-		AWSSecurityToken: creds.AWSSecurityToken,
-		AWSSessionToken:  creds.AWSSessionToken,
-		Expires:          creds.Expires,
-		PrincipalARN:     creds.PrincipalARN,
-		ProfileName:      profileName,
-	}
-}
-
-func mapIdentityToCreds(awsIdentity *Identity) *awsconfig.AWSCredentials {
-	return &awsconfig.AWSCredentials{
-		AWSAccessKey:     awsIdentity.AWSAccessKey,
-		AWSSecretKey:     awsIdentity.AWSSecretKey,
-		AWSSecurityToken: awsIdentity.AWSSecurityToken,
-		AWSSessionToken:  awsIdentity.AWSSessionToken,
-		Expires:          awsIdentity.Expires,
-		PrincipalARN:     awsIdentity.PrincipalARN,
 	}
 }

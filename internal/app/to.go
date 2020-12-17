@@ -267,6 +267,10 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 		}
 	}
 
+	if err := config.ApplyToConfigSetWithProvider(cs, clusterProvider.Name()); err != nil {
+		return nil, fmt.Errorf("applying app config: %w", err)
+	}
+
 	for _, configItem := range cs.GetAll() {
 		if !configItem.HasValue() {
 			configItem.Value = configItem.DefaultValue

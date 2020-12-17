@@ -25,6 +25,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	MediaTypeJSON = "application/json"
+)
+
 // NewHTTPClient creates a new http client
 func NewHTTPClient() Client {
 	client := &http.Client{}
@@ -54,7 +58,6 @@ func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
 	}
 
 	zap.S().Debugw("http request", "url", req.URL, "method", req.Method, "headers", req.Headers)
-	//zap.S().Debug(*req.Body)
 
 	resp, err := n.client.Do(r)
 	if err != nil {

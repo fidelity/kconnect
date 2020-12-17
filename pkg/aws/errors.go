@@ -16,31 +16,11 @@ limitations under the License.
 
 package aws
 
-import (
-	"time"
+import "errors"
+
+var (
+	ErrNoProfile           = errors.New("no profile supplied")
+	ErrUnexpectedIdentity  = errors.New("unexpected identity type")
+	ErrNoPartitionSupplied = errors.New("no AWS partition supplied")
+	ErrPartitionNotFound   = errors.New("AWS partition not found")
 )
-
-// Identity represents an AWS identity
-type Identity struct {
-	ProfileName      string
-	AWSAccessKey     string
-	AWSSecretKey     string
-	AWSSessionToken  string
-	AWSSecurityToken string
-	PrincipalARN     string
-	Expires          time.Time
-	Region           string
-}
-
-func (i *Identity) Type() string {
-	return "aws"
-}
-
-func (i *Identity) Name() string {
-	return i.PrincipalARN
-}
-
-func (i *Identity) IsExpired() bool {
-	now := time.Now().UTC()
-	return now.After(i.Expires)
-}

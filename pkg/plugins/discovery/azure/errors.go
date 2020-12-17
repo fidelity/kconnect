@@ -19,7 +19,7 @@ package azure
 import "errors"
 
 var (
-	ErrNotOIDCIdentity      = errors.New("unsupported identity, oidc.Identity required")
+	ErrUnsupportedIdentity  = errors.New("unsupported identity, oidc.Identity orazure.AuthorizerIdentity required")
 	ErrNoKubeconfigs        = errors.New("no kubeconfigs available for the managed cluster cluster")
 	ErrNoSubscriptions      = errors.New("no subscriptions found")
 	ErrSubscriptionNameOrID = errors.New("subscription name and id cannot be both supplied")

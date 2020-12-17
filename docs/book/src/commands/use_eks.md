@@ -74,12 +74,26 @@ kconnect use eks [flags]
 ### Options inherited from parent commands
 
 ```bash
-      --config string     Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
-      --non-interactive   Run without interactive flag resolution
-  -v, --verbosity int     Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
+      --config string      Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
+      --no-version-check   If set to true kconnect will not check for a newer version
+      --non-interactive    Run without interactive flag resolution
+  -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 ```
 
 ### IDP Protocol Options
+
+#### AWS-IAM Options
+
+Use `--idp-protocol=aws-iam`
+
+```bash
+      --access-key string      AWS access key to use
+      --partition string       AWS partition to use (default "aws")
+      --profile string         AWS profile to use
+      --region string          AWS region to connect to
+      --secret-key string      AWS secret key to use
+      --session-token string   AWS session token to use
+```
 
 #### SAML Options
 

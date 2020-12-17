@@ -43,12 +43,26 @@ func NewAppConfiguration() (AppConfiguration, error) {
 }
 
 func NewAppConfigurationWithPath(path string) (AppConfiguration, error) {
+
 	configPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("getting config absolute file path for %s: %w", path, err)
 	}
+	configDirPath := filepath.Dir(configPath)
+	info, err := os.Stat(configDirPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("getting details of config dir %s: %w", configDirPath, err)
+		}
+		err = os.MkdirAll(configDirPath, os.ModePerm)
+		if err != nil {
+			return nil, fmt.Errorf("creating config dir %s: %w", configDirPath, err)
+		}
+	} else if !info.IsDir() {
+		return nil, fmt.Errorf("supplied path is not directory %s: %w", configDirPath, err)
+	}
 
-	info, err := os.Stat(configPath)
+	info, err = os.Stat(configPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("getting details of config file %s: %w", configPath, err)
@@ -117,6 +131,10 @@ func (a *appConfiguration) Get() (*kconnectv1alpha.Configuration, error) {
 	appConfiguration := &kconnectv1alpha.Configuration{}
 	if err := runtime.DecodeInto(apiCodecs.UniversalDecoder(), data, appConfiguration); err != nil {
 		return nil, fmt.Errorf("decoding config file: %w", err)
+	}
+
+	if appConfiguration.Spec.VersionCheck == nil {
+		appConfiguration.Spec.VersionCheck = &kconnectv1alpha.VersionCheck{}
 	}
 
 	return appConfiguration, nil

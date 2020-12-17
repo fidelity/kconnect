@@ -26,6 +26,8 @@ type Identity struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 	IDToken      string `json:"id_token"`
+
+	IDProviderName string
 }
 
 func (i *Identity) Type() string {
@@ -43,4 +45,8 @@ func (i *Identity) IsExpired() bool {
 
 func (i *Identity) OAuthToken() string {
 	return i.AccessToken
+}
+
+func (i *Identity) IdentityProviderName() string {
+	return i.IDProviderName
 }

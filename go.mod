@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.1.1
 	github.com/Azure/azure-sdk-for-go v48.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.10
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3 // indirect
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3
 	github.com/Azure/go-autorest/autorest/date v0.3.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
@@ -15,10 +15,13 @@ require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.35.2
 	github.com/beevik/etree v1.1.0
+	github.com/blang/semver v3.5.0+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.10.1
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
+	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0
 	github.com/google/uuid v1.1.1
 	github.com/imdario/mergo v0.3.10
@@ -30,6 +33,7 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.0 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.7.0
@@ -48,6 +52,7 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/tools v0.0.0-20201103235415-b653051172e4 // indirect
+	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.19.1
 	k8s.io/apimachinery v0.19.1

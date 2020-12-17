@@ -27,6 +27,7 @@ import (
 	"github.com/versent/saml2aws/pkg/creds"
 	"go.uber.org/zap"
 
+	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
@@ -46,11 +47,12 @@ var (
 )
 
 const (
+	ProviderName   = "saml"
 	defaultSession = 3600
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin("saml", newSAMLProvider()); err != nil {
+	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newSAMLProvider()); err != nil {
 		zap.S().Fatalw("failed to register SAML identity provider plugin", "error", err)
 	}
 }
@@ -68,7 +70,7 @@ type samlIdentityProvider struct {
 
 // Name returns the name of the plugin
 func (p *samlIdentityProvider) Name() string {
-	return "saml"
+	return ProviderName
 }
 
 func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
@@ -212,13 +214,18 @@ func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	return nil
 }
 
-func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, providerName string) (provider.IdentityStore, error) {
+func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, clusterProviderName string) (provider.IdentityStore, error) {
 	var store provider.IdentityStore
 	var err error
 
-	switch providerName {
+	switch clusterProviderName {
 	case "eks":
-		store, err = aws.NewIdentityStore(ctx.ConfigurationItems())
+		if !ctx.ConfigurationItems().ExistsWithValue("aws-profile") {
+			return nil, kaws.ErrNoProfile
+		}
+		profileCfg := ctx.ConfigurationItems().Get("aws-profile")
+		profile := profileCfg.Value.(string)
+		store, err = kaws.NewIdentityStore(profile, ProviderName)
 	default:
 		return nil, ErrUnsuportedProvider
 	}
@@ -251,6 +258,6 @@ func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
 
 func (p *samlIdentityProvider) ensureLogger() {
 	if p.logger == nil {
-		p.logger = zap.S().With("provider", "saml")
+		p.logger = zap.S().With("provider", ProviderName)
 	}
 }

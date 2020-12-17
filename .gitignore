@@ -24,6 +24,9 @@ hack/tools/share
 *.swp
 
 .vscode/
+.idea/
 
 .DS_Store
+
+client_credentials.json
 

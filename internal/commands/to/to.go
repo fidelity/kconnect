@@ -93,7 +93,7 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Info("running `to` command")
+			zap.S().Debug("running `to` command")
 
 			aliasOrIDORPosition := ""
 			if len(args) > 0 {
