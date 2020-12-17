@@ -110,7 +110,7 @@ func (a *App) Use(params *UseParams) error {
 		params.Kubeconfig = pathOptions.GetDefaultFilename()
 	}
 
-	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig, params.SetCurrent); err != nil {
+	if err := kubeconfig.Write(params.Kubeconfig, kubeConfig, true, params.SetCurrent); err != nil {
 		return fmt.Errorf("writing cluster kubeconfig: %w", err)
 	}
 

@@ -93,7 +93,10 @@ func addConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("adding all short flag: %w", err)
 	}
 	if _, err := cs.String("alias", "", "comma delimited list of aliass"); err != nil {
-		return fmt.Errorf("adding password config: %w", err)
+		return fmt.Errorf("adding alias config: %w", err)
+	}
+	if _, err := cs.String("ids", "", "comma delimited list of ids"); err != nil {
+		return fmt.Errorf("adding ids config: %w", err)
 	}
 
 	if err := app.AddHistoryLocationItems(cs); err != nil {
