@@ -26,29 +26,33 @@ import (
 )
 
 // Write will write the kubeconfig to the specified file. If there
-// is an existing kubeconfig it will be merged
-func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
+// is an existing kubeconfig it will be merged if flag is set to true
+func Write(path string, clusterConfig *api.Config, merge, setCurrent bool) error {
 	zap.S().Debugw("writing kubeconfig", "path", path)
 
 	pathOptions := clientcmd.NewDefaultPathOptions()
 	if path != "" {
 		pathOptions.LoadingRules.ExplicitPath = path
 	}
-
-	existingConfig, err := pathOptions.GetStartingConfig()
-	if err != nil {
-		return fmt.Errorf("getting existing kubeconfig: %w", err)
-	}
-
-	zap.S().Debug("merging kubeconfig files")
-	for k, v := range clusterConfig.Clusters {
-		existingConfig.Clusters[k] = v
-	}
-	for k, v := range clusterConfig.AuthInfos {
-		existingConfig.AuthInfos[k] = v
-	}
-	for k, v := range clusterConfig.Contexts {
-		existingConfig.Contexts[k] = v
+	var existingConfig *api.Config
+	if merge {
+		existingConfig, err := pathOptions.GetStartingConfig()
+		if err != nil {
+			return fmt.Errorf("getting existing kubeconfig: %w", err)
+		}
+	
+		zap.S().Debug("merging kubeconfig files")
+		for k, v := range clusterConfig.Clusters {
+			existingConfig.Clusters[k] = v
+		}
+		for k, v := range clusterConfig.AuthInfos {
+			existingConfig.AuthInfos[k] = v
+		}
+		for k, v := range clusterConfig.Contexts {
+			existingConfig.Contexts[k] = v
+		}
+	} else {
+		existingConfig = clusterConfig
 	}
 
 	if setCurrent {
