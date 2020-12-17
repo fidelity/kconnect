@@ -21,6 +21,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
 
+	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -51,11 +52,9 @@ func (p *aksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 
 func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cluster, error) {
 	p.logger.Debugw("listing clusters", "subscription", *p.config.SubscriptionID)
-	client := containerservice.NewManagedClustersClient(*p.config.SubscriptionID)
-	client.Authorizer = p.authorizer
+	client := azclient.NewContainerClient(*p.config.SubscriptionID, p.authorizer)
 
 	clusters := []*provider.Cluster{}
-
 	var list containerservice.ManagedClusterListResultPage
 	var err error
 	if p.config.ResourceGroup == nil || *p.config.ResourceGroup == "" {
@@ -68,15 +67,17 @@ func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cl
 	}
 
 	for _, val := range list.Values() {
-		clusterID, err := id.ToClusterID(*val.ID)
-		if err != nil {
-			return nil, fmt.Errorf("create cluster id: %w", err)
+		if p.config.ClusterName == "" || p.config.ClusterName == *val.Name {
+			clusterID, err := id.ToClusterID(*val.ID)
+			if err != nil {
+				return nil, fmt.Errorf("create cluster id: %w", err)
+			}
+			cluster := &provider.Cluster{
+				Name: *val.Name,
+				ID:   clusterID,
+			}
+			clusters = append(clusters, cluster)
 		}
-		cluster := &provider.Cluster{
-			Name: *val.Name,
-			ID:   clusterID,
-		}
-		clusters = append(clusters, cluster)
 	}
 
 	return clusters, nil

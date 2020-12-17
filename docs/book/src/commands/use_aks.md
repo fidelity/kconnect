@@ -50,6 +50,7 @@ kconnect use aks [flags]
       --admin                      Generate admin user kubeconfig
   -a, --alias string               Friendly name to give to give the connection
   -c, --cluster-id string          Id of the cluster to use.
+      --cluster-name string        The name of the AKS cluster
   -h, --help                       help for aks
       --history-location string    Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
