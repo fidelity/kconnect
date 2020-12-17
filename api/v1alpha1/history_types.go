@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
+	"fmt"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -25,6 +27,7 @@ import (
 	htime "github.com/fidelity/kconnect/pkg/history/time"
 	"github.com/oklog/ulid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 // HistoryEntrySpec represents a history item
@@ -130,6 +133,23 @@ func NewHistoryReference(entryID string) *HistoryReference {
 		},
 		EntryID: entryID,
 	}
+}
+
+func GetHistoryReferenceFromContext(context *api.Context) (*HistoryReference, error) {
+	kconnectExtension, ok := context.Extensions["kconnect"]
+	if !ok {
+		return nil, fmt.Errorf("No kconnext history extension found")
+	}
+	b, err := json.Marshal(kconnectExtension)
+	if err != nil {
+		return nil, fmt.Errorf("marshalling json: %w", err)
+	}
+	kconnectExtensionObj := HistoryReference{}
+	err = json.Unmarshal(b, &kconnectExtensionObj)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshalling json: %w", err)
+	}
+	return &kconnectExtensionObj, nil
 }
 
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
