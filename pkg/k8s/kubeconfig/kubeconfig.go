@@ -34,7 +34,7 @@ func Write(path string, clusterConfig *api.Config, merge, setCurrent bool) error
 	if path != "" {
 		pathOptions.LoadingRules.ExplicitPath = path
 	}
-	var existingConfig *api.Config
+	var newConfig *api.Config
 	if merge {
 		existingConfig, err := pathOptions.GetStartingConfig()
 		if err != nil {
@@ -51,16 +51,17 @@ func Write(path string, clusterConfig *api.Config, merge, setCurrent bool) error
 		for k, v := range clusterConfig.Contexts {
 			existingConfig.Contexts[k] = v
 		}
+		newConfig = existingConfig
 	} else {
-		existingConfig = clusterConfig
+		newConfig = clusterConfig
 	}
 
 	if setCurrent {
 		zap.S().Infow("setting current context", "context", clusterConfig.CurrentContext)
-		existingConfig.CurrentContext = clusterConfig.CurrentContext
+		newConfig.CurrentContext = clusterConfig.CurrentContext
 	}
 
-	if err := clientcmd.ModifyConfig(pathOptions, *existingConfig, true); err != nil {
+	if err := clientcmd.ModifyConfig(pathOptions, *newConfig, true); err != nil {
 		return fmt.Errorf("writing kubeconfig: %w", err)
 	}
 	zap.S().Infow("kubeconfig updated", "path", path)

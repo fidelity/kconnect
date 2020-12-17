@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
@@ -35,29 +36,34 @@ func (a *App) Logout(params *LogoutParams) error {
 		}
 	} else if params.Alias != "" || params.IDs != "" {
 		// Log out of Aliass
-		aliasList := strings.Split(params.Alias, ",")
-		for _, alias := range(aliasList) {
-			zap.S().Infof("will log out of cluster: %s", alias)
-			entry, err := a.historyStore.GetByAlias(alias)
-			if err != nil {
-				return err
+		if params.Alias != "" {
+			aliasList := strings.Split(params.Alias, ",")
+			fmt.Printf("list: %+v", aliasList)
+			for _, alias := range(aliasList) {
+				zap.S().Infof("will log out of cluster 1: %s", alias)
+				entry, err := a.historyStore.GetByAlias(alias)
+				if err != nil {
+					return err
+				}
+				if entry == nil {
+					return ErrAliasNotFound
+				}
+				entries.Items = append(entries.Items, *entry)
 			}
-			if entry == nil {
-				return ErrAliasNotFound
-			}
-			entries.Items = append(entries.Items, *entry)
 		}
-		idsList := strings.Split(params.IDs, ",")
-		for _, id := range(idsList) {
-			zap.S().Infof("will log out of cluster: %s", id)
-			entry, err := a.historyStore.GetByID(id)
-			if err != nil {
-				return err
+		if params.IDs != "" {
+			idsList := strings.Split(params.IDs, ",")
+			for _, id := range(idsList) {
+				zap.S().Infof("will log out of cluster2 : %s", id)
+				entry, err := a.historyStore.GetByID(id)
+				if err != nil {
+					return err
+				}
+				if entry == nil {
+					return ErrAliasNotFound
+				}
+				entries.Items = append(entries.Items, *entry)
 			}
-			if entry == nil {
-				return ErrAliasNotFound
-			}
-			entries.Items = append(entries.Items, *entry)
 		}
 	} else {
 		// Log out of current cluster
