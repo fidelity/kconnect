@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The kconnect Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package logout
 
 import (
@@ -14,15 +30,11 @@ import (
 )
 
 var (
-	shortDesc = "Query the user's connection history"
+	shortDesc = "Logs out of a cluster"
 	longDesc  = `
-Query and display the user's connection history entries, including entry IDs and
-aliases.
-
-Each time kconnect creates a new kubectl context to connect to a Kubernetes 
-cluster, it saves the settings for the new connection as an entry in the user's 
-connection history.  The user can then reconnect using those same settings later 
-via the connection history entry's ID or alias.
+Logs out of a cluster. Can logout of specific cluster by their alias or entry ID. 
+Log out of all clusters by using the --all flag
+If neither above options are selected, will log out of current cluster
 `
 )
 
@@ -30,9 +42,9 @@ func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	logoutCmd := &cobra.Command{
-		Use:     "logout",
-		Short:   shortDesc,
-		Long:    longDesc,
+		Use:   "logout",
+		Short: shortDesc,
+		Long:  longDesc,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
@@ -79,7 +91,6 @@ func Command() (*cobra.Command, error) {
 	return logoutCmd, nil
 
 }
-
 
 func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {

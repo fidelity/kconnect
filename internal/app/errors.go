@@ -29,4 +29,5 @@ var (
 	ErrAliasAndIDNotAllowed    = errors.New("alias and id bith specified, only 1 is allowed")
 	ErrAliasNotFound           = errors.New("no alias found")
 	ErrNoEntriesFound          = errors.New("no entries found")
+	ErrUnknownProvider         = errors.New("unknown provider")
 )

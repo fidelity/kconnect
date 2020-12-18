@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -84,6 +85,8 @@ type HistoryReference struct {
 	EntryID string
 }
 
+var ErrNoHistoryExtension = errors.New("no kconnext history extension found")
+
 var ignoreFlags = map[string]struct{}{
 	"profile": {},
 }
@@ -138,7 +141,7 @@ func NewHistoryReference(entryID string) *HistoryReference {
 func GetHistoryReferenceFromContext(context *api.Context) (*HistoryReference, error) {
 	kconnectExtension, ok := context.Extensions["kconnect"]
 	if !ok {
-		return nil, fmt.Errorf("No kconnext history extension found")
+		return nil, ErrNoHistoryExtension
 	}
 	b, err := json.Marshal(kconnectExtension)
 	if err != nil {
