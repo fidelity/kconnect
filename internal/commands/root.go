@@ -31,7 +31,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	//"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	"github.com/fidelity/kconnect/internal/commands/configure"

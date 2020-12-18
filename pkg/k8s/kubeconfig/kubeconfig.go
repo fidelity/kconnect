@@ -40,7 +40,7 @@ func Write(path string, clusterConfig *api.Config, merge, setCurrent bool) error
 		if err != nil {
 			return fmt.Errorf("getting existing kubeconfig: %w", err)
 		}
-	
+
 		zap.S().Debug("merging kubeconfig files")
 		for k, v := range clusterConfig.Clusters {
 			existingConfig.Clusters[k] = v
