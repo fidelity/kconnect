@@ -27,6 +27,7 @@ func MapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Id
 		Expires:          creds.Expires,
 		PrincipalARN:     creds.PrincipalARN,
 		ProfileName:      profileName,
+		Region:           creds.Region,
 	}
 }
 
@@ -38,5 +39,6 @@ func MapIdentityToCreds(awsIdentity *Identity) *awsconfig.AWSCredentials {
 		AWSSessionToken:  awsIdentity.AWSSessionToken,
 		Expires:          awsIdentity.Expires,
 		PrincipalARN:     awsIdentity.PrincipalARN,
+		Region:           awsIdentity.Region,
 	}
 }
