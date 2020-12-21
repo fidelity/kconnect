@@ -23,7 +23,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
@@ -55,7 +55,7 @@ require (
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.19.1 // indirect
-	k8s.io/apimachinery v0.19.1
+	k8s.io/apimachinery v0.20.1
 	k8s.io/cli-runtime v0.19.1
 	k8s.io/client-go v0.19.1
 	k8s.io/kubectl v0.19.1 // indirect
