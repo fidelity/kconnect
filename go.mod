@@ -18,12 +18,12 @@ require (
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.10.1
 	github.com/go-playground/validator/v10 v10.3.0
-	github.com/golang/mock v1.3.1
+	github.com/golang/mock v1.4.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
@@ -54,10 +54,9 @@ require (
 	golang.org/x/tools v0.0.0-20201103235415-b653051172e4 // indirect
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.19.1 // indirect
-	k8s.io/apimachinery v0.19.1
-	k8s.io/cli-runtime v0.19.1
-	k8s.io/client-go v0.19.1
+	k8s.io/apimachinery v0.20.1
+	k8s.io/cli-runtime v0.20.1
+	k8s.io/client-go v0.20.1
 	k8s.io/kubectl v0.19.1 // indirect
 	sigs.k8s.io/controller-tools v0.4.0 // indirect
 	sigs.k8s.io/kubebuilder/docs/book/utils v0.0.0-20201009223647-5031c94d9175 // indirect
