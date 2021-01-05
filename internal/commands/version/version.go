@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel"
 	"gopkg.in/yaml.v2"
 
 	"github.com/fidelity/kconnect/internal/version"
@@ -31,6 +32,9 @@ func Command() *cobra.Command {
 		Use:   "version",
 		Short: "Display version & build information",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			tr := otel.GetTracerProvider().Tracer("kconnect")
+			_, span := tr.Start(cmd.Context(), "versionCmd")
+			defer span.End()
 			return doVersion(cmd)
 		},
 	}

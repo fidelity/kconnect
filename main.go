@@ -55,10 +55,11 @@ func main() {
 	}
 	defer traceShutdown()
 
+	v := intver.Get()
+
 	commonLabels := []label.KeyValue{
-		label.String("labelA", "chocolate"),
-		label.String("labelB", "raspberry"),
-		label.String("labelC", "vanilla"),
+		label.String("version", v.Version),
+		label.String("platform", v.Platform),
 	}
 
 	tracer := otel.Tracer("kconnect")
@@ -69,7 +70,6 @@ func main() {
 
 	span.AddEvent("kconnect started")
 
-	v := intver.Get()
 	zap.S().Infow("kconnect - the Kubernetes Connection Manager CLI", "version", v.Version)
 	zap.S().Debugw("build information", "date", v.BuildDate, "commit", v.CommitHash, "gover", v.GoVersion)
 
