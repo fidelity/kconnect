@@ -44,7 +44,7 @@ func doVersion(_ *cobra.Command) error {
 	if err != nil {
 		return fmt.Errorf("marshalling version information: %w", err)
 	}
-	fmt.Println(string(outYaml))
+	fmt.Println(string(outYaml)) //nolint:forbidigo
 
 	return nil
 }
