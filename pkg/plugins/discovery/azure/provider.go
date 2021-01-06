@@ -49,6 +49,7 @@ type aksClusterProviderConfig struct {
 	SubscriptionName *string `json:"subscription-name"`
 	ResourceGroup    *string `json:"resource-group"`
 	Admin            bool    `json:"admin"`
+	ClusterName      string  `json:"cluster-name"`
 }
 
 type aksClusterProvider struct {
@@ -74,6 +75,7 @@ func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs.String(SubscriptionNameConfigItem, "", "The Azure subscription to use (specified by name)") //nolint: errcheck
 	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use")                      //nolint: errcheck
 	cs.Bool(AdminConfigItem, false, "Generate admin user kubeconfig")                              //nolint: errcheck
+	cs.String(ClusterNameConfigItem, "", "The name of the AKS cluster")                            //nolint: errcheck
 
 	cs.SetShort(ResourceGroupConfigItem, "r") //nolint: errcheck
 

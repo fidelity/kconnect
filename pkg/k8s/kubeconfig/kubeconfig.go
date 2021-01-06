@@ -26,9 +26,50 @@ import (
 )
 
 // Write will write the kubeconfig to the specified file. If there
-// is an existing kubeconfig it will be merged
-func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
+// is an existing kubeconfig it will be merged if flag is set to true
+func Write(path string, clusterConfig *api.Config, merge, setCurrent bool) error {
 	zap.S().Debugw("writing kubeconfig", "path", path)
+
+	pathOptions := clientcmd.NewDefaultPathOptions()
+	if path != "" {
+		pathOptions.LoadingRules.ExplicitPath = path
+	}
+	var newConfig *api.Config
+	if merge {
+		existingConfig, err := pathOptions.GetStartingConfig()
+		if err != nil {
+			return fmt.Errorf("getting existing kubeconfig: %w", err)
+		}
+
+		zap.S().Debug("merging kubeconfig files")
+		for k, v := range clusterConfig.Clusters {
+			existingConfig.Clusters[k] = v
+		}
+		for k, v := range clusterConfig.AuthInfos {
+			existingConfig.AuthInfos[k] = v
+		}
+		for k, v := range clusterConfig.Contexts {
+			existingConfig.Contexts[k] = v
+		}
+		newConfig = existingConfig
+	} else {
+		newConfig = clusterConfig
+	}
+
+	if setCurrent {
+		zap.S().Infow("setting current context", "context", clusterConfig.CurrentContext)
+		newConfig.CurrentContext = clusterConfig.CurrentContext
+	}
+
+	if err := clientcmd.ModifyConfig(pathOptions, *newConfig, true); err != nil {
+		return fmt.Errorf("writing kubeconfig: %w", err)
+	}
+	zap.S().Infow("kubeconfig updated", "path", path)
+
+	return nil
+}
+
+func Read(path string) (*api.Config, error) {
 
 	pathOptions := clientcmd.NewDefaultPathOptions()
 	if path != "" {
@@ -37,31 +78,9 @@ func Write(path string, clusterConfig *api.Config, setCurrent bool) error {
 
 	existingConfig, err := pathOptions.GetStartingConfig()
 	if err != nil {
-		return fmt.Errorf("getting existing kubeconfig: %w", err)
+		return nil, fmt.Errorf("getting existing kubeconfig: %w", err)
 	}
-
-	zap.S().Debug("merging kubeconfig files")
-	for k, v := range clusterConfig.Clusters {
-		existingConfig.Clusters[k] = v
-	}
-	for k, v := range clusterConfig.AuthInfos {
-		existingConfig.AuthInfos[k] = v
-	}
-	for k, v := range clusterConfig.Contexts {
-		existingConfig.Contexts[k] = v
-	}
-
-	if setCurrent {
-		zap.S().Infow("setting current context", "context", clusterConfig.CurrentContext)
-		existingConfig.CurrentContext = clusterConfig.CurrentContext
-	}
-
-	if err := clientcmd.ModifyConfig(pathOptions, *existingConfig, true); err != nil {
-		return fmt.Errorf("writing kubeconfig: %w", err)
-	}
-	zap.S().Infow("kubeconfig updated", "path", path)
-
-	return nil
+	return existingConfig, nil
 }
 
 func GetCurrentContext(path string) (*api.Context, error) {

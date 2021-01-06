@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -25,6 +28,7 @@ import (
 	htime "github.com/fidelity/kconnect/pkg/history/time"
 	"github.com/oklog/ulid"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 // HistoryEntrySpec represents a history item
@@ -81,6 +85,8 @@ type HistoryReference struct {
 	EntryID string
 }
 
+var ErrNoHistoryExtension = errors.New("no kconnext history extension found")
+
 var ignoreFlags = map[string]struct{}{
 	"profile": {},
 }
@@ -97,7 +103,7 @@ func NewHistoryEntryList() *HistoryEntryList {
 
 func NewHistoryEntry() *HistoryEntry {
 	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0) //nolint: gosec
 	id := ulid.MustNew(ulid.Timestamp(t), entropy)
 
 	created := metav1.Now()
@@ -130,6 +136,23 @@ func NewHistoryReference(entryID string) *HistoryReference {
 		},
 		EntryID: entryID,
 	}
+}
+
+func GetHistoryReferenceFromContext(context *api.Context) (*HistoryReference, error) {
+	kconnectExtension, ok := context.Extensions["kconnect"]
+	if !ok {
+		return nil, ErrNoHistoryExtension
+	}
+	b, err := json.Marshal(kconnectExtension)
+	if err != nil {
+		return nil, fmt.Errorf("marshalling json: %w", err)
+	}
+	kconnectExtensionObj := HistoryReference{}
+	err = json.Unmarshal(b, &kconnectExtensionObj)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshalling json: %w", err)
+	}
+	return &kconnectExtensionObj, nil
 }
 
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
@@ -242,6 +265,6 @@ func getTimeLeft(entry *HistoryEntry) string {
 	} else {
 		return "NA"
 	}
-	//TODO - other variations e.g. AKS
+	// TODO - other variations e.g. AKS
 	return htime.GetRemainingTime(expiresTime)
 }

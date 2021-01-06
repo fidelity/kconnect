@@ -27,4 +27,7 @@ var (
 	ErrHistoryIDRequired       = errors.New("history id is required")
 	ErrAliasRequired           = errors.New("alias is required")
 	ErrAliasAndIDNotAllowed    = errors.New("alias and id bith specified, only 1 is allowed")
+	ErrAliasNotFound           = errors.New("no alias found")
+	ErrNoEntriesFound          = errors.New("no entries found")
+	ErrUnknownProvider         = errors.New("unknown provider")
 )

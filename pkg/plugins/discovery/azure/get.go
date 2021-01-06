@@ -19,8 +19,7 @@ package azure
 import (
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
-
+	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
@@ -37,9 +36,7 @@ func (p *aksClusterProvider) Get(ctx *provider.Context, clusterID string, identi
 		return nil, fmt.Errorf("getting resource id: %w", err)
 	}
 
-	client := containerservice.NewManagedClustersClient(resourceID.SubscriptionID)
-	client.Authorizer = p.authorizer
-
+	client := azclient.NewContainerClient(resourceID.SubscriptionID, p.authorizer)
 	result, err := client.Get(ctx.Context, resourceID.ResourceGroupName, resourceID.ResourceName)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster: %w", err)

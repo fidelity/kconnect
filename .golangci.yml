@@ -32,3 +32,8 @@ linters:
     - godot
     - godox
     - maligned
+    - nlreturn
+    - exhaustivestruct
+    - gofumpt
+    - gci
+    - wrapcheck # enable in the future

@@ -25,7 +25,7 @@ import (
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-//Command creates the version cobra command
+// Command creates the version cobra command
 func Command() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version",
@@ -44,7 +44,7 @@ func doVersion(_ *cobra.Command) error {
 	if err != nil {
 		return fmt.Errorf("marshalling version information: %w", err)
 	}
-	fmt.Println(string(outYaml))
+	fmt.Println(string(outYaml)) //nolint:forbidigo
 
 	return nil
 }
