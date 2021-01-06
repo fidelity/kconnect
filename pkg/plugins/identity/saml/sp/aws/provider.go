@@ -268,7 +268,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, rol
 	}
 	if err := survey.AskOne(prompt, &selectedRole, survey.WithValidator(survey.Required)); err != nil {
 		if errors.Is(err, terminal.InterruptErr) {
-			fmt.Println("Received interrupt, exiting..")
+			zap.S().Info("Received interrupt, exiting..")
 			os.Exit(0)
 		}
 		return nil, fmt.Errorf("asking for role: %w", err)
