@@ -7,6 +7,21 @@
 
 <em>NOTE:</em> `kconnect` requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to authenticate to the AWS EKS cluster provider.
 
+
+## kubectl plugin
+
+To install as a kubectl plugin:
+
+```bash
+kubectl krew index add fidelity https://github.com/fidelity/krew-index.git
+kubectl krew install fidelity/connect
+```
+
+You can then run like so:
+```bash
+kubectl connect use eks
+```
+
 ## Mac
 
 To install on OSX you can use homebrew:
