@@ -29,10 +29,10 @@ spec:
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_linux_amd64.tar.gz" .TagName }}
     files:
     - from: "kconnect"
-      to: "kubectl-kconnect"
+      to: "kubectl-connect"
     - from: "LICENSE"
       to: "."
-    bin: kubectl-kconnect
+    bin: kubectl-connect
   - selector:
       matchLabels:
         os: linux
@@ -40,10 +40,10 @@ spec:
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_linux_arm.tar.gz" .TagName }}
     files:
     - from: "kconnect"
-      to: "kubectl-kconnect"
+      to: "kubectl-connect"
     - from: "LICENSE"
       to: "."
-    bin: kubectl-kconnect
+    bin: kubectl-connect
   - selector:
       matchLabels:
         os: linux
@@ -51,10 +51,10 @@ spec:
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_linux_arm64.tar.gz" .TagName }}
     files:
     - from: "kconnect"
-      to: "kubectl-kconnect"
+      to: "kubectl-connect"
     - from: "LICENSE"
       to: "."
-    bin: kubectl-kconnect
+    bin: kubectl-connect
   - selector:
       matchLabels:
         os: darwin
@@ -62,10 +62,10 @@ spec:
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_macos_amd64.tar.gz" .TagName }}
     files:
     - from: "kconnect"
-      to: "kubectl-kconnect"
+      to: "kubectl-connect"
     - from: "LICENSE"
       to: "."
-    bin: kubectl-kconnect
+    bin: kubectl-connect
   - selector:
       matchLabels:
         os: windows
@@ -73,7 +73,7 @@ spec:
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_windows_amd64.zip" .TagName }}
     files:
     - from: "kconnect.exe"
-      to: "kubectl-kconnect.exe"
+      to: "kubectl-connect.exe"
     - from: "LICENSE"
       to: "."
-    bin: kubectl-kconnect.exe
+    bin: kubectl-connect.exe

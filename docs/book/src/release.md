@@ -26,6 +26,11 @@ git push origin 0.3.0
 6. Go to GitHub and check on the **goreleaser** [action](https://github.com/fidelity/kconnect/actions?query=workflow%3Agoreleaser). This action is what does the actual release.
 7. Once the **goreleaser** action completes go to the [releases on GitHub](https://github.com/fidelity/kconnect/releases) and check the release is available.
 8. Click **Edit** next to the release and tidy up the **Changelog** entries. If there are any breaking changes then a new markdown section should be added to the top that documents this.
+9. Locally on your machine, run this command:
+```bash
+sudo docker run -v /path/to/repo/.krew.yaml:/tmp/template-file.yaml rajatjindal/krew-release-bot:v0.0.38 krew-release-bot template --tag 0.3.0 --template-file /tmp/template-file.yaml
+```
+10. Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob.main/kconnect.yaml with the output you just obtainted (note: these manual steps will be automated in future)
 
 ## Implementation
 
