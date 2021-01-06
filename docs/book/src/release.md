@@ -30,7 +30,7 @@ git push origin 0.3.0
 ```bash
 sudo docker run -v /path/to/repo/.krew.yaml:/tmp/template-file.yaml rajatjindal/krew-release-bot:v0.0.38 krew-release-bot template --tag 0.3.0 --template-file /tmp/template-file.yaml
 ```
-10. Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob.main/kconnect.yaml with the output you just obtainted (note: these manual steps will be automated in future)
+10. Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob/main/plugins/connect.yaml with the output you just obtainted (note: these manual steps will be automated in future)
 
 ## Implementation
 
