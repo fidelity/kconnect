@@ -36,5 +36,3 @@ jobs:
                   args: release --rm-dist
               env:
                   GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-            - name: Update new version in krew-index
-              uses: rajatjindal/krew-release-bot@v0.0.38
