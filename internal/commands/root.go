@@ -269,9 +269,11 @@ func reportNewerVersion() error {
 		}
 	} else {
 		zap.S().Debugw("latest version not retrieved as check interval not exceeded", "diffMins", checkDiff.Minutes(), "savedVersion", cfg.Spec.VersionCheck.LatestReleaseVersion)
-		latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
-		if err != nil {
-			return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
+		if cfg.Spec.VersionCheck.LatestReleaseVersion != nil && *cfg.Spec.VersionCheck.LatestReleaseVersion != "" {
+			latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
+			if err != nil {
+				return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
+			}
 		}
 	}
 

@@ -82,6 +82,7 @@ nfpms:
     package_name: kconnect
     replacements:
       darwin: macos
+    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     vendor: kconnect authors
     homepage: https://github.com/fidelity/kconnect
     description: "The Kubernetes Connection Manager CLI"
