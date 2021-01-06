@@ -194,6 +194,12 @@ git pull
 <li>Go to GitHub and check on the <strong>goreleaser</strong> <a href="https://github.com/fidelity/kconnect/actions?query=workflow%3Agoreleaser">action</a>. This action is what does the actual release.</li>
 <li>Once the <strong>goreleaser</strong> action completes go to the <a href="https://github.com/fidelity/kconnect/releases">releases on GitHub</a> and check the release is available.</li>
 <li>Click <strong>Edit</strong> next to the release and tidy up the <strong>Changelog</strong> entries. If there are any breaking changes then a new markdown section should be added to the top that documents this.</li>
+<li>Locally on your machine, run this command:</li>
+</ol>
+<pre><code class="language-bash">sudo docker run -v /path/to/repo/.krew.yaml:/tmp/template-file.yaml rajatjindal/krew-release-bot:v0.0.38 krew-release-bot template --tag 0.3.0 --template-file /tmp/template-file.yaml
+</code></pre>
+<ol start="10">
+<li>Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob/main/plugins/connect.yaml with the output you just obtainted (note: these manual steps will be automated in future)</li>
 </ol>
 <h2><a class="header" href="#implementation" id="implementation">Implementation</a></h2>
 <p>We use <a href="https://goreleaser.com/">goreleaser</a> to do the majority of the build, packaging and release. The <a href="https://github.com/fidelity/kconnect/blob/main/.goreleaser.yml">.goreleaser.yml</a> configuration file drives this.</p>
