@@ -38,6 +38,7 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
+	"github.com/fidelity/kconnect/internal/commands/util"
 	"github.com/fidelity/kconnect/internal/commands/version"
 	"github.com/fidelity/kconnect/internal/defaults"
 	appver "github.com/fidelity/kconnect/internal/version"
@@ -192,6 +193,12 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating logout command: %w", err)
 	}
 	rootCmd.AddCommand(logoutCmd)
+
+	utilCmd, err := util.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating util command: %w", err)
+	}
+	rootCmd.AddCommand(utilCmd)
 
 	cobra.OnInitialize(initConfig)
 

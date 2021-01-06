@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 type FilterSpec struct {
@@ -105,7 +106,7 @@ func ByAlias(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 		return true
 	}
 
-	return *entry.Spec.Alias == *spec.Alias
+	return utils.SurveyFilter(*spec.Alias, *entry.Spec.Alias, 0)
 }
 
 func ByClusterProvider(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {

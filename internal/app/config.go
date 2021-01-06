@@ -149,9 +149,13 @@ func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("provider-id", "", "Provider specific for a cluster"); err != nil {
 		return fmt.Errorf("adding provider-id config: %w", err)
 	}
+	if _, err := cs.String("alias-filter", "", "A filter to use against the aliases"); err != nil {
+		return fmt.Errorf("adding alias-filter config: %w", err)
+	}
 	cs.SetHistoryIgnore("cluster-provider")  //nolint
 	cs.SetHistoryIgnore("identity-provider") //nolint
 	cs.SetHistoryIgnore("provider-id")       //nolint
+	cs.SetHistoryIgnore("alias-filter")      //nolint
 	return nil
 
 }

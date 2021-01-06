@@ -36,9 +36,10 @@ type HistoryQueryInput struct {
 	ClusterProvider  *string `json:"cluster-provider,omitempty"`
 	IdentityProvider *string `json:"identity-provider,omitempty"`
 
-	ProviderID *string `json:"provider-id,omitempty"`
-	HistoryID  *string `json:"id,omitempty"`
-	Alias      *string `json:"alias,omitempty"`
+	ProviderID  *string `json:"provider-id,omitempty"`
+	HistoryID   *string `json:"id,omitempty"`
+	Alias       *string `json:"alias,omitempty"`
+	AliasFilter *string `json:"alias-filter,omitempty"`
 
 	Flags map[string]string `json:"flags,omitempty"`
 
@@ -50,13 +51,21 @@ type HistoryQueryInput struct {
 func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) error {
 	zap.S().Debug("querying history")
 
+	if input.Alias != nil && *input.Alias != "" && input.AliasFilter != nil && *input.AliasFilter != "" {
+		return ErrAliasAndFilterNotAllowed
+	}
+	alias := input.Alias
+	if alias == nil || *alias == "" {
+		alias = input.AliasFilter
+	}
+
 	list, err := a.historyStore.GetAllSortedByLastUsed()
 	if err != nil {
 		return fmt.Errorf("getting history entries: %w", err)
 	}
 
 	filterSpec := &history.FilterSpec{
-		Alias:            input.Alias,
+		Alias:            alias,
 		ClusterProvider:  input.ClusterProvider,
 		Flags:            input.Flags,
 		HistoryID:        input.HistoryID,
