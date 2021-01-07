@@ -36,7 +36,7 @@ import (
 
 var (
 	ErrMissingProvider       = errors.New("required provider name argument")
-	ErrMissingIdpProtocol    = errors.New("missing idp protocol, please use --idp-protocol")
+	ErrMissingIdpProtocol    = errors.New("missing idp protocol")
 	ErrMustBeDirectory       = errors.New("specified config directory is not a directory")
 	ErrUnsuportedIdpProtocol = errors.New("unsupported idp protocol")
 )
@@ -137,13 +137,14 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		Long:    providerLongDesc,
 		Example: providerUsageExample,
 		AdditionalSetupE: func(cmd *cobra.Command, args []string) error {
-			if err := setupIdpProtocol(os.Args, params); err != nil {
+			if err := setupIdpProtocol(cmd, os.Args, params); err != nil {
 				return fmt.Errorf("additional command setup: %w", err)
 			}
 
 			if err := flags.CreateCommandFlags(cmd, params.Context.ConfigurationItems()); err != nil {
 				return err
 			}
+
 			return nil
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -232,19 +233,25 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	return nil
 }
 
-func setupIdpProtocol(args []string, params *app.UseParams) error {
-	idpProtocol, err := getIdpProtocol(args, params)
+func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseParams) error {
+	idpProtocol, hasFlagValue, err := getIdpProtocol(args, params)
 	if err != nil {
 		return fmt.Errorf("getting idp-protocol: %w", err)
 	}
 
 	if idpProtocol == "" {
-		return nil
+		return ErrMissingIdpProtocol
 	}
 
 	if !isIdpSupported(idpProtocol, params.Provider) {
 		zap.S().Warnw("Unsupported IdP protocol", "allowed", params.Provider.SupportedIDs(), "used", idpProtocol)
 		return fmt.Errorf("using identity provider %s: %w", idpProtocol, ErrUnsuportedIdpProtocol)
+	}
+	params.IdpProtocol = idpProtocol
+	if !hasFlagValue {
+		// If the flag wasn't supplied and we are using a default then
+		// set the value on the commnads flag
+		cmd.Flags().Set("idp-protocol", idpProtocol)
 	}
 
 	idProvider, err := provider.GetIdentityProvider(idpProtocol)
@@ -282,26 +289,27 @@ func preRun(params *app.UseParams) error {
 	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems(), params.Identity)
 }
 
-func getIdpProtocol(args []string, params *app.UseParams) (string, error) {
+func getIdpProtocol(args []string, params *app.UseParams) (string, bool, error) {
 	// look for a flag first
 	for i, arg := range args {
 		if arg == "--idp-protocol" {
-			return args[i+1], nil
+			return args[i+1], true, nil
 		}
 	}
 
 	// look in app config
 	idProtocol, err := config.GetValue("idp-protocol", params.Provider.Name())
 	if err != nil {
-		return "", fmt.Errorf("getting idp-protocol from config: %w", err)
+		return "", false, fmt.Errorf("getting idp-protocol from config: %w", err)
 	}
 	// Default to the first supported provider if empty
 	if idProtocol == "" {
 		supportedIDProviders := params.Provider.SupportedIDs()
 		idProtocol = supportedIDProviders[0]
+		zap.S().Debugw("no idp-protocol, using default for provider", "idp-protocol", idProtocol)
 	}
 
-	return idProtocol, nil
+	return idProtocol, false, nil
 }
 
 func isIdpSupported(idProviderName string, clusterprovider provider.ClusterProvider) bool {
