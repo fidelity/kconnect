@@ -43,7 +43,7 @@ kconnect [flags]
   #
   # Use this command to set up kconnect the first time you use it on a new system.
   #
-  kconnect configure -f FILE_OR_URL
+  kconnect config -f FILE_OR_URL
 
   # Create a kubectl confirguration context for an AWS EKS cluster.
   #
@@ -84,7 +84,7 @@ kconnect [flags]
 ### SEE ALSO
 
 * [kconnect alias](alias.md)	 - Query and manipulate connection history entry aliases.
-* [kconnect configure](configure.md)	 - Set and view your kconnect configuration.
+* [kconnect config](config.md)	 - Set and view your kconnect configuration.
 * [kconnect logout](logout.md)	 - Logs out of a cluster
 * [kconnect ls](ls.md)	 - Query the user's connection history
 * [kconnect to](to.md)	 - Reconnect to a connection history entry.
