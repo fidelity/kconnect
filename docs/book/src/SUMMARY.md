@@ -8,7 +8,7 @@
     - [add](./commands/alias_add.md)
     - [ls](./commands/alias_ls.md)
     - [remove](./commands/alias_remove.md)
-  - [configure](./commands/configure.md)
+  - [config](./commands/config.md)
   - [ls](./commands/ls.md)
   - [to](./commands/to.md)
   - [use](./commands/use.md)

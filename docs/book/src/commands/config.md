@@ -1,4 +1,4 @@
-## kconnect configure
+## kconnect config
 
 Set and view your kconnect configuration.
 
@@ -19,7 +19,7 @@ kconnect.
 
 
 ```bash
-kconnect configure [flags]
+kconnect config [flags]
 ```
 
 ### Examples
@@ -27,19 +27,19 @@ kconnect configure [flags]
 ```bash
 
   # Display user's current configurations
-  kconnect configure
+  kconnect config
 
   # Display the user's configurations as json
-  kconnect configure --output json
+  kconnect config --output json
 
   # Set the user's configurations from a local file
-  kconnect configure -f ./defaults.yaml
+  kconnect config -f ./defaults.yaml
 
   # Set the user's configurations from a remote location via HTTP
-  kconnect configure -f https://mycompany.com/config.yaml
+  kconnect config -f https://mycompany.com/config.yaml
 
   # Set the user's configurations from stdin
-  cat ./config.yaml | kconnect configure -f -
+  cat ./config.yaml | kconnect config -f -
 
 ```
 
@@ -47,7 +47,7 @@ kconnect configure [flags]
 
 ```bash
   -f, --file string     File or remote location to use to set the default configuration
-  -h, --help            help for configure
+  -h, --help            help for config
       --output string   Controls the output format for the result. (default "yaml")
 ```
 

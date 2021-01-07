@@ -251,7 +251,7 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseParams) 
 	if !hasFlagValue {
 		// If the flag wasn't supplied and we are using a default then
 		// set the value on the commnads flag
-		cmd.Flags().Set("idp-protocol", idpProtocol)
+		cmd.Flags().Set("idp-protocol", idpProtocol) //nolint: errcheck
 	}
 
 	idProvider, err := provider.GetIdentityProvider(idpProtocol)
