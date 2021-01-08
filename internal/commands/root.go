@@ -34,6 +34,7 @@ import (
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	configcmd "github.com/fidelity/kconnect/internal/commands/config"
+	"github.com/fidelity/kconnect/internal/commands/logout"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
@@ -199,6 +200,12 @@ func RootCmd() (*cobra.Command, error) { //nolint: funlen
 	}
 	rootCmd.AddCommand(aliasCmd)
 
+	logoutCmd, err := logout.Command()
+	if err != nil {
+		return nil, fmt.Errorf("creating logout command: %w", err)
+	}
+	rootCmd.AddCommand(logoutCmd)
+
 	cobra.OnInitialize(initConfig)
 
 	return rootCmd, nil
@@ -283,9 +290,11 @@ func reportNewerVersion() error {
 		}
 	} else {
 		zap.S().Debugw("latest version not retrieved as check interval not exceeded", "diffMins", checkDiff.Minutes(), "savedVersion", cfg.Spec.VersionCheck.LatestReleaseVersion)
-		latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
-		if err != nil {
-			return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
+		if cfg.Spec.VersionCheck.LatestReleaseVersion != nil && *cfg.Spec.VersionCheck.LatestReleaseVersion != "" {
+			latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
+			if err != nil {
+				return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
+			}
 		}
 	}
 
