@@ -27,7 +27,7 @@ import (
 func FormatCommand(cmd *cobra.Command) {
 
 	rootCmdName := "kconnect"
-	// If running as a krew plugin, need to change useage output
+	// If running as a krew plugin, need to change usage output
 	if isKrewPlugin() {
 		rootCmdName = "kubectl connect"
 		// Only change this for root command
@@ -42,11 +42,7 @@ func FormatCommand(cmd *cobra.Command) {
 }
 
 func isKrewPlugin() bool {
-	if strings.HasPrefix(filepath.Base(os.Args[0]), "kubectl-") { 
-		return true
-	} else {
-		return false
-	}
+	return strings.HasPrefix(filepath.Base(os.Args[0]), "kubectl-")
 }
 
 func formatMessage(message, rootCmdName string) string {
