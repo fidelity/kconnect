@@ -34,7 +34,6 @@ import (
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	"github.com/fidelity/kconnect/internal/commands/configure"
-	"github.com/fidelity/kconnect/internal/commands/logout"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
@@ -43,6 +42,7 @@ import (
 	appver "github.com/fidelity/kconnect/internal/version"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -75,39 +75,39 @@ can then display their connection history entries and reconnect to any entry by
 its unique ID (or by a user-friendly alias) to refresh an expired access token
 for that cluster.
 `
-	examples = `
+	examplesTemplate = `
   # Display a help screen with kconnect commands.
-  kconnect help
+  {{.CommandPath}} help
 
   # Configure the default identity provider and connection profile for your user.
   #
   # Use this command to set up kconnect the first time you use it on a new system.
   #
-  kconnect configure -f FILE_OR_URL
+  {{.CommandPath}} configure -f FILE_OR_URL
 
   # Create a kubectl confirguration context for an AWS EKS cluster.
   #
   # Use this command the first time you connect to a new cluster or a new context.
   #
-  kconnect use eks
+  {{.CommandPath}} use eks
 
   # Display connection history entries.
   #
-  kconnect ls
+  {{.CommandPath}} ls
 
   # Add an alias to a connection history entry.
   #
-  kconnect alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
+  {{.CommandPath}} alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
 
   # Reconnect and refresh the token for an aliased connection history entry.
   #
   # Use this to reconnect to a provider and refresh an expired access token.
   #
-  kconnect to MYALIAS
+  {{.CommandPath}} to MYALIAS
 
   # Display connection history entry aliases.
   #
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 `
 )
 
@@ -119,7 +119,7 @@ func RootCmd() (*cobra.Command, error) {
 		Use:     "kconnect",
 		Short:   shortDesc,
 		Long:    longDesc,
-		Example: examples,
+		Example: examplesTemplate,
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
 				zap.S().Debugw("ingoring cobra error",
@@ -144,7 +144,8 @@ func RootCmd() (*cobra.Command, error) {
 			return nil
 		},
 	}
-
+	utils.FormatCommand(rootCmd)
+	
 	if err := ensureAppDirectory(); err != nil {
 		return nil, fmt.Errorf("ensuring app directory exists: %w", err)
 	}
@@ -186,12 +187,6 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating alias command: %w", err)
 	}
 	rootCmd.AddCommand(aliasCmd)
-
-	logoutCmd, err := logout.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating logout command: %w", err)
-	}
-	rootCmd.AddCommand(logoutCmd)
 
 	cobra.OnInitialize(initConfig)
 
@@ -269,11 +264,9 @@ func reportNewerVersion() error {
 		}
 	} else {
 		zap.S().Debugw("latest version not retrieved as check interval not exceeded", "diffMins", checkDiff.Minutes(), "savedVersion", cfg.Spec.VersionCheck.LatestReleaseVersion)
-		if cfg.Spec.VersionCheck.LatestReleaseVersion != nil && *cfg.Spec.VersionCheck.LatestReleaseVersion != "" {
-			latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
-			if err != nil {
-				return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
-			}
+		latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
+		if err != nil {
+			return fmt.Errorf("parsing saved latest release version %s: %w", *cfg.Spec.VersionCheck.LatestReleaseVersion, err)
 		}
 	}
 

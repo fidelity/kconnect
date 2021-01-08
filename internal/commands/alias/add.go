@@ -28,6 +28,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
@@ -40,23 +41,23 @@ the alias instead of the connection history entry's unique ID.
 `
 	examplesAdd = `
   # Add an alias to a connection history entry
-  kconnect alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
+  {{.CommandPath}} alias add --id 01EMEM5DB60TMX7D8SS2JCX3MT --alias dev-bu-1
 
   # Connect to a cluster using the alias
-  kconnect to dev-bu-1
+  {{.CommandPath}} to dev-bu-1
 
   # List available aliases
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 
   # List available history entries - includes aliases
-  kconnect ls
+  {{.CommandPath}} ls
 `
 )
 
 func addCommand() (*cobra.Command, error) { //nolint: dupl
 	cfg := config.NewConfigurationSet()
 
-	lsCmd := &cobra.Command{
+	addCmd := &cobra.Command{
 		Use:     "add",
 		Short:   shortDescAdd,
 		Long:    longDescAdd,
@@ -97,16 +98,17 @@ func addCommand() (*cobra.Command, error) { //nolint: dupl
 			return a.AliasAdd(ctx, params)
 		},
 	}
+	utils.FormatCommand(addCmd)
 
 	if err := addConfigAdd(cfg); err != nil {
 		return nil, fmt.Errorf("adding add command config: %w", err)
 	}
 
-	if err := flags.CreateCommandFlags(lsCmd, cfg); err != nil {
+	if err := flags.CreateCommandFlags(addCmd, cfg); err != nil {
 		return nil, err
 	}
 
-	return lsCmd, nil
+	return addCmd, nil
 
 }
 

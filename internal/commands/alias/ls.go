@@ -28,6 +28,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -40,19 +41,19 @@ An alias is a user-friendly name for a connection history entry.
 `
 	examplesLs = `
   # Display all the aliases as a table
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 
   # Display all connection history entry aliases as a table
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 
   # Display all connection history entry aliases as json
-  kconnect alias ls --output json
+  {{.CommandPath}} alias ls --output json
 
   # Connect to a cluster using a connection history entry alias
-  kconnect to ${alias}
+  {{.CommandPath}} to ${alias}
 
   # List all connection history entries as a table - includes aliases
-  kconnect ls
+  {{.CommandPath}} ls
 `
 )
 
@@ -100,6 +101,7 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 			return a.AliasList(ctx, params)
 		},
 	}
+	utils.FormatCommand(lsCmd)
 
 	if err := addConfigLs(cfg); err != nil {
 		return nil, fmt.Errorf("add ls command config: %w", err)

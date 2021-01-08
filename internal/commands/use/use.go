@@ -32,6 +32,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -77,17 +78,17 @@ specified cluster provider.
 `
 	usageExample = `
   # Connect to EKS and choose an available EKS cluster.
-  kconnect use eks
+  {{.CommandPath}} use eks
 
   # Connect to an EKS cluster and create an alias for its connection history entry.
-  kconnect use eks --alias mycluster
+  {{.CommandPath}} use eks --alias mycluster
 `
 	usageExampleFoot = `
   # Reconnect to a cluster by its connection history entry alias.
-  kconnect to mycluster
+  {{.CommandPath}} to mycluster
 
   # Display the user's connection history as a table.
-  kconnect ls
+  {{.CommandPath}} ls
 `
 )
 
@@ -105,6 +106,7 @@ func Command() (*cobra.Command, error) {
 			}
 		},
 	}
+	utils.FormatCommand(useCmd)
 
 	// Add the provider subcommands
 	for _, provider := range provider.ListClusterProviders() {

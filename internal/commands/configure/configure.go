@@ -25,6 +25,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
@@ -44,19 +45,19 @@ kconnect.
 `
 	examples = `
   # Display user's current configurations
-  kconnect configure
+  {{.CommandPath}} configure
 
   # Display the user's configurations as json
-  kconnect configure --output json
+  {{.CommandPath}} configure --output json
 
   # Set the user's configurations from a local file
-  kconnect configure -f ./defaults.yaml
+  {{.CommandPath}} configure -f ./defaults.yaml
 
   # Set the user's configurations from a remote location via HTTP
-  kconnect configure -f https://mycompany.com/config.yaml
+  {{.CommandPath}} configure -f https://mycompany.com/config.yaml
 
   # Set the user's configurations from stdin
-  cat ./config.yaml | kconnect configure -f -
+  cat ./config.yaml | {{.CommandPath}} configure -f -
 `
 )
 
@@ -94,6 +95,7 @@ func Command() (*cobra.Command, error) {
 			return a.Configuration(ctx, params)
 		},
 	}
+	utils.FormatCommand(cfgCmd)
 
 	if err := addConfig(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
