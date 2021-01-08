@@ -146,7 +146,7 @@ func RootCmd() (*cobra.Command, error) {
 		},
 	}
 	utils.FormatCommand(rootCmd)
-	
+
 	if err := ensureAppDirectory(); err != nil {
 		return nil, fmt.Errorf("ensuring app directory exists: %w", err)
 	}
