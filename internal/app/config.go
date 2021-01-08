@@ -23,6 +23,11 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
+const (
+	NoInputConfigItem        = "no-input"
+	NonInteractiveConfigItem = "non-interactive"
+)
+
 type HistoryLocationConfig struct {
 	Location string `json:"history-location"`
 }
@@ -82,7 +87,7 @@ func AddKubeconfigConfigItems(cs config.ConfigurationSet) error {
 type CommonConfig struct {
 	ConfigFile          string `json:"config"`
 	Verbosity           int    `json:"verbosity"`
-	Interactive         bool   `json:"non-interactive"`
+	NoInput             bool   `json:"no-input"`
 	DisableVersionCheck bool   `json:"no-version-check"`
 }
 
@@ -93,17 +98,23 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.Int("verbosity", 0, "Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace."); err != nil {
 		return fmt.Errorf("adding verbosity config: %w", err)
 	}
-	if _, err := cs.Bool("non-interactive", false, "Run without interactive flag resolution"); err != nil {
+	if _, err := cs.Bool(NonInteractiveConfigItem, false, "Run without interactive flag resolution"); err != nil {
 		return fmt.Errorf("adding non-interactive config: %w", err)
+	}
+	if _, err := cs.Bool(NoInputConfigItem, false, "Explicitly disable interactivity when running in a terminal"); err != nil {
+		return fmt.Errorf("adding no-input config: %w", err)
 	}
 	if _, err := cs.Bool("no-version-check", false, "If set to true kconnect will not check for a newer version"); err != nil {
 		return fmt.Errorf("adding non-version-check config: %w", err)
 	}
-	cs.SetShort("verbosity", "v")           //nolint
-	cs.SetHistoryIgnore("config")           //nolint
-	cs.SetHistoryIgnore("verbosity")        //nolint
-	cs.SetHistoryIgnore("non-interactive")  //nolint
-	cs.SetHistoryIgnore("no-version-check") //nolint
+	cs.SetShort("verbosity", "v")                                       //nolint
+	cs.SetHistoryIgnore("config")                                       //nolint
+	cs.SetHistoryIgnore("verbosity")                                    //nolint
+	cs.SetHistoryIgnore(NonInteractiveConfigItem)                       //nolint
+	cs.SetHistoryIgnore(NoInputConfigItem)                              //nolint
+	cs.SetHistoryIgnore("no-version-check")                             //nolint
+	cs.SetDeprecated(NonInteractiveConfigItem, "please use --no-input") //nolint
+
 	return nil
 }
 
