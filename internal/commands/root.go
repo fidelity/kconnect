@@ -33,7 +33,7 @@ import (
 
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
-	"github.com/fidelity/kconnect/internal/commands/configure"
+	configcmd "github.com/fidelity/kconnect/internal/commands/config"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
@@ -83,7 +83,7 @@ for that cluster.
   #
   # Use this command to set up kconnect the first time you use it on a new system.
   #
-  {{.CommandPath}} configure -f FILE_OR_URL
+  {{.CommandPath}} config -f FILE_OR_URL
 
   # Create a kubectl confirguration context for an AWS EKS cluster.
   #
@@ -175,9 +175,9 @@ func RootCmd() (*cobra.Command, error) {
 		return nil, fmt.Errorf("creating ls command: %w", err)
 	}
 	rootCmd.AddCommand(lsCmd)
-	cfgCmd, err := configure.Command()
+	cfgCmd, err := configcmd.Command()
 	if err != nil {
-		return nil, fmt.Errorf("creating configure command: %w", err)
+		return nil, fmt.Errorf("creating config command: %w", err)
 	}
 	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())

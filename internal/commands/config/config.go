@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package configure
+package config
 
 import (
 	"fmt"
@@ -45,19 +45,19 @@ kconnect.
 `
 	examples = `
   # Display user's current configurations
-  {{.CommandPath}} configure
+  kconnect config
 
   # Display the user's configurations as json
-  {{.CommandPath}} configure --output json
+  {{.CommandPath}} config --output json
 
   # Set the user's configurations from a local file
-  {{.CommandPath}} configure -f ./defaults.yaml
+  {{.CommandPath}} config -f ./defaults.yaml
 
   # Set the user's configurations from a remote location via HTTP
-  {{.CommandPath}} configure -f https://mycompany.com/config.yaml
+  {{.CommandPath}} config -f https://mycompany.com/config.yaml
 
   # Set the user's configurations from stdin
-  cat ./config.yaml | {{.CommandPath}} configure -f -
+  cat ./config.yaml | kconnect {{.CommandPath}} -f -
 `
 )
 
@@ -65,7 +65,8 @@ func Command() (*cobra.Command, error) {
 	cfg := config.NewConfigurationSet()
 
 	cfgCmd := &cobra.Command{
-		Use:     "configure",
+		Use:     "config",
+		Aliases: []string{"configure"},
 		Short:   shortDesc,
 		Long:    longDesc,
 		Example: examples,
