@@ -28,6 +28,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -41,26 +42,26 @@ the user's connection history.
 `
 	examplesRemove = `
   # Remove an alias using the alias name
-  kconnect alias remove --alias dev-bu-1
+  {{.CommandPath}} alias remove --alias dev-bu-1
 
   # Remove an alias using a histiry entry id
-  kconnect alias remove --id 01EMEM5DB60TMX7D8SS2JCX3MT
+  {{.CommandPath}} alias remove --id 01EMEM5DB60TMX7D8SS2JCX3MT
 
   # Remove all aliases
-  kconnect alias remove --all
+  {{.CommandPath}} alias remove --all
 
   # List available aliases
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 
   # Query your connection history - includes aliases
-  kconnect ls
+  {{.CommandPath}} ls
 `
 )
 
 func removeCommand() (*cobra.Command, error) { //nolint: dupl
 	cfg := config.NewConfigurationSet()
 
-	lsCmd := &cobra.Command{
+	rmCmd := &cobra.Command{
 		Use:     "remove",
 		Short:   shortDescRemove,
 		Long:    longDescRemove,
@@ -101,16 +102,17 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 			return a.AliasRemove(ctx, params)
 		},
 	}
+	utils.FormatCommand(rmCmd)
 
 	if err := addConfigRemove(cfg); err != nil {
 		return nil, fmt.Errorf("add remove command config: %w", err)
 	}
 
-	if err := flags.CreateCommandFlags(lsCmd, cfg); err != nil {
+	if err := flags.CreateCommandFlags(rmCmd, cfg); err != nil {
 		return nil, err
 	}
 
-	return lsCmd, nil
+	return rmCmd, nil
 
 }
 

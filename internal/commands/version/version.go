@@ -23,6 +23,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/fidelity/kconnect/internal/version"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 // Command creates the version cobra command
@@ -34,6 +35,7 @@ func Command() *cobra.Command {
 			return doVersion(cmd)
 		},
 	}
+	utils.FormatCommand(versionCmd)
 
 	return versionCmd
 }

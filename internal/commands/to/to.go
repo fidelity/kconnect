@@ -29,6 +29,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -54,27 +55,27 @@ Otherwise kconnect will promot the user to enter their password.
 `
 	examples = `
   # Reconnect based on an alias - aliases can be found using kconnect ls
-  kconnect to uat-bu1
+  {{.CommandPath}} to uat-bu1
 
   # Reconnect based on an history id - history id can be found using kconnect ls
-  kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
+  {{.CommandPath}} to 01EM615GB2YX3C6WZ9MCWBDWBF
 
   # Reconnect interactively from history list
-  kconnect to
+  {{.CommandPath}} to
 
   # Reconnect to current cluster (this is useful for renewing credentials)
-  kconnect to -
+  {{.CommandPath}} to -
   OR
-  kconnect to LAST
+  {{.CommandPath}} to LAST
 
   # Reconnect to cluster used before current one
-  kconnect to LAST~1
+  {{.CommandPath}} to LAST~1
 
   # Reconnect based on an alias supplying a password
-  kconnect to uat-bu1 --password supersecret
+  {{.CommandPath}} to uat-bu1 --password supersecret
 
   # Reconnect based on an alias supplying a password via env var
-  KCONNECT_PASSWORD=supersecret kconnect to uat-bu2
+  KCONNECT_PASSWORD=supersecret {{.CommandPath}} to uat-bu2
  `
 )
 
@@ -124,6 +125,7 @@ func Command() (*cobra.Command, error) {
 			return a.ConnectTo(params)
 		},
 	}
+	utils.FormatCommand(toCmd)
 
 	if err := addConfig(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)

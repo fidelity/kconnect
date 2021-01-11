@@ -25,6 +25,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -79,6 +80,7 @@ func Command() (*cobra.Command, error) {
 			return a.Logout(params)
 		},
 	}
+	utils.FormatCommand(logoutCmd)
 
 	if err := addConfig(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
