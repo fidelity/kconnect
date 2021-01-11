@@ -165,3 +165,20 @@ func GetFlagValueDirect(args []string, longName, shortName string) (string, erro
 	// look in app config
 	return config.GetValue(longName, "")
 }
+
+func CopyFlagValue(sourceFlagName, destinationFlagName string, fs *pflag.FlagSet, ignoreNotFound bool) error {
+	sourceFlag := fs.Lookup(sourceFlagName)
+	if sourceFlag == nil && !ignoreNotFound {
+		return fmt.Errorf("getting source flag %s: %w", sourceFlagName, ErrFlagNotFound)
+	}
+	destinationFlag := fs.Lookup(destinationFlagName)
+	if destinationFlag == nil && !ignoreNotFound {
+		return fmt.Errorf("getting destination flag %s: %w", destinationFlagName, ErrFlagNotFound)
+	}
+
+	if sourceFlag != nil && sourceFlag.Changed && destinationFlag != nil {
+		destinationFlag.Value = sourceFlag.Value
+	}
+
+	return nil
+}

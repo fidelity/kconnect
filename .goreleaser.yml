@@ -65,12 +65,22 @@ brews:
 
 dockers:
   -
+    dockerfile: Dockerfile
     image_templates:
     - "docker.io/kconnectcli/kconnect:latest"
     - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
-    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-{{ .ShortCommit }}"
     - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
-    - "docker.io/kconnectcli/kconnect:{{ .ShortCommit }}"
+    build_flag_templates:
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    dockerfile: Dockerfile.alpine
+    image_templates:
+    - "docker.io/kconnectcli/kconnect:latest-alpine"
+    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-alpine"
+    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}-alpine"
     build_flag_templates:
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"

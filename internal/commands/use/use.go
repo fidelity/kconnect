@@ -276,11 +276,8 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseParams) 
 }
 
 func preRun(params *app.UseParams) error {
-	// Update the context now the flags have been parsed
-	interactive := isInteractive(params.Context.ConfigurationItems())
-
 	params.Context = provider.NewContext(
-		provider.WithInteractive(interactive),
+		provider.WithInteractive(!params.NoInput),
 		provider.WithConfig(params.Context.ConfigurationItems()),
 	)
 
@@ -326,17 +323,6 @@ func isIdpSupported(idProviderName string, clusterprovider provider.ClusterProvi
 	}
 
 	return false
-}
-
-func isInteractive(cs config.ConfigurationSet) bool {
-	item := cs.Get("non-interactive")
-	if item == nil {
-		return true
-	}
-
-	value := item.Value.(bool)
-
-	return !value
 }
 
 func ensureConfigFolder(path string) error {

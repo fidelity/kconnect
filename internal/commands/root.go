@@ -113,7 +113,7 @@ for that cluster.
 )
 
 // RootCmd creates the root kconnect command
-func RootCmd() (*cobra.Command, error) {
+func RootCmd() (*cobra.Command, error) { //nolint: funlen
 	cfg = config.NewConfigurationSet()
 
 	rootCmd := &cobra.Command{
@@ -128,7 +128,18 @@ func RootCmd() (*cobra.Command, error) {
 					err.Error())
 			}
 		},
-		PreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			inTerminal := isRunningInTerminal()
+			if !inTerminal {
+				zap.S().Debug("Not running in a terminal, setting no-input to true")
+				cmd.Flags().Set(app.NoInputConfigItem, "true") //nolint: errcheck
+				return nil
+			}
+
+			if err := flags.CopyFlagValue(app.NonInteractiveConfigItem, app.NoInputConfigItem, cmd.Flags(), true); err != nil {
+				return fmt.Errorf("copying flag value from %s to %s: %w", app.NonInteractiveConfigItem, app.NoInputConfigItem, err)
+			}
+
 			return nil
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
@@ -222,6 +233,14 @@ func ensureAppDirectory() error {
 	}
 
 	return nil
+}
+
+func isRunningInTerminal() bool {
+	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) != 0 {
+		return true
+	}
+
+	return false
 }
 
 func reportNewerVersion() error {

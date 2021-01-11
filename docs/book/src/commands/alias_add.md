@@ -46,8 +46,8 @@ kconnect alias add [flags]
 ```bash
       --config string             Configuration file for application wide defaults. (default "$HOME/.kconnect/config.yaml")
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
+      --no-input                  Explicitly disable interactivity when running in a terminal
       --no-version-check          If set to true kconnect will not check for a newer version
-      --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 ```
 
