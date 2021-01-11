@@ -106,6 +106,7 @@ func Command() (*cobra.Command, error) {
 			}
 		},
 	}
+	utils.FormatCommand(useCmd)
 
 	utils.FormatCommand(useCmd)
 
