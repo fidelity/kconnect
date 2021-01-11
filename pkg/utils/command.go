@@ -44,7 +44,7 @@ func FormatCommand(cmd *cobra.Command) {
 func FormatUse(use string) string {
 	if isKrewPlugin() {
 		return "kubectl " + use
-	} 
+	}
 	return use
 }
 
