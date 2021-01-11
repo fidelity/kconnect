@@ -109,8 +109,6 @@ func Command() (*cobra.Command, error) {
 
 	utils.FormatCommand(useCmd)
 
-	utils.FormatCommand(useCmd)
-
 	// Add the provider subcommands
 	for _, provider := range provider.ListClusterProviders() {
 		providerCmd, err := createProviderCmd(provider)
