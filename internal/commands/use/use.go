@@ -106,6 +106,7 @@ func Command() (*cobra.Command, error) {
 			}
 		},
 	}
+
 	utils.FormatCommand(useCmd)
 
 	// Add the provider subcommands
@@ -198,6 +199,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 
 	providerCmd.SetUsageFunc(providerUsage(clusterProvider.Name()))
 
+	utils.FormatCommand(providerCmd)
 	return providerCmd, nil
 }
 
@@ -345,7 +347,8 @@ func ensureConfigFolder(path string) error {
 
 func providerUsage(providerName string) func(cmd *cobra.Command) error {
 	return func(cmd *cobra.Command) error {
-		usage := []string{fmt.Sprintf("Usage: %s", cmd.UseLine())}
+		use := utils.FormatUse(cmd.UseLine())
+		usage := []string{fmt.Sprintf("Usage: %s", use)}
 
 		if cmd.Example != "" {
 			usage = append(usage, "\nExamples:")
