@@ -97,9 +97,9 @@ func (p *rancherClusterProvider) ensureLogger() {
 // UsageExample will provide an example of the usage of this provider
 func (p *rancherClusterProvider) UsageExample() string {
 	return `  # Discover Rancher clusters using Active Directory
-  kconnect use rancher --idp-protocol rancher-ad
+  {{.CommandPath}} use rancher --idp-protocol rancher-ad
 
   # Discover clusters via Rancher using a API key
-  kconnect use rancher --idp-protocol static-token --token ABCDEF
+  {{.CommandPath}} use rancher --idp-protocol static-token --token ABCDEF
 `
 }

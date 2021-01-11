@@ -41,6 +41,13 @@ func FormatCommand(cmd *cobra.Command) {
 	cmd.Example = formatMessage(cmd.Example, rootCmdName)
 }
 
+func FormatUse(use string) string {
+	if isKrewPlugin() {
+		return "kubectl " + use
+	} 
+	return use
+}
+
 func isKrewPlugin() bool {
 	return strings.HasPrefix(filepath.Base(os.Args[0]), "kubectl-")
 }

@@ -121,12 +121,12 @@ func (p *aksClusterProvider) ensureLogger() {
 // UsageExample will provide an example of the usage of this provider
 func (p *aksClusterProvider) UsageExample() string {
 	return `  # Discover AKS clusters using Azure AD
-  kconnect use aks --idp-protocol aad
+  {{.CommandPath}} use aks --idp-protocol aad
 
   # Discover AKS clusters using file based credentials
   export AZURE_TENANT_ID="123455"
   export AZURE_CLIENT_ID="76849"
   export AZURE_CLIENT_SECRET="supersecret"
-  kconnect use aks --idp-protocol az-env
+  {{.CommandPath}} use aks --idp-protocol az-env
 `
 }

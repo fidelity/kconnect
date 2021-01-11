@@ -57,7 +57,7 @@ kconnect.
   {{.CommandPath}} config -f https://mycompany.com/config.yaml
 
   # Set the user's configurations from stdin
-  cat ./config.yaml | kconnect {{.CommandPath}} -f -
+  cat ./config.yaml | {{.CommandPath}} config -f -
 `
 )
 
