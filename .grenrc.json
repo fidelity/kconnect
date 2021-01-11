@@ -1,0 +1,12 @@
+{
+    "dataSource": "issues",
+    "prefix": "",
+    "ignoreLabels": ["closed/duplicate", "closed/wontfix"],
+    "ignoreIssuesWith": ["dependencies"],
+    "onlyMilestones": false,
+    "groupBy": {
+        "Enhancements": ["kind/feature", "kind/documentation"],
+        "Bug Fixes": ["kind/bug"]
+    },
+    "changelogFilename": "CHANGELOG.md"
+}
