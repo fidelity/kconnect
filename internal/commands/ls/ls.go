@@ -36,6 +36,7 @@ var (
 	longDesc  = `
 Query and display the user's connection history entries, including entry IDs and
 aliases.
+
 Each time kconnect creates a new kubectl context to connect to a Kubernetes 
 cluster, it saves the settings for the new connection as an entry in the user's 
 connection history.  The user can then reconnect using those same settings later 
