@@ -114,12 +114,12 @@ func (p *eksClusterProvider) ensureLogger() {
 func (p *eksClusterProvider) UsageExample() string {
 	return `
   # Discover EKS clusters using SAML
-  kconnect use eks --idp-protocol saml
+  {{.CommandPath}} use eks --idp-protocol saml
 
   # Discover EKS clusters using SAML with a specific role
-  kconnect use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
+  {{.CommandPath}} use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
 
   # Discover an EKS cluster and add an alias to its connection history entry
-  kconnect use eks --alias mycluster
+  {{.CommandPath}} use eks --alias mycluster
 `
 }
