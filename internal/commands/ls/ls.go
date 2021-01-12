@@ -28,6 +28,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -35,7 +36,6 @@ var (
 	longDesc  = `
 Query and display the user's connection history entries, including entry IDs and
 aliases.
-
 Each time kconnect creates a new kubectl context to connect to a Kubernetes 
 cluster, it saves the settings for the new connection as an entry in the user's 
 connection history.  The user can then reconnect using those same settings later 
@@ -43,22 +43,22 @@ via the connection history entry's ID or alias.
 `
 	examples = `
   # Display all connection history entries as a table
-  kconnect ls
+  {{.CommandPath}} ls
 
   # Display all connection history entries as YAML
-  kconnect ls --output yaml
+  {{.CommandPath}} ls --output yaml
 
   # Display a specific connection history entry by entry id
-  kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
+  {{.CommandPath}} ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
 
   # Display a specific connection history entry by its alias
-  kconnect ls --alias mydev
+  {{.CommandPath}} ls --alias mydev
 
   # Display all connection history entries for the EKS mamaged cluster provider
-  kconnect ls --cluster-provider eks
+  {{.CommandPath}} ls --cluster-provider eks
 
   # Reconnect using the connection history entry alias
-  kconnect to mydev
+  {{.CommandPath}} to mydev
 `
 )
 
@@ -106,6 +106,7 @@ func Command() (*cobra.Command, error) {
 			return a.QueryHistory(ctx, params)
 		},
 	}
+	utils.FormatCommand(lsCmd)
 
 	if err := addConfig(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)

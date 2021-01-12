@@ -43,6 +43,7 @@ import (
 	appver "github.com/fidelity/kconnect/internal/version"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
@@ -75,51 +76,51 @@ can then display their connection history entries and reconnect to any entry by
 its unique ID (or by a user-friendly alias) to refresh an expired access token
 for that cluster.
 `
-	examples = `
+	examplesTemplate = `
   # Display a help screen with kconnect commands.
-  kconnect help
+  {{.CommandPath}} help
 
   # Configure the default identity provider and connection profile for your user.
   #
   # Use this command to set up kconnect the first time you use it on a new system.
   #
-  kconnect config -f FILE_OR_URL
+  {{.CommandPath}} config -f FILE_OR_URL
 
   # Create a kubectl confirguration context for an AWS EKS cluster.
   #
   # Use this command the first time you connect to a new cluster or a new context.
   #
-  kconnect use eks
+  {{.CommandPath}} use eks
 
   # Display connection history entries.
   #
-  kconnect ls
+  {{.CommandPath}} ls
 
   # Add an alias to a connection history entry.
   #
-  kconnect alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
+  {{.CommandPath}} alias add --id 012EX456834AFXR0F2NZT68RPKD --alias MYALIAS
 
   # Reconnect and refresh the token for an aliased connection history entry.
   #
   # Use this to reconnect to a provider and refresh an expired access token.
   #
-  kconnect to MYALIAS
+  {{.CommandPath}} to MYALIAS
 
   # Display connection history entry aliases.
   #
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 `
 )
 
 // RootCmd creates the root kconnect command
-func RootCmd() (*cobra.Command, error) { //nolint: funlen
+func RootCmd() (*cobra.Command, error) {
 	cfg = config.NewConfigurationSet()
 
 	rootCmd := &cobra.Command{
 		Use:     "kconnect",
 		Short:   shortDesc,
 		Long:    longDesc,
-		Example: examples,
+		Example: examplesTemplate,
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
 				zap.S().Debugw("ingoring cobra error",
@@ -155,6 +156,7 @@ func RootCmd() (*cobra.Command, error) { //nolint: funlen
 			return nil
 		},
 	}
+	utils.FormatCommand(rootCmd)
 
 	if err := ensureAppDirectory(); err != nil {
 		return nil, fmt.Errorf("ensuring app directory exists: %w", err)

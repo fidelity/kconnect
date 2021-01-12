@@ -25,6 +25,7 @@ import (
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
@@ -39,13 +40,13 @@ connection history entries.
 `
 	examples = `
   # Add an alias to an existing connection history entry
-  kconnect alias add --id 123456 --alias appdev
+  {{.CommandPath}} alias add --id 123456 --alias appdev
 
   # List available connection history entry aliases
-  kconnect alias ls
+  {{.CommandPath}} alias ls
 
   # Remove an alias from a connection history entry
-  kconnect alias remove --alias appdev
+  {{.CommandPath}} alias remove --alias appdev
 `
 )
 
@@ -65,6 +66,7 @@ func Command() (*cobra.Command, error) {
 			}
 		},
 	}
+	utils.FormatCommand(aliasCmd)
 
 	if err := addConfigRoot(cfg); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
