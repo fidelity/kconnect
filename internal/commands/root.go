@@ -172,39 +172,10 @@ func RootCmd() (*cobra.Command, error) {
 	rootCmd.PersistentFlags().AddFlagSet(rootFlags)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
-	useCmd, err := use.Command()
+	err = addRootCommands(rootCmd)
 	if err != nil {
-		return nil, fmt.Errorf("creating use command: %w", err)
+		return nil, fmt.Errorf("adding commands: %w", err)
 	}
-	rootCmd.AddCommand(useCmd)
-	toCmd, err := to.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating to command: %w", err)
-	}
-	rootCmd.AddCommand(toCmd)
-	lsCmd, err := ls.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating ls command: %w", err)
-	}
-	rootCmd.AddCommand(lsCmd)
-	cfgCmd, err := configcmd.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating config command: %w", err)
-	}
-	rootCmd.AddCommand(cfgCmd)
-	rootCmd.AddCommand(version.Command())
-
-	aliasCmd, err := alias.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating alias command: %w", err)
-	}
-	rootCmd.AddCommand(aliasCmd)
-
-	logoutCmd, err := logout.Command()
-	if err != nil {
-		return nil, fmt.Errorf("creating logout command: %w", err)
-	}
-	rootCmd.AddCommand(logoutCmd)
 
 	cobra.OnInitialize(initConfig)
 
@@ -214,6 +185,43 @@ func RootCmd() (*cobra.Command, error) {
 func initConfig() {
 	viper.SetEnvPrefix("KCONNECT")
 	viper.AutomaticEnv()
+}
+
+func addRootCommands(rootCmd *cobra.Command) error {
+	useCmd, err := use.Command()
+	if err != nil {
+		return fmt.Errorf("creating use command: %w", err)
+	}
+	rootCmd.AddCommand(useCmd)
+	toCmd, err := to.Command()
+	if err != nil {
+		return fmt.Errorf("creating to command: %w", err)
+	}
+	rootCmd.AddCommand(toCmd)
+	lsCmd, err := ls.Command()
+	if err != nil {
+		return fmt.Errorf("creating ls command: %w", err)
+	}
+	rootCmd.AddCommand(lsCmd)
+	cfgCmd, err := configcmd.Command()
+	if err != nil {
+		return fmt.Errorf("creating config command: %w", err)
+	}
+	rootCmd.AddCommand(cfgCmd)
+	rootCmd.AddCommand(version.Command())
+
+	aliasCmd, err := alias.Command()
+	if err != nil {
+		return fmt.Errorf("creating alias command: %w", err)
+	}
+	rootCmd.AddCommand(aliasCmd)
+
+	logoutCmd, err := logout.Command()
+	if err != nil {
+		return fmt.Errorf("creating logout command: %w", err)
+	}
+	rootCmd.AddCommand(logoutCmd)
+	return nil
 }
 
 func ensureAppDirectory() error {
