@@ -418,6 +418,14 @@ func ResolveConfig(cs config.ConfigurationSet) error {
 				}
 			} else {
 				// run default resolver
+				prompt := item.ResolutionPrompt
+				if prompt == "" {
+					prompt = fmt.Sprintf("Enter %s:", strings.Title(item.Name))
+				}
+
+				if err := resolve.Input(cs, item.Name, prompt, item.Required); err != nil {
+					return fmt.Errorf("prompting user for required config %s: %w", item.Name, err)
+				}
 			}
 		}
 

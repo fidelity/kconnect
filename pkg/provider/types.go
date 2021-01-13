@@ -156,3 +156,8 @@ func (t *TokenIdentity) IdentityProviderName() string {
 func (t *TokenIdentity) Token() string {
 	return t.token
 }
+
+// SelectItemFunc is a function that is used abstract the method for selecting
+// an item from the a list of possible values. Providers shouldn't directly
+// ask the user for input and instead should use this.
+type SelectItemFunc func(prompt string, items map[string]string) (string, error)

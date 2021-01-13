@@ -42,9 +42,9 @@ var (
 	ErrNoSAMLAssertions   = errors.New("no SAML assertions")
 	ErrCreatingAccount    = errors.New("creating account")
 
-	serviceProviders = map[string]sp.ServiceProvider{
-		"eks": aws.NewServiceProvider(),
-	}
+	// serviceProviders = map[string]sp.ServiceProvider{
+	// 	"eks": aws.NewServiceProvider(),
+	// }
 )
 
 const (
@@ -59,12 +59,15 @@ func init() {
 }
 
 func newSAMLProvider() *samlIdentityProvider {
-	return &samlIdentityProvider{}
+	return &samlIdentityProvider{
+		itemSelector: provider.DefaultItemSelection,
+	}
 }
 
 type samlIdentityProvider struct {
 	config          *sp.ProviderConfig
 	serviceProvider sp.ServiceProvider
+	itemSelector    provider.SelectItemFunc
 
 	logger *zap.SugaredLogger
 }
@@ -88,9 +91,9 @@ func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (c
 
 	// get the service provider flags
 	if clusterProviderName != "" {
-		sp, ok := serviceProviders[clusterProviderName]
-		if !ok {
-			return nil, ErrUnsuportedProvider
+		sp, err := p.createServiceProvider(clusterProviderName)
+		if err != nil {
+			return nil, fmt.Errorf("creating saml service provider: %w", err)
 		}
 
 		spConfig := sp.ConfigurationItems()
@@ -107,9 +110,9 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 	p.ensureLogger()
 	p.logger.Info("authenticating user")
 
-	sp, ok := serviceProviders[clusterProvider]
-	if !ok {
-		return nil, ErrUnsuportedProvider
+	sp, err := p.createServiceProvider(clusterProvider)
+	if err != nil {
+		return nil, fmt.Errorf("creating saml service provider: %w", err)
 	}
 	p.serviceProvider = sp
 
@@ -197,6 +200,15 @@ func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.I
 	}
 
 	return account, nil
+}
+
+func (p *samlIdentityProvider) createServiceProvider(clusterProviderName string) (sp.ServiceProvider, error) {
+	switch clusterProviderName {
+	case "eks":
+		return aws.NewServiceProvider(p.itemSelector), nil
+	default:
+		return nil, ErrUnsuportedProvider
+	}
 }
 
 // func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {

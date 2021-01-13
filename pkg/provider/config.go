@@ -83,5 +83,7 @@ func CommonIdentityConfig() config.ConfigurationSet {
 	cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml). Each protocol has its own flags.") //nolint: errcheck
 	cs.SetSensitive("password")                                                                            //nolint: errcheck
 
+	cs.SetRequired("username")
+	cs.SetRequired("password")
 	return cs
 }

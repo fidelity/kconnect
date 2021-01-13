@@ -40,7 +40,7 @@ type App struct {
 // Option represents an option to use with the kcinnect application
 type Option func(*App)
 
-// SelectClusterFunc is a function type that is used to allow selecttion of a cluster
+// SelectClusterFunc is a function type that is used to allow selection of a cluster
 type SelectClusterFunc func(discoverOutput *provider.DiscoverOutput) (*provider.Cluster, error)
 
 // New creates a new instance of the kconnect app with options

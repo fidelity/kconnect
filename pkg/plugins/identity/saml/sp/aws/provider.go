@@ -20,12 +20,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"os"
-	"sort"
 	"strings"
 
-	survey "github.com/AlecAivazis/survey/v2"
-	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/beevik/etree"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -42,7 +38,6 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
@@ -63,16 +58,19 @@ type awsProviderConfig struct {
 	Region    string `json:"region" validate:"required"`
 }
 
-func NewServiceProvider() sp.ServiceProvider {
-	return &ServiceProvider{}
+func NewServiceProvider(itemSelector provider.SelectItemFunc) sp.ServiceProvider {
+	return &ServiceProvider{
+		logger:       zap.S().With("provider", "saml", "sp", "aws"),
+		itemSelector: itemSelector,
+	}
 }
 
 type ServiceProvider struct {
-	logger *zap.SugaredLogger
+	logger       *zap.SugaredLogger
+	itemSelector provider.SelectItemFunc
 }
 
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
-	p.ensureLogger()
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 	account.Profile = "kconnect-saml-provider"
 
@@ -91,7 +89,6 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 }
 
 func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (provider.Identity, error) {
-	p.ensureLogger()
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -205,12 +202,9 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 		return saml2aws.LocateRole(awsRoles, account.RoleARN)
 	}
 
-	for {
-		role, err = p.getRoleFromPrompt(awsAccounts, roleFilter)
-		if err == nil {
-			break
-		}
-		p.logger.Info("Error selecting role, try again")
+	role, err = p.getRoleFromPrompt(awsAccounts, roleFilter)
+	if err != nil {
+		return nil, fmt.Errorf("getting role: %w", err)
 	}
 
 	return role, nil
@@ -244,36 +238,24 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, roleFilter string) (*saml2aws.AWSRole, error) {
 
 	roles := map[string]*saml2aws.AWSRole{}
-	var roleOptions []string
+	roleOptions := map[string]string{}
 
 	for _, account := range accounts {
 		for _, role := range account.Roles {
 			if roleFilter == "" || strings.Contains(role.RoleARN, roleFilter) {
 				name := fmt.Sprintf("%s / %s", account.Name, role.Name)
 				roles[name] = role
-				roleOptions = append(roleOptions, name)
+				roleOptions[name] = name
 			}
 		}
 	}
-	if len(roleOptions) == 0 {
-		return roles[roleOptions[0]], nil
+
+	selected, err := p.itemSelector("Select AWS role", roleOptions)
+	if err != nil {
+		return nil, fmt.Errorf("selected aws role: %w", err)
 	}
 
-	sort.Strings(roleOptions)
-	selectedRole := ""
-	prompt := &survey.Select{
-		Message: "Select an AWS role",
-		Options: roleOptions,
-		Filter:  utils.SurveyFilter,
-	}
-	if err := survey.AskOne(prompt, &selectedRole, survey.WithValidator(survey.Required)); err != nil {
-		if errors.Is(err, terminal.InterruptErr) {
-			zap.S().Info("Received interrupt, exiting..")
-			os.Exit(0)
-		}
-		return nil, fmt.Errorf("asking for role: %w", err)
-	}
-	return roles[selectedRole], nil
+	return roles[selected], nil
 }
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
@@ -342,7 +324,6 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 }
 
 func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
-	p.ensureLogger()
 	cfg := &awsProviderConfig{}
 
 	if err := config.Unmarshall(configItems, cfg); err != nil {
@@ -358,14 +339,7 @@ func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
 }
 
 func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
-	p.ensureLogger()
 	cs := kaws.SharedConfig()
 
 	return cs
-}
-
-func (p *ServiceProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", "saml", "sp", "aws")
-	}
 }
