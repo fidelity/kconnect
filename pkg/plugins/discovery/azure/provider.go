@@ -83,9 +83,9 @@ func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 }
 
 // ConfigurationResolver returns the resolver to use for config with this provider
-func (p *aksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return p
-}
+// func (p *aksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
+// 	return p
+// }
 
 func (p *aksClusterProvider) setup(cs config.ConfigurationSet, identity provider.Identity) error {
 	p.ensureLogger()

@@ -29,6 +29,7 @@ const (
 
 	UsernameConfigItem = "username"
 	PasswordConfigItem = "password"
+	AliasConfigItem    = "alias"
 )
 
 func AppDirectory() string {

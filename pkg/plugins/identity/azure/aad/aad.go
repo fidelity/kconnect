@@ -74,9 +74,9 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 	p.ensureLogger()
 	p.logger.Info("authenticating user")
 
-	if err := p.resolveConfig(ctx); err != nil {
-		return nil, fmt.Errorf("resolving config: %w", err)
-	}
+	// if err := p.resolveConfig(ctx); err != nil {
+	// 	return nil, fmt.Errorf("resolving config: %w", err)
+	// }
 
 	cfg := &aadConfig{}
 	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
@@ -169,8 +169,12 @@ func (p *aadIdentityProvider) ConfigurationItems(clusterProviderName string) (co
 	cs.String(azure.ClientIDConfigItem, "04b07795-8ddb-461a-bbee-02f9e1bf7b46", "The azure ad client id") //nolint: errcheck
 	cs.String(azure.AADHostConfigItem, string(identity.AADHostWorldwide), "The AAD host to use")          //nolint: errcheck
 
-	cs.SetShort(azure.TenantIDConfigItem, "t") //nolint: errcheck
-	cs.SetRequired(azure.TenantIDConfigItem)   //nolint: errcheck
+	cs.SetShort(azure.TenantIDConfigItem, "t")                            //nolint: errcheck
+	cs.SetRequiredWithPrompt(azure.TenantIDConfigItem, "Azure tenant ID") //nolint: errcheck
+
+	cs.SetResolver(azure.TenantIDConfigItem, ResolveTenantID)
+	cs.SetResolver(azure.ClientIDConfigItem, ResolveClientID)
+	cs.SetResolver(azure.AADHostConfigItem, ResolveAADHost)
 
 	return cs, nil
 }

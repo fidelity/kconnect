@@ -19,33 +19,47 @@ package aad
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/azure/identity"
+	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
-func (p *aadIdentityProvider) resolveConfig(ctx *provider.Context) error {
-	if !ctx.IsInteractive() {
-		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-	}
+// func (p *aadIdentityProvider) resolveConfig(ctx *provider.Context) error {
+// 	if !ctx.IsInteractive() {
+// 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
+// 	}
 
-	cfg := ctx.ConfigurationItems()
+// 	cfg := ctx.ConfigurationItems()
 
-	if err := resolve.Username(cfg); err != nil {
-		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
-	}
-	if err := resolve.Password(cfg); err != nil {
-		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
-	}
-	if err := resolve.Input(cfg, azure.TenantIDConfigItem, "Enter the Azure tenant ID", true); err != nil {
+// 	if err := resolve.Username(cfg); err != nil {
+// 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
+// 	}
+// 	if err := resolve.Password(cfg); err != nil {
+// 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
+// 	}
+
+// 	return nil
+// }
+
+func ResolveTenantID(item *config.Item, cs config.ConfigurationSet) error {
+	if err := resolve.Input(cs, azure.TenantIDConfigItem, "Enter the Azure tenant ID", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.TenantIDConfigItem, err)
 	}
-	if err := resolve.Input(cfg, azure.ClientIDConfigItem, "Enter the Azure client ID", true); err != nil {
+
+	return nil
+}
+
+func ResolveClientID(item *config.Item, cs config.ConfigurationSet) error {
+	if err := resolve.Input(cs, azure.ClientIDConfigItem, "Enter the Azure client ID", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.ClientIDConfigItem, err)
 	}
-	if err := resolve.Choose(cfg, azure.AADHostConfigItem, "Choose the Azure AAD host", true, aadHostOptions); err != nil {
+
+	return nil
+}
+
+func ResolveAADHost(item *config.Item, cs config.ConfigurationSet) error {
+	if err := resolve.Choose(cs, azure.AADHostConfigItem, "Choose the Azure AAD host", true, aadHostOptions); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.ClientIDConfigItem, err)
 	}
 

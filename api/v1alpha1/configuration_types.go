@@ -29,8 +29,13 @@ type ConfigurationSpec struct {
 	Global map[string]string `json:"global,omitempty"`
 	// Providers holds provider specific configuration valies in the form of
 	// key:value pairs per provider name. Values specified here will
-	// overwrite an global config of the same name.
+	// overwrite an global config of the same name. If a value of a config
+	// starts with $ then this is taken to be a name of a list to use
+	// duration resolution to allow the user to select from the list.
 	Providers map[string]map[string]string `json:"providers,omitempty"`
+	// Lists contains predefined name lists of name/value pairs that can be
+	// used to offer a selection to a user for a configuration item
+	Lists map[string][]ListItem `json:"lists,omitempty"`
 	// ImportedFrom holds where this configuration was originally imported from
 	ImportedFrom *string `json:"importedFrom,omitempty"`
 	// VersionCheck holds details of the last version cehck
@@ -52,6 +57,14 @@ type VersionCheck struct {
 	LatestReleaseVersion *string `json:"latestReleaseVersion,omitempty"`
 	// LatestReleaseURL holds the URL for latest release version of kconnect thats been retrieved from GitHub
 	LatestReleaseURL *string `json:"latestReleaseURL,omitempty"`
+}
+
+// ListItem represents an item in a list
+type ListItem struct {
+	// Name is the the name to display to the user for the list item
+	Name string `json:"name"`
+	// Value is the value to use if the list item is selected
+	Value string `json:"value"`
 }
 
 // +kubebuilder:object:root=true

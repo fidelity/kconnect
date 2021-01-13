@@ -71,9 +71,9 @@ func (p *radIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 	p.ensureLogger()
 	p.logger.Info("authenticating user")
 
-	if err := p.resolveConfig(ctx); err != nil {
-		return nil, fmt.Errorf("resolving config: %w", err)
-	}
+	// if err := p.resolveConfig(ctx); err != nil {
+	// 	return nil, fmt.Errorf("resolving config: %w", err)
+	// }
 
 	cfg := &radConfig{}
 	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {

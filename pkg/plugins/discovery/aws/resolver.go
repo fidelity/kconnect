@@ -16,50 +16,50 @@ limitations under the License.
 
 package aws
 
-import (
-	"fmt"
+// import (
+// 	"fmt"
 
-	awsclient "github.com/aws/aws-sdk-go/aws/client"
+// 	awsclient "github.com/aws/aws-sdk-go/aws/client"
 
-	"github.com/fidelity/kconnect/pkg/config"
-	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/provider"
-)
+// 	"github.com/fidelity/kconnect/pkg/config"
+// 	kerrors "github.com/fidelity/kconnect/pkg/errors"
+// 	"github.com/fidelity/kconnect/pkg/provider"
+// )
 
-// NewConfigResolver creates a new config resolver for AWS
-func NewConfigResolver(session awsclient.ConfigProvider) (provider.ConfigResolver, error) {
-	if session == nil {
-		return nil, ErrNoSession
-	}
+// // NewConfigResolver creates a new config resolver for AWS
+// func NewConfigResolver(session awsclient.ConfigProvider) (provider.ConfigResolver, error) {
+// 	if session == nil {
+// 		return nil, ErrNoSession
+// 	}
 
-	return &awsConfigResolver{
-		session: session,
-	}, nil
-}
+// 	return &awsConfigResolver{
+// 		session: session,
+// 	}, nil
+// }
 
-// awsConfigResolver is used to resolve the config values for AWS interactively.
-type awsConfigResolver struct {
-	session awsclient.ConfigProvider
-}
+// // awsConfigResolver is used to resolve the config values for AWS interactively.
+// type awsConfigResolver struct {
+// 	session awsclient.ConfigProvider
+// }
 
-func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
-	errsValidation := &kerrors.ValidationFailed{}
+// func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
+// 	errsValidation := &kerrors.ValidationFailed{}
 
-	for _, item := range cfg.GetAll() {
-		if item.Required && !cfg.ExistsWithValue(item.Name) {
-			errsValidation.AddFailure(fmt.Sprintf("%s is required", item.Name))
-		}
-	}
+// 	for _, item := range cfg.GetAll() {
+// 		if item.Required && !cfg.ExistsWithValue(item.Name) {
+// 			errsValidation.AddFailure(fmt.Sprintf("%s is required", item.Name))
+// 		}
+// 	}
 
-	if len(errsValidation.Failures()) > 0 {
-		return errsValidation
-	}
+// 	if len(errsValidation.Failures()) > 0 {
+// 		return errsValidation
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (r *awsConfigResolver) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
-	return nil
-}
+// func (r *awsConfigResolver) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
+// 	return nil
+// }

@@ -41,7 +41,7 @@ type ClusterProvider interface {
 	GetClusterConfig(ctx *Context, cluster *Cluster, namespace string) (*api.Config, string, error)
 
 	// ConfigurationResolver returns the resolver used to interactively resolve configuration
-	ConfigurationResolver() ConfigResolver
+	//ConfigurationResolver() ConfigResolver
 
 	// ConfigurationItems will return the configuration items for the plugin
 	ConfigurationItems() config.ConfigurationSet
@@ -54,17 +54,17 @@ type ClusterProvider interface {
 }
 
 // ConfigResolver is used to resolve the values for config items interactively.
-type ConfigResolver interface {
+// type ConfigResolver interface {
 
-	// Validate is used to validate the config items and return any errors
-	Validate(config config.ConfigurationSet) error
+// 	// Validate is used to validate the config items and return any errors
+// 	Validate(config config.ConfigurationSet) error
 
-	// Resolve will resolve the values for the supplied config items. It will interactively
-	// resolve the values by asking the user for selections.
-	Resolve(config config.ConfigurationSet, identity Identity) error
-}
+// 	// Resolve will resolve the values for the supplied config items. It will interactively
+// 	// resolve the values by asking the user for selections.
+// 	Resolve(config config.ConfigurationSet, identity Identity) error
+// }
 
-type ConfigResolveFunc func(name string, config *config.ConfigurationSet) error
+//type ConfigResolveFunc func(name string, config *config.ConfigurationSet) error
 
 // IdentityProvider represents the interface used to implement an identity provider
 // plugin. It provides authentication and authorization functionality.

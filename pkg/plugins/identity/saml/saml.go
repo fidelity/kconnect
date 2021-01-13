@@ -27,6 +27,7 @@ import (
 	"github.com/versent/saml2aws/pkg/creds"
 	"go.uber.org/zap"
 
+	"github.com/fidelity/kconnect/internal/resolvers"
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
@@ -79,8 +80,11 @@ func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (c
 
 	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
 	cs.String("idp-provider", "", "the name of the idp provider")                        //nolint: errcheck
-	cs.SetRequired("idp-endpoint")                                                       //nolint: errcheck
-	cs.SetRequired("idp-provider")                                                       //nolint: errcheck
+	cs.SetRequiredWithPrompt("idp-endpoint", "Endpoint for the IdP")                     //nolint: errcheck
+	cs.SetRequiredWithPrompt("idp-provider", "Your identity provider")                   //nolint: errcheck
+	cs.SetResolver("idp-provider", resolvers.IdpProvider)
+	cs.SetResolver("idp-endpoint", resolvers.IdpEndpoint)
+	cs.SetPriority("idp-endpoint", 10)
 
 	// get the service provider flags
 	if clusterProviderName != "" {
@@ -108,10 +112,6 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, ErrUnsuportedProvider
 	}
 	p.serviceProvider = sp
-
-	if err := p.resolveConfig(ctx); err != nil {
-		return nil, err
-	}
 
 	if err := p.bindAndValidateConfig(ctx.ConfigurationItems()); err != nil {
 		return nil, fmt.Errorf("binding and validation config: %w", err)
@@ -199,20 +199,20 @@ func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.I
 	return account, nil
 }
 
-func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
-	sp := p.serviceProvider
+// func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
+// 	sp := p.serviceProvider
 
-	if ctx.IsInteractive() {
-		p.logger.Debug("resolving SAML provider flags")
-		if err := sp.ResolveConfiguration(ctx.ConfigurationItems()); err != nil {
-			return fmt.Errorf("resolving flags: %w", err)
-		}
-	} else {
-		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-	}
+// 	//if ctx.IsInteractive() {
+// 	p.logger.Debug("resolving SAML provider flags")
+// 	if err := sp.ResolveConfiguration(ctx.ConfigurationItems()); err != nil {
+// 		return fmt.Errorf("resolving flags: %w", err)
+// 	}
+// 	//} else {
+// 	//	p.logger.Debug("skipping configuration resolution as runnning non-interactive")
+// 	//}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, clusterProviderName string) (provider.IdentityStore, error) {
 	var store provider.IdentityStore

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -32,6 +33,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 var (
@@ -152,6 +154,9 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
 			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
+			}
+			if err := ResolveConfig(params.Context.ConfigurationItems()); err != nil {
+				return fmt.Errorf("resolving config: %w", err)
 			}
 
 			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
@@ -283,7 +288,9 @@ func preRun(params *app.UseParams) error {
 	}
 	params.Identity = identity
 
-	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems(), params.Identity)
+	//return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems(), params.Identity)
+
+	return nil
 }
 
 func getIdpProtocol(args []string, params *app.UseParams) (string, bool, error) {
@@ -384,4 +391,48 @@ func providerUsage(providerName string) func(cmd *cobra.Command) error {
 		cmd.Println(strings.Join(usage, "\n"))
 		return nil
 	}
+}
+
+// TODO: remove to a proper package location
+func ResolveConfig(cs config.ConfigurationSet) error {
+	items := cs.GetAll()
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Priority < items[j].Priority
+	})
+
+	for _, item := range items {
+		if cs.ValueIsList(item.Name) {
+			listName := cs.ValueString(item.Name)
+			if err := resolve.ChooseFromList(cs, item.Name, item.ResolutionPrompt, item.Required, listName); err != nil {
+				return fmt.Errorf("getting list selection for %s: %w", item.Name, err)
+			}
+			continue
+		}
+
+		if item.Required && !item.HasValue() {
+			resolver := cs.GetResolver(item.Name)
+			if resolver != nil {
+				// run resolver
+				if err := resolver(item, cs); err != nil {
+					return fmt.Errorf("running resolver for %s: %w", item.Name, err)
+				}
+			} else {
+				// run default resolver
+			}
+		}
+
+	}
+
+	/*
+
+			if cs.ValueIsList(item.Name) {
+			listName := cs.ValueString(item.Name)
+			return resolve.ChooseFromList(cs, item.Name, item.ResolutionPrompt, item.Required, listName)
+		} else {
+			return resolve.Input(cs, item.Name, item.ResolutionPrompt, item.Required)
+		}
+
+	*/
+
+	return nil
 }

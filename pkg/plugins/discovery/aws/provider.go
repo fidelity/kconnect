@@ -75,9 +75,9 @@ func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 }
 
 // ConfigurationResolver returns the resolver to use for config with this provider
-func (p *eksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return &awsConfigResolver{}
-}
+// func (p *eksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
+// 	return &awsConfigResolver{}
+// }
 
 func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
 	p.ensureLogger()

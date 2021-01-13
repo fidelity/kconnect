@@ -16,42 +16,33 @@ limitations under the License.
 
 package rancher
 
-import (
-	"fmt"
+// func (p *rancherClusterProvider) Validate(cfg config.ConfigurationSet) error {
+// 	errsValidation := &kerrors.ValidationFailed{}
 
-	"github.com/fidelity/kconnect/pkg/config"
-	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/provider"
-	rshared "github.com/fidelity/kconnect/pkg/rancher"
-)
+// 	for _, item := range cfg.GetAll() {
+// 		if item.Required && !cfg.ExistsWithValue(item.Name) {
+// 			errsValidation.AddFailure(fmt.Sprintf("%s is required", item.Name))
+// 		}
+// 	}
 
-func (p *rancherClusterProvider) Validate(cfg config.ConfigurationSet) error {
-	errsValidation := &kerrors.ValidationFailed{}
+// 	if len(errsValidation.Failures()) > 0 {
+// 		return errsValidation
+// 	}
 
-	for _, item := range cfg.GetAll() {
-		if item.Required && !cfg.ExistsWithValue(item.Name) {
-			errsValidation.AddFailure(fmt.Sprintf("%s is required", item.Name))
-		}
-	}
-
-	if len(errsValidation.Failures()) > 0 {
-		return errsValidation
-	}
-
-	return nil
-}
+// 	return nil
+// }
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *rancherClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
-	if err := p.setup(cfg, identity); err != nil {
-		return fmt.Errorf("setting up rancher provider: %w", err)
-	}
-	p.logger.Debug("resolving Rancher configuration items")
+// func (p *rancherClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
+// 	if err := p.setup(cfg, identity); err != nil {
+// 		return fmt.Errorf("setting up rancher provider: %w", err)
+// 	}
+// 	p.logger.Debug("resolving Rancher configuration items")
 
-	if err := rshared.ResolveCommon(cfg); err != nil {
-		return fmt.Errorf("resolving common Rancher config: %w", err)
-	}
+// 	if err := rshared.ResolveCommon(cfg); err != nil {
+// 		return fmt.Errorf("resolving common Rancher config: %w", err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

@@ -17,17 +17,10 @@ limitations under the License.
 package rancher
 
 import (
-	"fmt"
-
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
-// ResolveCommon will interactively resolve the common configuration for rancher
-func ResolveCommon(cfg config.ConfigurationSet) error {
-	if err := resolve.Input(cfg, APIEndpointConfigName, "Enter the Rancher API endpoint", true); err != nil {
-		return fmt.Errorf("resolving %s: %w", APIEndpointConfigName, err)
-	}
-
-	return nil
+func ResolveAPIEndpoint(item *config.Item, cs config.ConfigurationSet) error {
+	return resolve.Input(cs, APIEndpointConfigName, item.ResolutionPrompt, item.Required)
 }

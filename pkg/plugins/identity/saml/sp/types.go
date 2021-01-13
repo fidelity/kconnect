@@ -33,7 +33,7 @@ type ServiceProvider interface {
 	ConfigurationItems() config.ConfigurationSet
 
 	Validate(configItems config.ConfigurationSet) error
-	ResolveConfiguration(configItems config.ConfigurationSet) error
+	//ResolveConfiguration(configItems config.ConfigurationSet) error
 	PopulateAccount(account *cfg.IDPAccount, configItems config.ConfigurationSet) error
 	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, configItems config.ConfigurationSet) (provider.Identity, error)
 }

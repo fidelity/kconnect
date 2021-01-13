@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strconv"
 
-	survey "github.com/AlecAivazis/survey/v2"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/clientcmd"
@@ -59,8 +58,8 @@ func (a *App) Use(params *UseParams) error {
 	var err error
 
 	if !params.IgnoreAlias {
-		if err := a.resolveAndCheckAlias(params); err != nil {
-			return fmt.Errorf("resolving and checking alias: %w", err)
+		if err := a.checkAlias(params); err != nil {
+			return fmt.Errorf("checking alias: %w", err)
 		}
 	}
 
@@ -200,17 +199,10 @@ func (a *App) aliasInUse(alias *string) (bool, error) {
 	return inUse, nil
 }
 
-func (a *App) resolveAndCheckAlias(params *UseParams) error {
+func (a *App) checkAlias(params *UseParams) error {
 	if params.Alias == nil || *params.Alias == "" {
-		if !params.Context.IsInteractive() {
-			return nil
-		}
-		zap.S().Debug("no alias set, resolving")
-		alias, err := a.resolveAlias()
-		if err != nil {
-			return fmt.Errorf("resolving alias: %w", err)
-		}
-		params.Alias = &alias
+		zap.S().Debug("no alias set")
+		return nil
 	}
 
 	aliasInUse, err := a.aliasInUse(params.Alias)
@@ -224,28 +216,4 @@ func (a *App) resolveAndCheckAlias(params *UseParams) error {
 	zap.S().Infof("Command to reconnect using this alias: kconnect to %s", *params.Alias)
 
 	return nil
-}
-
-func (a *App) resolveAlias() (string, error) {
-	useAlias := false
-	promptUse := &survey.Confirm{
-		Message: "Do you want to set an alias?",
-	}
-	if err := survey.AskOne(promptUse, &useAlias); err != nil {
-		return "", err
-	}
-
-	if !useAlias {
-		return "", nil
-	}
-
-	alias := ""
-	promptAliasName := &survey.Input{
-		Message: "Enter the alias name",
-	}
-	if err := survey.AskOne(promptAliasName, &alias); err != nil {
-		return "", err
-	}
-
-	return alias, nil
 }

@@ -29,20 +29,12 @@ import (
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
-func ResolvePartition(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(PartitionConfigItem) {
-		return nil
-	}
-
-	return resolve.Choose(cfg, PartitionConfigItem, "Select the AWS partition", true, awsPartitionOptions)
+func ResolvePartition(item *config.Item, cs config.ConfigurationSet) error {
+	return resolve.Choose(cs, PartitionConfigItem, item.ResolutionPrompt, item.Required, awsPartitionOptions)
 }
 
-func ResolveRegion(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(RegionConfigItem) {
-		return nil
-	}
-
-	partitionCfg := cfg.Get("partition")
+func ResolveRegion(item *config.Item, cs config.ConfigurationSet) error {
+	partitionCfg := cs.Get("partition")
 	if partitionCfg == nil {
 		return ErrNoPartitionSupplied
 	}
@@ -63,7 +55,7 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 	}
 
 	regionFilter := ""
-	regionFilterCfg := cfg.Get("region-filter")
+	regionFilterCfg := cs.Get("region-filter")
 	if regionFilterCfg != nil {
 		regionFilter = regionFilterCfg.Value.(string)
 	}
@@ -78,7 +70,7 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 
 	region := ""
 	prompt := &survey.Select{
-		Message: "Select an AWS region",
+		Message: item.ResolutionPrompt,
 		Options: options,
 		Filter:  utils.SurveyFilter,
 	}
@@ -86,7 +78,7 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 		return fmt.Errorf("asking for region: %w", err)
 	}
 
-	if err := cfg.SetValue(RegionConfigItem, region); err != nil {
+	if err := cs.SetValue(RegionConfigItem, region); err != nil {
 		return fmt.Errorf("setting region config: %w", err)
 	}
 

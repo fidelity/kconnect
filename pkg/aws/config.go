@@ -28,6 +28,9 @@ const (
 	AccessKeyConfigItem    = "access-key"
 	SecretKeyConfigItem    = "secret-key"
 	SessionTokenConfigItem = "session-token"
+
+	RegionPrompt  = "AWS Region:"
+	ProfilePrompt = "AWS Profile:"
 )
 
 // SharedConfig will return shared configuration items for AWS based cluster and identity providers
@@ -43,12 +46,27 @@ func SharedConfig() config.ConfigurationSet {
 
 func AddRegionConfig(cs config.ConfigurationSet) {
 	cs.String(RegionConfigItem, "", "AWS region to connect to") //nolint: errcheck
-	cs.SetRequired(RegionConfigItem)                            //nolint: errcheck
+	cs.SetRequiredWithPrompt(RegionConfigItem, RegionPrompt)    //nolint: errcheck
+	cs.SetPriority(RegionConfigItem, 10)                        //nolint: errcheck
+	cs.SetResolver(RegionConfigItem, ResolveRegion)
+
+	// region := &config.Item{
+	// 	Name: RegionConfigItem,
+	// 	Shorthand: "",
+	// 	Description: "AWS region to connect to",
+	// 	Priority: 10,
+	// 	Type: config.ItemTypeString,
+	// 	Required: true,
+	// 	ResolutionPrompt: RegionPrompt,
+	// }
+	// cs.Add(region)
+	// cs.AddWithResolver(region, ResolveRegion)
 }
 
 func AddPartitionConfig(cs config.ConfigurationSet) {
 	cs.String(PartitionConfigItem, endpoints.AwsPartition().ID(), "AWS partition to use") //nolint: errcheck
-	cs.SetRequired(ProfileConfigItem)                                                     //nolint: errcheck
+	cs.SetRequiredWithPrompt(ProfileConfigItem, ProfilePrompt)
+	cs.SetResolver(PartitionConfigItem, ResolvePartition) //nolint: errcheck
 }
 
 func AddIAMConfigs(cs config.ConfigurationSet) {

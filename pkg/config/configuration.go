@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -28,6 +29,15 @@ import (
 
 	kconnectv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/internal/defaults"
+)
+
+const (
+	// ListPrefix is teh prefix for a list name
+	ListPrefix = "$"
+)
+
+var (
+	ErrListNotFound = errors.New("list not found")
 )
 
 type AppConfiguration interface {

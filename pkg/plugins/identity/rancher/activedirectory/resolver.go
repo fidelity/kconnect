@@ -16,31 +16,22 @@ limitations under the License.
 
 package activedirectory
 
-import (
-	"fmt"
+// func (p *radIdentityProvider) resolveConfig(ctx *provider.Context) error {
+// 	if !ctx.IsInteractive() {
+// 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
+// 	}
 
-	"github.com/fidelity/kconnect/internal/defaults"
-	"github.com/fidelity/kconnect/pkg/provider"
-	rshared "github.com/fidelity/kconnect/pkg/rancher"
-	"github.com/fidelity/kconnect/pkg/resolve"
-)
+// 	cfg := ctx.ConfigurationItems()
 
-func (p *radIdentityProvider) resolveConfig(ctx *provider.Context) error {
-	if !ctx.IsInteractive() {
-		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-	}
+// 	if err := resolve.Username(cfg); err != nil {
+// 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
+// 	}
+// 	if err := resolve.Password(cfg); err != nil {
+// 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
+// 	}
+// 	if err := rshared.ResolveCommon(cfg); err != nil {
+// 		return fmt.Errorf("resolving common Rancher config: %w", err)
+// 	}
 
-	cfg := ctx.ConfigurationItems()
-
-	if err := resolve.Username(cfg); err != nil {
-		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
-	}
-	if err := resolve.Password(cfg); err != nil {
-		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
-	}
-	if err := rshared.ResolveCommon(cfg); err != nil {
-		return fmt.Errorf("resolving common Rancher config: %w", err)
-	}
-
-	return nil
-}
+// 	return nil
+// }

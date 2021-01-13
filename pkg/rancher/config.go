@@ -38,8 +38,11 @@ func AddCommonConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String(APIEndpointConfigName, "", "The Rancher API endpoint"); err != nil {
 		return fmt.Errorf("setting config item %s: %w", APIEndpointConfigName, err)
 	}
-	if err := cs.SetRequired(APIEndpointConfigName); err != nil {
+	if err := cs.SetRequiredWithPrompt(APIEndpointConfigName, "Rancher API Endpoint"); err != nil {
 		return fmt.Errorf("setting %s required: %w", APIEndpointConfigName, err)
+	}
+	if err := cs.SetResolver(APIEndpointConfigName, ResolveAPIEndpoint); err != nil {
+		return fmt.Errorf("setting %s resolver: %w", APIEndpointConfigName, err)
 	}
 
 	return nil

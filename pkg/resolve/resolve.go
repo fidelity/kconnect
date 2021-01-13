@@ -19,55 +19,13 @@ package resolve
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
 )
-
-// Username will interactively resolve the username config item
-func Username(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(defaults.UsernameConfigItem) {
-		return nil
-	}
-
-	username := ""
-	prompt := &survey.Input{
-		Message: "Enter your username",
-	}
-	if err := survey.AskOne(prompt, &username, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for username name: %w", err)
-	}
-
-	if err := cfg.SetValue(defaults.UsernameConfigItem, username); err != nil {
-		return fmt.Errorf("setting username config: %w", err)
-	}
-
-	return nil
-}
-
-// Password will interactively resolve the password config item
-func Password(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(defaults.PasswordConfigItem) {
-		return nil
-	}
-
-	password := ""
-	prompt := &survey.Password{
-		Message: "Enter your password",
-	}
-	if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for password name: %w", err)
-	}
-
-	if err := cfg.SetValue(defaults.PasswordConfigItem, password); err != nil {
-		return fmt.Errorf("setting password config: %w", err)
-	}
-
-	return nil
-}
 
 // Input will resolve a configuration item by asking the user to enter a value
 func Input(cfg config.ConfigurationSet, name, message string, required bool) error {
@@ -146,4 +104,37 @@ func Choose(cfg config.ConfigurationSet, name, message string, required bool, op
 	zap.S().Debugw("resolved config item", "name", name, "value", selectedValue)
 
 	return nil
+}
+
+// ChooseFromList will resolve a configuration item by asking the user to select a value from a names list
+// that is defined in the application config.
+func ChooseFromList(cfg config.ConfigurationSet, name, message string, required bool, listName string) error {
+	if strings.HasPrefix(listName, config.ListPrefix) {
+		listName = strings.Replace(listName, config.ListPrefix, "", -1)
+	}
+	return Choose(cfg, name, message, required, listOptions(listName))
+}
+
+// ListAsOptions will return an options func based on a list from the app config
+func listOptions(listName string) OptionsFunc {
+	return func() (map[string]string, error) {
+		appConfig, err := config.NewAppConfiguration()
+		if err != nil {
+			return nil, fmt.Errorf("getting app configuration: %w", err)
+		}
+		appCfg, err := appConfig.Get()
+		if err != nil {
+			return nil, fmt.Errorf("reading app configuration: %w", err)
+		}
+		list, ok := appCfg.Spec.Lists[listName]
+		if !ok {
+			return nil, fmt.Errorf("getting list %s: %w", listName, err)
+		}
+		items := map[string]string{}
+		for _, listItem := range list {
+			items[listItem.Name] = listItem.Value
+		}
+
+		return items, nil
+	}
 }

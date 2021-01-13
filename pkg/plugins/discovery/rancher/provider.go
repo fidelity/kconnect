@@ -67,9 +67,9 @@ func (p *rancherClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	return cs
 }
 
-func (p *rancherClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return p
-}
+// func (p *rancherClusterProvider) ConfigurationResolver() provider.ConfigResolver {
+// 	return p
+// }
 
 func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, identity provider.Identity) error {
 	p.ensureLogger()
