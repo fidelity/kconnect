@@ -17,12 +17,16 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/resolve"
@@ -83,6 +87,10 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 		Filter:  utils.SurveyFilter,
 	}
 	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
+		if errors.Is(err, terminal.InterruptErr) {
+			zap.S().Info("Received interrupt, exiting..")
+			os.Exit(0)
+		}
 		return fmt.Errorf("asking for region: %w", err)
 	}
 
