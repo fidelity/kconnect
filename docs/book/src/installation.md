@@ -5,6 +5,8 @@
 - [Windows](#windows)
 - [Docker](#docker)
 
+<em>NOTE:</em> `kconnect` requires [kubectl >= 1.17.0](https://kubernetes.io/docs/tasks/tools/install-kubectl)
+
 <em>NOTE:</em> `kconnect` requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to authenticate to the AWS EKS cluster provider.
 
 
