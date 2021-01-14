@@ -139,7 +139,7 @@ func RootCmd() (*cobra.Command, error) {
 			if err := flags.CopyFlagValue(app.NonInteractiveConfigItem, app.NoInputConfigItem, cmd.Flags(), true); err != nil {
 				return fmt.Errorf("copying flag value from %s to %s: %w", app.NonInteractiveConfigItem, app.NoInputConfigItem, err)
 			}
-
+			checkPrereqs()
 			return nil
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
@@ -313,4 +313,10 @@ func reportNewerVersion() error {
 	}
 
 	return nil
+}
+
+func checkPrereqs() {
+	if err := utils.CheckKubectlPrereq(); err != nil {
+		fmt.Fprintf(os.Stderr, "\033[33m%s\033[0m\n", err.Error())
+	}
 }

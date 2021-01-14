@@ -25,6 +25,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 func init() {
@@ -122,4 +123,9 @@ func (p *eksClusterProvider) UsageExample() string {
   # Discover an EKS cluster and add an alias to its connection history entry
   {{.CommandPath}} use eks --alias mycluster
 `
+}
+
+func (p *eksClusterProvider) CheckPreReqs() error {
+
+	return utils.CheckAWSIAMAuthPrereq()
 }

@@ -103,3 +103,7 @@ func (p *rancherClusterProvider) UsageExample() string {
   {{.CommandPath}} use rancher --idp-protocol static-token --token ABCDEF
 `
 }
+
+func (p *rancherClusterProvider) CheckPreReqs() error {
+	return nil
+}
