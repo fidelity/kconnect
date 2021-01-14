@@ -51,6 +51,8 @@ type ClusterProvider interface {
 
 	// SupportedIDs returns a list of the supported identity providers
 	SupportedIDs() []string
+
+	CheckPreReqs() error
 }
 
 // ConfigResolver is used to resolve the values for config items interactively.

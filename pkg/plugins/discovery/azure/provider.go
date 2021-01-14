@@ -130,3 +130,7 @@ func (p *aksClusterProvider) UsageExample() string {
   {{.CommandPath}} use aks --idp-protocol az-env
 `
 }
+
+func (p *aksClusterProvider) CheckPreReqs() error {
+	return nil
+}

@@ -281,6 +281,11 @@ func preRun(params *app.UseParams) error {
 		provider.WithConfig(params.Context.ConfigurationItems()),
 	)
 
+	err := params.Provider.CheckPreReqs()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "\033[33m%s\033[0m\n", err.Error())
+	}
+
 	identity, err := params.IdentityProvider.Authenticate(params.Context, params.Provider.Name())
 	if err != nil {
 		return fmt.Errorf("authenticating using provider %s: %w", params.IdentityProvider.Name(), err)
