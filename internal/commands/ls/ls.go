@@ -37,9 +37,9 @@ var (
 Query and display the user's connection history entries, including entry IDs and
 aliases.
 
-Each time kconnect creates a new kubectl context to connect to a Kubernetes 
-cluster, it saves the settings for the new connection as an entry in the user's 
-connection history.  The user can then reconnect using those same settings later 
+Each time kconnect creates a new kubectl context to connect to a Kubernetes
+cluster, it saves the settings for the new connection as an entry in the user's
+connection history.  The user can then reconnect using those same settings later
 via the connection history entry's ID or alias.
 `
 	examples = `
@@ -55,7 +55,7 @@ via the connection history entry's ID or alias.
   # Display a specific connection history entry by its alias
   {{.CommandPath}} ls --alias mydev
 
-  # Display all connection history entries for the EKS mamaged cluster provider
+  # Display all connection history entries for the EKS managed cluster provider
   {{.CommandPath}} ls --cluster-provider eks
 
   # Reconnect using the connection history entry alias
