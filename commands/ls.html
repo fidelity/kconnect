@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="../commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="../commands/ls.html" class="active"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="../commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="../commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li><li class="chapter-item expanded "><a href="../commands/use_rancher.html"><strong aria-hidden="true">4.5.3.</strong> rancher</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="../release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="../commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="../commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/config.html"><strong aria-hidden="true">4.2.</strong> config</a></li><li class="chapter-item expanded "><a href="../commands/ls.html" class="active"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="../commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="../commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="../commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li><li class="chapter-item expanded "><a href="../commands/use_rancher.html"><strong aria-hidden="true">4.5.3.</strong> rancher</a></li></ol></li><li class="chapter-item expanded "><a href="../commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="../release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -168,9 +168,9 @@
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
 <p>Query and display the user’s connection history entries, including entry IDs and
 aliases.</p>
-<p>Each time kconnect creates a new kubectl context to connect to a Kubernetes 
-cluster, it saves the settings for the new connection as an entry in the user’s 
-connection history.  The user can then reconnect using those same settings later 
+<p>Each time kconnect creates a new kubectl context to connect to a Kubernetes
+cluster, it saves the settings for the new connection as an entry in the user’s
+connection history.  The user can then reconnect using those same settings later
 via the connection history entry’s ID or alias.</p>
 <pre><code class="language-bash">kconnect ls [flags]
 </code></pre>
@@ -188,7 +188,7 @@ via the connection history entry’s ID or alias.</p>
   # Display a specific connection history entry by its alias
   kconnect ls --alias mydev
 
-  # Display all connection history entries for the EKS mamaged cluster provider
+  # Display all connection history entries for the EKS managed cluster provider
   kconnect ls --cluster-provider eks
 
   # Reconnect using the connection history entry alias
@@ -210,8 +210,8 @@ via the connection history entry’s ID or alias.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also" id="see-also">SEE ALSO</a></h3>
@@ -227,7 +227,7 @@ via the connection history entry’s ID or alias.</p>
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../commands/configure.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../commands/config.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
@@ -245,7 +245,7 @@ via the connection history entry’s ID or alias.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="../commands/configure.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../commands/config.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 

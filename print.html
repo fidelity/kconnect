@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/configure.html"><strong aria-hidden="true">4.2.</strong> configure</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li><li class="chapter-item expanded "><a href="commands/use_rancher.html"><strong aria-hidden="true">4.5.3.</strong> rancher</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">3.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="commands/index.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias.html"><strong aria-hidden="true">4.1.</strong> alias</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/alias_add.html"><strong aria-hidden="true">4.1.1.</strong> add</a></li><li class="chapter-item expanded "><a href="commands/alias_ls.html"><strong aria-hidden="true">4.1.2.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/alias_remove.html"><strong aria-hidden="true">4.1.3.</strong> remove</a></li></ol></li><li class="chapter-item expanded "><a href="commands/config.html"><strong aria-hidden="true">4.2.</strong> config</a></li><li class="chapter-item expanded "><a href="commands/ls.html"><strong aria-hidden="true">4.3.</strong> ls</a></li><li class="chapter-item expanded "><a href="commands/to.html"><strong aria-hidden="true">4.4.</strong> to</a></li><li class="chapter-item expanded "><a href="commands/use.html"><strong aria-hidden="true">4.5.</strong> use</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="commands/use_aks.html"><strong aria-hidden="true">4.5.1.</strong> aks</a></li><li class="chapter-item expanded "><a href="commands/use_eks.html"><strong aria-hidden="true">4.5.2.</strong> eks</a></li><li class="chapter-item expanded "><a href="commands/use_rancher.html"><strong aria-hidden="true">4.5.3.</strong> rancher</a></li></ol></li><li class="chapter-item expanded "><a href="commands/version.html"><strong aria-hidden="true">4.6.</strong> version</a></li></ol></li><li class="chapter-item expanded "><a href="release.html"><strong aria-hidden="true">5.</strong> Releasing kconnect</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">6.</strong> Contributing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -196,6 +196,7 @@
 <li><a href="installation.html#windows">Windows</a></li>
 <li><a href="installation.html#docker">Docker</a></li>
 </ul>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl &gt;= 1.17.0</a></p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
@@ -289,7 +290,7 @@ for that cluster.</p>
   #
   # Use this command to set up kconnect the first time you use it on a new system.
   #
-  kconnect configure -f FILE_OR_URL
+  kconnect config -f FILE_OR_URL
 
   # Create a kubectl confirguration context for an AWS EKS cluster.
   #
@@ -319,14 +320,14 @@ for that cluster.</p>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
   -h, --help               help for kconnect
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also" id="see-also">SEE ALSO</a></h3>
 <ul>
 <li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
-<li><a href="commands/configure.html">kconnect configure</a>	 - Set and view your kconnect configuration.</li>
+<li><a href="commands/config.html">kconnect config</a>	 - Set and view your kconnect configuration.</li>
 <li><a href="commands/logout.html">kconnect logout</a>	 - Logs out of a cluster</li>
 <li><a href="commands/ls.html">kconnect ls</a>	 - Query the user’s connection history</li>
 <li><a href="commands/to.html">kconnect to</a>	 - Reconnect to a connection history entry.</li>
@@ -363,8 +364,8 @@ connection history entries.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-1" id="see-also-1">SEE ALSO</a></h3>
@@ -408,8 +409,8 @@ the alias instead of the connection history entry’s unique ID.</p>
 <h3><a class="header" href="#options-inherited-from-parent-commands-1" id="options-inherited-from-parent-commands-1">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --no-input                  Explicitly disable interactivity when running in a terminal
       --no-version-check          If set to true kconnect will not check for a newer version
-      --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-2" id="see-also-2">SEE ALSO</a></h3>
@@ -452,8 +453,8 @@ user’s connection history.</p>
 <h3><a class="header" href="#options-inherited-from-parent-commands-2" id="options-inherited-from-parent-commands-2">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --no-input                  Explicitly disable interactivity when running in a terminal
       --no-version-check          If set to true kconnect will not check for a newer version
-      --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-3" id="see-also-3">SEE ALSO</a></h3>
@@ -499,8 +500,8 @@ the user’s connection history.</p>
 <h3><a class="header" href="#options-inherited-from-parent-commands-3" id="options-inherited-from-parent-commands-3">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string             Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
       --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+      --no-input                  Explicitly disable interactivity when running in a terminal
       --no-version-check          If set to true kconnect will not check for a newer version
-      --non-interactive           Run without interactive flag resolution
   -v, --verbosity int             Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-4" id="see-also-4">SEE ALSO</a></h3>
@@ -510,7 +511,7 @@ the user’s connection history.</p>
 <blockquote>
 <p>NOTE: this page is auto-generated from the cobra commands</p>
 </blockquote>
-<h2><a class="header" href="#kconnect-configure" id="kconnect-configure">kconnect configure</a></h2>
+<h2><a class="header" href="#kconnect-config" id="kconnect-config">kconnect config</a></h2>
 <p>Set and view your kconnect configuration.</p>
 <h3><a class="header" href="#synopsis-5" id="synopsis-5">Synopsis</a></h3>
 <p>The configure command creates kconnect configuration files and displays 
@@ -521,35 +522,35 @@ current user’s $HOME/.kconnect/config.yaml file.</p>
 system or a new user via the -f flag and a local filename or remote URL.</p>
 <p>The user typically only needs to use this command the first time they use 
 kconnect.</p>
-<pre><code class="language-bash">kconnect configure [flags]
+<pre><code class="language-bash">kconnect config [flags]
 </code></pre>
 <h3><a class="header" href="#examples-5" id="examples-5">Examples</a></h3>
 <pre><code class="language-bash">
   # Display user's current configurations
-  kconnect configure
+  kconnect config
 
   # Display the user's configurations as json
-  kconnect configure --output json
+  kconnect config --output json
 
   # Set the user's configurations from a local file
-  kconnect configure -f ./defaults.yaml
+  kconnect config -f ./defaults.yaml
 
   # Set the user's configurations from a remote location via HTTP
-  kconnect configure -f https://mycompany.com/config.yaml
+  kconnect config -f https://mycompany.com/config.yaml
 
   # Set the user's configurations from stdin
-  cat ./config.yaml | kconnect configure -f -
+  cat ./config.yaml | kconnect config -f -
 
 </code></pre>
 <h3><a class="header" href="#options-5" id="options-5">Options</a></h3>
 <pre><code class="language-bash">  -f, --file string     File or remote location to use to set the default configuration
-  -h, --help            help for configure
+  -h, --help            help for config
       --output string   Controls the output format for the result. (default &quot;yaml&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-4" id="options-inherited-from-parent-commands-4">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-5" id="see-also-5">SEE ALSO</a></h3>
@@ -564,9 +565,9 @@ kconnect.</p>
 <h3><a class="header" href="#synopsis-6" id="synopsis-6">Synopsis</a></h3>
 <p>Query and display the user’s connection history entries, including entry IDs and
 aliases.</p>
-<p>Each time kconnect creates a new kubectl context to connect to a Kubernetes 
-cluster, it saves the settings for the new connection as an entry in the user’s 
-connection history.  The user can then reconnect using those same settings later 
+<p>Each time kconnect creates a new kubectl context to connect to a Kubernetes
+cluster, it saves the settings for the new connection as an entry in the user’s
+connection history.  The user can then reconnect using those same settings later
 via the connection history entry’s ID or alias.</p>
 <pre><code class="language-bash">kconnect ls [flags]
 </code></pre>
@@ -584,7 +585,7 @@ via the connection history entry’s ID or alias.</p>
   # Display a specific connection history entry by its alias
   kconnect ls --alias mydev
 
-  # Display all connection history entries for the EKS mamaged cluster provider
+  # Display all connection history entries for the EKS managed cluster provider
   kconnect ls --cluster-provider eks
 
   # Reconnect using the connection history entry alias
@@ -606,8 +607,8 @@ via the connection history entry’s ID or alias.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-5" id="options-inherited-from-parent-commands-5">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-6" id="see-also-6">SEE ALSO</a></h3>
@@ -669,8 +670,8 @@ Otherwise kconnect will promot the user to enter their password.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-6" id="options-inherited-from-parent-commands-6">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-7" id="see-also-7">SEE ALSO</a></h3>
@@ -724,8 +725,8 @@ specified cluster provider.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-7" id="options-inherited-from-parent-commands-7">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-8" id="see-also-8">SEE ALSO</a></h3>
@@ -792,8 +793,8 @@ token.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-8" id="options-inherited-from-parent-commands-8">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#idp-protocol-options" id="idp-protocol-options">IDP Protocol Options</a></h3>
@@ -876,8 +877,8 @@ token.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-9" id="options-inherited-from-parent-commands-9">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#idp-protocol-options-1" id="idp-protocol-options-1">IDP Protocol Options</a></h3>
@@ -951,8 +952,8 @@ token.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-10" id="options-inherited-from-parent-commands-10">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#idp-protocol-options-2" id="idp-protocol-options-2">IDP Protocol Options</a></h3>
@@ -986,8 +987,8 @@ token.</p>
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-11" id="options-inherited-from-parent-commands-11">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
+      --no-input           Explicitly disable interactivity when running in a terminal
       --no-version-check   If set to true kconnect will not check for a newer version
-      --non-interactive    Run without interactive flag resolution
   -v, --verbosity int      Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace.
 </code></pre>
 <h3><a class="header" href="#see-also-12" id="see-also-12">SEE ALSO</a></h3>
