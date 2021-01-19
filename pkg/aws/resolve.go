@@ -25,12 +25,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/resolve"
+	"github.com/fidelity/kconnect/pkg/prompts"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 func ResolvePartition(item *config.Item, cs config.ConfigurationSet) error {
-	return resolve.Choose(cs, PartitionConfigItem, item.ResolutionPrompt, item.Required, awsPartitionOptions)
+	return prompts.Choose(cs, item.Name, item.ResolutionPrompt, item.Required, awsPartitionOptions)
 }
 
 func ResolveRegion(item *config.Item, cs config.ConfigurationSet) error {

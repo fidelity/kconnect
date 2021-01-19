@@ -23,8 +23,6 @@ import (
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
@@ -43,28 +41,28 @@ func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 	return nil
 }
 
-// Resolve will resolve the values for the AWS specific flags that have no value. It will
+// Resolve will resolve the values for the azure specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
-	if err := p.setup(cfg, identity); err != nil {
-		return fmt.Errorf("setting up aks provider: %w", err)
-	}
-	p.logger.Debug("resolving Azure configuration items")
+// func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
+// 	if err := p.setup(cfg, identity); err != nil {
+// 		return fmt.Errorf("setting up aks provider: %w", err)
+// 	}
+// 	p.logger.Debug("resolving Azure configuration items")
 
-	if cfg.ExistsWithValue(SubscriptionIDConfigItem) && cfg.ExistsWithValue(SubscriptionNameConfigItem) {
-		return ErrSubscriptionNameOrID
-	}
+// 	if cfg.ExistsWithValue(SubscriptionIDConfigItem) && cfg.ExistsWithValue(SubscriptionNameConfigItem) {
+// 		return ErrSubscriptionNameOrID
+// 	}
 
-	if err := p.resolveSubscripionName(cfg); err != nil {
-		return fmt.Errorf("resolving subscription name: %w", err)
-	}
+// 	if err := p.resolveSubscripionName(cfg); err != nil {
+// 		return fmt.Errorf("resolving subscription name: %w", err)
+// 	}
 
-	if err := resolve.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
-		return fmt.Errorf("resolving %s: %w", SubscriptionIDConfigItem, err)
-	}
+// 	if err := prompts.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
+// 		return fmt.Errorf("resolving %s: %w", SubscriptionIDConfigItem, err)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (p *aksClusterProvider) resolveSubscripionName(cfg config.ConfigurationSet) error {
 	if !cfg.ExistsWithValue(SubscriptionNameConfigItem) {

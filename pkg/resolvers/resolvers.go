@@ -23,7 +23,6 @@ import (
 
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 func IdpProvider(item *config.Item, cs config.ConfigurationSet) error {
@@ -44,15 +43,6 @@ func IdpProvider(item *config.Item, cs config.ConfigurationSet) error {
 	}
 
 	return nil
-}
-
-func IdpEndpoint(item *config.Item, cs config.ConfigurationSet) error {
-	// if cs.ValueIsList(item.Name) {
-	// 	listName := cs.ValueString(item.Name)
-	// 	return resolve.ChooseFromList(cs, item.Name, item.ResolutionPrompt, item.Required, listName)
-	// } else {
-	return resolve.Input(cs, item.Name, item.ResolutionPrompt, item.Required)
-	//}
 }
 
 // Username will interactively resolve the username config item

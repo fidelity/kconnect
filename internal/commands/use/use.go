@@ -32,8 +32,8 @@ import (
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
+	"github.com/fidelity/kconnect/pkg/prompts"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 var (
@@ -403,7 +403,7 @@ func ResolveConfig(cs config.ConfigurationSet) error {
 	for _, item := range items {
 		if cs.ValueIsList(item.Name) {
 			listName := cs.ValueString(item.Name)
-			if err := resolve.ChooseFromList(cs, item.Name, item.ResolutionPrompt, item.Required, listName); err != nil {
+			if err := prompts.ChooseFromList(cs, item.Name, item.ResolutionPrompt, item.Required, listName); err != nil {
 				return fmt.Errorf("getting list selection for %s: %w", item.Name, err)
 			}
 			continue
@@ -423,7 +423,7 @@ func ResolveConfig(cs config.ConfigurationSet) error {
 					prompt = fmt.Sprintf("Enter %s:", strings.Title(item.Name))
 				}
 
-				if err := resolve.Input(cs, item.Name, prompt, item.Required); err != nil {
+				if err := prompts.Input(cs, item.Name, prompt, item.Required); err != nil {
 					return fmt.Errorf("prompting user for required config %s: %w", item.Name, err)
 				}
 			}

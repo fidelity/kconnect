@@ -18,9 +18,9 @@ package rancher
 
 import (
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/resolve"
+	"github.com/fidelity/kconnect/pkg/prompts"
 )
 
 func ResolveAPIEndpoint(item *config.Item, cs config.ConfigurationSet) error {
-	return resolve.Input(cs, APIEndpointConfigName, item.ResolutionPrompt, item.Required)
+	return prompts.Input(cs, APIEndpointConfigName, item.ResolutionPrompt, item.Required)
 }

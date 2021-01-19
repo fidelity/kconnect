@@ -30,19 +30,23 @@ var (
 
 // Item represents a configuration item
 type Item struct {
-	Name              string
-	Shorthand         string
-	Type              ItemType
-	Description       string
-	Sensitive         bool
-	ResolutionPrompt  string
-	Value             interface{}
-	DefaultValue      interface{}
-	Required          bool
-	Hidden            bool
+	Name             string
+	Shorthand        string
+	Type             ItemType
+	Description      string
+	ResolutionPrompt string
+	Value            interface{}
+	DefaultValue     interface{}
+
+	Sensitive bool
+	Required  bool
+	Hidden    bool
+
 	Deprecated        bool
-	DeprecatedMessage string
-	HistoryIgnore     bool
+	DeprecatedAction  DeprecationAction
+	DeprecatedSubject string
+
+	HistoryIgnore bool
 
 	Priority int //Higher priority are evaluated later
 }
@@ -62,6 +66,13 @@ func (i *Item) HasValue() bool {
 
 	return true
 }
+
+type DeprecationAction string
+
+var (
+	DeprecationActionMessage   = DeprecationAction("message")
+	DeprecationActionCopyValue = DeprecationAction("copy-value")
+)
 
 type ItemType string
 
@@ -87,7 +98,7 @@ type ConfigurationSet interface {
 	SetRequired(name string) error
 	SetRequiredWithPrompt(name, prompt string) error
 	SetHidden(name string) error
-	SetDeprecated(name string, message string) error
+	SetDeprecated(name string, action DeprecationAction, subject string) error
 	SetValue(name string, value interface{}) error
 	SetShort(name string, shorthand string) error
 	SetPriority(name string, priority int) error
@@ -263,14 +274,15 @@ func (s *configSet) SetHidden(name string) error {
 	return nil
 }
 
-func (s *configSet) SetDeprecated(name string, message string) error {
+func (s *configSet) SetDeprecated(name string, action DeprecationAction, subject string) error {
 	item := s.Get(name)
 	if item == nil {
 		return ErrConfigNotFound
 	}
 
 	item.Deprecated = true
-	item.DeprecatedMessage = message
+	item.DeprecatedAction = action
+	item.DeprecatedSubject = subject
 
 	return nil
 }

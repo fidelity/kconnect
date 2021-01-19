@@ -71,13 +71,21 @@ func (p *aksClusterProvider) SupportedIDs() []string {
 func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
 
+	cs.String(SubscriptionConfigItem, "", "The Azure subscription to use (specified by ID or name)") //nolint: errcheck
+	cs.SetRequiredWithPrompt(SubscriptionConfigItem, "Azure subscription to use")
+	cs.SetPriority(SubscriptionConfigItem, 10)
+
+	cs.Bool(AdminConfigItem, false, "Generate admin user kubeconfig")   //nolint: errcheck
+	cs.String(ClusterNameConfigItem, "", "The name of the AKS cluster") //nolint: errcheck
+
+	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use") //nolint: errcheck
+	cs.SetShort(ResourceGroupConfigItem, "r")                                 //nolint: errcheck
+
+	// DEPRECATED subscription-id/subscription-name in favor of a generic subscrion item
 	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use (specified by ID)")     //nolint: errcheck
 	cs.String(SubscriptionNameConfigItem, "", "The Azure subscription to use (specified by name)") //nolint: errcheck
-	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use")                      //nolint: errcheck
-	cs.Bool(AdminConfigItem, false, "Generate admin user kubeconfig")                              //nolint: errcheck
-	cs.String(ClusterNameConfigItem, "", "The name of the AKS cluster")                            //nolint: errcheck
-
-	cs.SetShort(ResourceGroupConfigItem, "r") //nolint: errcheck
+	cs.SetDeprecated(SubscriptionIDConfigItem, config.DeprecationActionCopyValue, SubscriptionConfigItem)
+	cs.SetDeprecated(SubscriptionNameConfigItem, config.DeprecationActionCopyValue, SubscriptionConfigItem)
 
 	return cs
 }

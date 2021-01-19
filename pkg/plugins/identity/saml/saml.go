@@ -27,13 +27,13 @@ import (
 	"github.com/versent/saml2aws/pkg/creds"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/resolvers"
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/resolvers"
 )
 
 var (
@@ -41,10 +41,6 @@ var (
 	ErrUnsuportedProvider = errors.New("cluster provider not supported")
 	ErrNoSAMLAssertions   = errors.New("no SAML assertions")
 	ErrCreatingAccount    = errors.New("creating account")
-
-	// serviceProviders = map[string]sp.ServiceProvider{
-	// 	"eks": aws.NewServiceProvider(),
-	// }
 )
 
 const (
@@ -86,7 +82,7 @@ func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (c
 	cs.SetRequiredWithPrompt("idp-endpoint", "Endpoint for the IdP")                     //nolint: errcheck
 	cs.SetRequiredWithPrompt("idp-provider", "Your identity provider")                   //nolint: errcheck
 	cs.SetResolver("idp-provider", resolvers.IdpProvider)
-	cs.SetResolver("idp-endpoint", resolvers.IdpEndpoint)
+	//cs.SetResolver("idp-endpoint", resolvers.IdpEndpoint)
 	cs.SetPriority("idp-endpoint", 10)
 
 	// get the service provider flags

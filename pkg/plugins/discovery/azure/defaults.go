@@ -20,8 +20,9 @@ const (
 	TenantIDConfigItem         = "tenant-id"
 	ClientIDConfigItem         = "client-id"
 	AADHostConfigItem          = "aad-host"
-	SubscriptionIDConfigItem   = "subscription-id"
-	SubscriptionNameConfigItem = "subscription-name"
+	SubscriptionIDConfigItem   = "subscription-id"   // Deprecated
+	SubscriptionNameConfigItem = "subscription-name" // Deprecated
+	SubscriptionConfigItem     = "subscription"
 	ResourceGroupConfigItem    = "resource-group"
 	AdminConfigItem            = "admin"
 	ClusterNameConfigItem      = "cluster-name"
