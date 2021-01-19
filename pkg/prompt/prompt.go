@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resolve
+package prompt
 
 import (
 	"fmt"
@@ -23,51 +23,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
 )
-
-// Username will interactively resolve the username config item
-func Username(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(defaults.UsernameConfigItem) {
-		return nil
-	}
-
-	username := ""
-	prompt := &survey.Input{
-		Message: "Enter your username",
-	}
-	if err := survey.AskOne(prompt, &username, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for username name: %w", err)
-	}
-
-	if err := cfg.SetValue(defaults.UsernameConfigItem, username); err != nil {
-		return fmt.Errorf("setting username config: %w", err)
-	}
-
-	return nil
-}
-
-// Password will interactively resolve the password config item
-func Password(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(defaults.PasswordConfigItem) {
-		return nil
-	}
-
-	password := ""
-	prompt := &survey.Password{
-		Message: "Enter your password",
-	}
-	if err := survey.AskOne(prompt, &password, survey.WithValidator(survey.Required)); err != nil {
-		return fmt.Errorf("asking for password name: %w", err)
-	}
-
-	if err := cfg.SetValue(defaults.PasswordConfigItem, password); err != nil {
-		return fmt.Errorf("setting password config: %w", err)
-	}
-
-	return nil
-}
 
 // Input will resolve a configuration item by asking the user to enter a value
 func Input(cfg config.ConfigurationSet, name, message string, required bool) error {
@@ -77,6 +34,35 @@ func Input(cfg config.ConfigurationSet, name, message string, required bool) err
 
 	enteredValue := ""
 	prompt := &survey.Input{
+		Message: message,
+	}
+	opts := []survey.AskOpt{}
+
+	if required {
+		opts = append(opts, survey.WithValidator(survey.Required))
+	}
+
+	if err := survey.AskOne(prompt, &enteredValue, opts...); err != nil {
+		return fmt.Errorf("asking for %s name: %w", name, err)
+	}
+
+	if err := cfg.SetValue(name, enteredValue); err != nil {
+		return fmt.Errorf("setting %s config: %w", name, err)
+	}
+	zap.S().Debugw("resolved config item", "name", name, "value", enteredValue)
+
+	return nil
+}
+
+// InputSensitive will resolve a configuration item by asking the user to enter a value
+// but it won't show the value eneterd
+func InputSensitive(cfg config.ConfigurationSet, name, message string, required bool) error {
+	if cfg.ExistsWithValue(name) {
+		return nil
+	}
+
+	enteredValue := ""
+	prompt := &survey.Password{
 		Message: message,
 	}
 	opts := []survey.AskOpt{}

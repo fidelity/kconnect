@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The kconnect Authors.
+Copyright 2021 The kconnect Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rancher
+package config
 
-import (
-	"fmt"
+import "errors"
 
-	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/prompt"
+var (
+	ErrListNotFound = errors.New("list not found")
 )
-
-// ResolveCommon will interactively resolve the common configuration for rancher
-func ResolveCommon(cfg config.ConfigurationSet) error {
-	if err := prompt.Input(cfg, APIEndpointConfigName, "Enter the Rancher API endpoint", true); err != nil {
-		return fmt.Errorf("resolving %s: %w", APIEndpointConfigName, err)
-	}
-
-	return nil
-}

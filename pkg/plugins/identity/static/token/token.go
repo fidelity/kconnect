@@ -23,8 +23,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 const (
@@ -118,7 +118,7 @@ func (p *staticTokenIdentityProvider) resolveConfig(ctx *provider.Context) error
 
 	cfg := ctx.ConfigurationItems()
 
-	if err := resolve.Input(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
+	if err := prompt.Input(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
 	}
 

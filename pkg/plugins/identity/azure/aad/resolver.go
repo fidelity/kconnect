@@ -22,8 +22,8 @@ import (
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 func (p *aadIdentityProvider) resolveConfig(ctx *provider.Context) error {
@@ -33,19 +33,19 @@ func (p *aadIdentityProvider) resolveConfig(ctx *provider.Context) error {
 
 	cfg := ctx.ConfigurationItems()
 
-	if err := resolve.Username(cfg); err != nil {
+	if err := prompt.Input(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
-	if err := resolve.Password(cfg); err != nil {
+	if err := prompt.InputSensitive(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}
-	if err := resolve.Input(cfg, azure.TenantIDConfigItem, "Enter the Azure tenant ID", true); err != nil {
+	if err := prompt.Input(cfg, azure.TenantIDConfigItem, "Enter the Azure tenant ID", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.TenantIDConfigItem, err)
 	}
-	if err := resolve.Input(cfg, azure.ClientIDConfigItem, "Enter the Azure client ID", true); err != nil {
+	if err := prompt.Input(cfg, azure.ClientIDConfigItem, "Enter the Azure client ID", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.ClientIDConfigItem, err)
 	}
-	if err := resolve.Choose(cfg, azure.AADHostConfigItem, "Choose the Azure AAD host", true, aadHostOptions); err != nil {
+	if err := prompt.Choose(cfg, azure.AADHostConfigItem, "Choose the Azure AAD host", true, aadHostOptions); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.ClientIDConfigItem, err)
 	}
 
