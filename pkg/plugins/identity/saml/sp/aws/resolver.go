@@ -21,15 +21,15 @@ import (
 
 	survey "github.com/AlecAivazis/survey/v2"
 
+	"github.com/fidelity/kconnect/internal/defaults"
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/resolve"
+	"github.com/fidelity/kconnect/pkg/prompt"
 )
 
 // ResolveConfiguration will resolve the values for the AWS specific config items that have no value.
 // It will query AWS and interactively ask the user for selections.
 func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) error {
-	p.ensureLogger()
 	p.logger.Debug("resolving AWS identity configuration items")
 
 	// NOTE: resolution is only needed for required fields
@@ -46,12 +46,11 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 	if err := kaws.ResolveRegion(cfg); err != nil {
 		return fmt.Errorf("resolving region: %w", err)
 	}
-	if err := resolve.Password(cfg); err != nil {
-		return fmt.Errorf("resolving password: %w", err)
+	if err := prompt.Input(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
+		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
-
-	if err := resolve.Username(cfg); err != nil {
-		return fmt.Errorf("resolving username: %w", err)
+	if err := prompt.InputSensitive(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
+		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}
 
 	return nil

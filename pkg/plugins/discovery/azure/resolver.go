@@ -23,8 +23,8 @@ import (
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
@@ -59,7 +59,7 @@ func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provi
 		return fmt.Errorf("resolving subscription name: %w", err)
 	}
 
-	if err := resolve.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
+	if err := prompt.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
 		return fmt.Errorf("resolving %s: %w", SubscriptionIDConfigItem, err)
 	}
 

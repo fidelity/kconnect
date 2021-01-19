@@ -20,9 +20,9 @@ import (
 	"fmt"
 
 	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
 	rshared "github.com/fidelity/kconnect/pkg/rancher"
-	"github.com/fidelity/kconnect/pkg/resolve"
 )
 
 func (p *radIdentityProvider) resolveConfig(ctx *provider.Context) error {
@@ -32,10 +32,10 @@ func (p *radIdentityProvider) resolveConfig(ctx *provider.Context) error {
 
 	cfg := ctx.ConfigurationItems()
 
-	if err := resolve.Username(cfg); err != nil {
+	if err := prompt.Input(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
-	if err := resolve.Password(cfg); err != nil {
+	if err := prompt.InputSensitive(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}
 	if err := rshared.ResolveCommon(cfg); err != nil {

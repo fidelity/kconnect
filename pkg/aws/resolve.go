@@ -29,7 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/resolve"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
@@ -38,7 +38,7 @@ func ResolvePartition(cfg config.ConfigurationSet) error {
 		return nil
 	}
 
-	return resolve.Choose(cfg, PartitionConfigItem, "Select the AWS partition", true, awsPartitionOptions)
+	return prompt.Choose(cfg, PartitionConfigItem, "Select the AWS partition", true, awsPartitionOptions)
 }
 
 func ResolveRegion(cfg config.ConfigurationSet) error {
