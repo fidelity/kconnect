@@ -17,28 +17,18 @@ limitations under the License.
 package aws
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/prompt"
-	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 func ResolvePartition(cfg config.ConfigurationSet) error {
-	if cfg.ExistsWithValue(PartitionConfigItem) {
-		return nil
-	}
-
-	return prompt.Choose(cfg, PartitionConfigItem, "Select the AWS partition", true, awsPartitionOptions)
+	return prompt.ChooseAndSet(cfg, PartitionConfigItem, "Select the AWS partition", true, awsPartitionOptions)
 }
 
 func ResolveRegion(cfg config.ConfigurationSet) error {
@@ -80,22 +70,9 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 	}
 	sort.Slice(options, func(i, j int) bool { return options[i] < options[j] })
 
-	region := ""
-	prompt := &survey.Select{
-		Message: "Select an AWS region",
-		Options: options,
-		Filter:  utils.SurveyFilter,
-	}
-	if err := survey.AskOne(prompt, &region, survey.WithValidator(survey.Required)); err != nil {
-		if errors.Is(err, terminal.InterruptErr) {
-			zap.S().Info("Received interrupt, exiting..")
-			os.Exit(0)
-		}
-		return fmt.Errorf("asking for region: %w", err)
-	}
-
-	if err := cfg.SetValue(RegionConfigItem, region); err != nil {
-		return fmt.Errorf("setting region config: %w", err)
+	err := prompt.ChooseAndSet(cfg, RegionConfigItem, "Select an AWS region", true, prompt.OptionsFromStringSlice(options))
+	if err != nil {
+		return fmt.Errorf("choosing and setting %s: %w", RegionConfigItem, err)
 	}
 
 	return nil

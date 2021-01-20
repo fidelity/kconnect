@@ -118,7 +118,7 @@ func (p *staticTokenIdentityProvider) resolveConfig(ctx *provider.Context) error
 
 	cfg := ctx.ConfigurationItems()
 
-	if err := prompt.Input(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
+	if err := prompt.InputAndSet(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
 	}
 

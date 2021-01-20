@@ -161,8 +161,6 @@ func (p *ServiceProvider) setProfileName(profileName string, cfg config.Configur
 }
 
 func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertion string, account *cfg.IDPAccount, roleFilter string) (*saml2aws.AWSRole, error) {
-	var role = new(saml2aws.AWSRole)
-
 	if len(awsRoles) == 1 {
 		if account.RoleARN != "" {
 			return saml2aws.LocateRole(awsRoles, account.RoleARN)
@@ -202,7 +200,7 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 		return saml2aws.LocateRole(awsRoles, account.RoleARN)
 	}
 
-	role, err = p.getRoleFromPrompt(awsAccounts, roleFilter)
+	role, err := p.getRoleFromPrompt(awsAccounts, roleFilter)
 	if err == nil {
 		return nil, fmt.Errorf("getting role: %w", err)
 	}

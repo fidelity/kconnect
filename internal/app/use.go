@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strconv"
 
-	survey "github.com/AlecAivazis/survey/v2"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/clientcmd"
@@ -28,6 +27,7 @@ import (
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/k8s/kubeconfig"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -227,11 +227,8 @@ func (a *App) resolveAndCheckAlias(params *UseParams) error {
 }
 
 func (a *App) resolveAlias() (string, error) {
-	useAlias := false
-	promptUse := &survey.Confirm{
-		Message: "Do you want to set an alias?",
-	}
-	if err := survey.AskOne(promptUse, &useAlias); err != nil {
+	useAlias, err := prompt.Confirm("use-alias", "Do you want to set an alias?", false)
+	if err != nil {
 		return "", err
 	}
 
@@ -239,11 +236,8 @@ func (a *App) resolveAlias() (string, error) {
 		return "", nil
 	}
 
-	alias := ""
-	promptAliasName := &survey.Input{
-		Message: "Enter the alias name",
-	}
-	if err := survey.AskOne(promptAliasName, &alias); err != nil {
+	alias, err := prompt.Input("alias", "Enter the alias name", false)
+	if err != nil {
 		return "", err
 	}
 

@@ -32,10 +32,10 @@ func (p *radIdentityProvider) resolveConfig(ctx *provider.Context) error {
 
 	cfg := ctx.ConfigurationItems()
 
-	if err := prompt.Input(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
+	if err := prompt.InputAndSet(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
-	if err := prompt.InputSensitive(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
+	if err := prompt.InputSensitiveAndSet(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}
 	if err := rshared.ResolveCommon(cfg); err != nil {

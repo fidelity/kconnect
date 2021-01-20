@@ -25,7 +25,7 @@ import (
 
 // ResolveCommon will interactively resolve the common configuration for rancher
 func ResolveCommon(cfg config.ConfigurationSet) error {
-	if err := prompt.Input(cfg, APIEndpointConfigName, "Enter the Rancher API endpoint", true); err != nil {
+	if err := prompt.InputAndSet(cfg, APIEndpointConfigName, "Enter the Rancher API endpoint", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", APIEndpointConfigName, err)
 	}
 
