@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	// ListPrefix is teh prefix for a list name
+	// ListPrefix is the prefix for a list name
 	ListPrefix = "$"
 )
 

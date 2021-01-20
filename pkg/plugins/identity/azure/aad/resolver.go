@@ -29,23 +29,24 @@ import (
 func (p *aadIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	if !ctx.IsInteractive() {
 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
+		return nil
 	}
 
 	cfg := ctx.ConfigurationItems()
 
-	if err := prompt.Input(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
+	if err := prompt.InputAndSet(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
-	if err := prompt.InputSensitive(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
+	if err := prompt.InputSensitiveAndSet(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}
-	if err := prompt.Input(cfg, azure.TenantIDConfigItem, "Enter the Azure tenant ID", true); err != nil {
+	if err := prompt.InputAndSet(cfg, azure.TenantIDConfigItem, "Enter the Azure tenant ID", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.TenantIDConfigItem, err)
 	}
-	if err := prompt.Input(cfg, azure.ClientIDConfigItem, "Enter the Azure client ID", true); err != nil {
+	if err := prompt.InputAndSet(cfg, azure.ClientIDConfigItem, "Enter the Azure client ID", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.ClientIDConfigItem, err)
 	}
-	if err := prompt.Choose(cfg, azure.AADHostConfigItem, "Choose the Azure AAD host", true, aadHostOptions); err != nil {
+	if err := prompt.ChooseAndSet(cfg, azure.AADHostConfigItem, "Choose the Azure AAD host", true, aadHostOptions); err != nil {
 		return fmt.Errorf("resolving %s: %w", azure.ClientIDConfigItem, err)
 	}
 

@@ -19,12 +19,12 @@ package app
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/history"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
 )
 
@@ -83,22 +83,11 @@ func DefaultSelectCluster(discoverOutput *provider.DiscoverOutput) (*provider.Cl
 		options = append(options, cluster.Name)
 	}
 
-	if len(options) == 1 {
-		clusterID := clusterNameToID[options[0]]
-		zap.S().Debugw("only 1 cluster, auto selecting", "id", clusterID)
-		return discoverOutput.Clusters[clusterID], nil
+	clusterName, err := prompt.Choose("cluster", "Select a cluster", true, prompt.OptionsFromStringSlice(options))
+	if err != nil {
+		return nil, fmt.Errorf("choosing cluster: %w", err)
 	}
 
-	clusterName := ""
-	prompt := &survey.Select{
-		Message:  "Select a cluster",
-		Options:  options,
-		PageSize: defaults.DefaultUIPageSize,
-		Help:     "Select a cluster to connect to from the discovered clusters",
-	}
-	if err := survey.AskOne(prompt, &clusterName, survey.WithValidator(survey.Required)); err != nil {
-		return nil, fmt.Errorf("selecting a cluster: %w", err)
-	}
 	clusterID := clusterNameToID[clusterName]
 	zap.S().Debugw("selected cluster", "id", clusterID)
 

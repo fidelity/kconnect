@@ -25,13 +25,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/AlecAivazis/survey/v2"
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/printer"
+	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 type ConnectToParams struct {
@@ -164,15 +163,11 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 		return nil, fmt.Errorf("getting history entrie options: %w", err)
 	}
 
-	selectedEntryString := ""
-	prompt := &survey.Select{
-		Message: "Select a history entry",
-		Options: options,
-		Filter:  utils.SurveyFilter,
-	}
-	if err := survey.AskOne(prompt, &selectedEntryString, survey.WithValidator(survey.Required)); err != nil {
+	selectedEntryString, err := prompt.Choose("history-entry", "Select a history entry", true, prompt.OptionsFromStringSlice(options))
+	if err != nil {
 		return nil, fmt.Errorf("asking for entry: %w", err)
 	}
+
 	// Get the name (ID) of the entry, which is the first alphanumerical string in the row
 	nameRegex := regexp.MustCompile("[a-zA-Z0-9]+")
 	selectedEntryName := nameRegex.FindString(selectedEntryString)

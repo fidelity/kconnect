@@ -59,7 +59,7 @@ func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provi
 		return fmt.Errorf("resolving subscription name: %w", err)
 	}
 
-	if err := prompt.Choose(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
+	if err := prompt.ChooseAndSet(cfg, SubscriptionIDConfigItem, "Choose the Azure subscription", true, p.subscriptionOptions); err != nil {
 		return fmt.Errorf("resolving %s: %w", SubscriptionIDConfigItem, err)
 	}
 

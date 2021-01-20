@@ -17,16 +17,10 @@ limitations under the License.
 package provider
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"sort"
 
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/AlecAivazis/survey/v2/terminal"
-	"go.uber.org/zap"
-
-	"github.com/fidelity/kconnect/pkg/utils"
+	"github.com/fidelity/kconnect/pkg/prompt"
 )
 
 // SelectItemFunc is a function that is used abstract the method for selecting
@@ -34,7 +28,7 @@ import (
 // ask the user for input and instead should use this.
 type SelectItemFunc func(prompt string, items map[string]string) (string, error)
 
-func DefaultItemSelection(prompt string, items map[string]string) (string, error) {
+func DefaultItemSelection(promptMessage string, items map[string]string) (string, error) {
 	options := []string{}
 
 	for key := range items {
@@ -45,18 +39,9 @@ func DefaultItemSelection(prompt string, items map[string]string) (string, error
 	}
 
 	sort.Strings(options)
-	selectedItem := ""
-	selectPrompt := &survey.Select{
-		Message: prompt,
-		Options: options,
-		Filter:  utils.SurveyFilter,
-	}
-	if err := survey.AskOne(selectPrompt, &selectedItem, survey.WithValidator(survey.Required)); err != nil {
-		if errors.Is(err, terminal.InterruptErr) {
-			zap.S().Info("Received interrupt, exiting..")
-			os.Exit(0)
-		}
-		return "", fmt.Errorf("asking for role: %w", err)
+	selectedItem, err := prompt.Choose("item", promptMessage, true, prompt.OptionsFromMap(items))
+	if err != nil {
+		return "", fmt.Errorf("selecting item: %w", err)
 	}
 
 	return items[selectedItem], nil
