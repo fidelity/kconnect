@@ -28,14 +28,14 @@ kconnect use aks [flags]
 
 ```bash
   # Discover AKS clusters using Azure AD
-	kconnect use aks --idp-protocol aad
+  kconnect use aks --idp-protocol aad
 
-	# Discover AKS clusters using file based credentials
-	export AZURE_TENANT_ID="123455"
-	export AZURE_CLIENT_ID="76849"
-	export AZURE_CLIENT_SECRET="supersecret"
-	kconnect use aks --idp-protocol az-env
-  
+  # Discover AKS clusters using file based credentials
+  export AZURE_TENANT_ID="123455"
+  export AZURE_CLIENT_ID="76849"
+  export AZURE_CLIENT_SECRET="supersecret"
+  kconnect use aks --idp-protocol az-env
+
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
@@ -49,12 +49,14 @@ kconnect use aks [flags]
 ```bash
       --admin                      Generate admin user kubeconfig
   -a, --alias string               Friendly name to give to give the connection
+      --azure-env string           The Azure environment the clusters are in. Possible values: public,china,usgov,stack (default "public")
   -c, --cluster-id string          Id of the cluster to use.
       --cluster-name string        The name of the AKS cluster
   -h, --help                       help for aks
       --history-location string    Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
   -k, --kubeconfig string          Location of the kubeconfig to use. (default "$HOME/.kube/config")
+      --login-type string          The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi (default "devicecode")
       --max-history int            Sets the maximum number of history items to keep (default 100)
   -n, --namespace string           Sets namespace for context in kubeconfig
       --no-history                 If set to true then no history entry will be written

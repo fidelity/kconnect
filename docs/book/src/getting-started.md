@@ -6,7 +6,9 @@ Once you have [installed](installation.md) kconnect you can see a list of the co
 kconnect help
 ```
 
-<em>NOTE:</em> `kconnect` requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to authenticate to the AWS EKS cluster provider.
+<em>NOTE:</em> `kconnect` requires:
+* [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to authenticate to AWS EKS clusters.
+* [kubelogin](https://github.com/Azure/kubelogin) to authenticate to Azure AKS clusters.
 
 The general workflow for using kconnect is the following:
 

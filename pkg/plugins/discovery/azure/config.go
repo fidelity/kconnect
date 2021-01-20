@@ -19,14 +19,20 @@ package azure
 import (
 	"context"
 	"fmt"
+	"os"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
 
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
+)
+
+const (
+	AKSAADServerAppID = "6dae42f8-4368-4678-94ff-3960e28e3630"
 )
 
 func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.GetConfigInput) (*discovery.GetConfigOutput, error) {
@@ -35,6 +41,10 @@ func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 	cfg, err := p.getKubeconfig(ctx, input.Cluster)
 	if err != nil {
 		return nil, fmt.Errorf("getting kubeconfig: %w", err)
+	}
+	if !p.config.Admin {
+		p.addKubelogin(cfg)
+		p.printLoginDetails()
 	}
 
 	if input.Namespace != nil && *input.Namespace != "" {
@@ -47,6 +57,49 @@ func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 		ContextName: &cfg.CurrentContext,
 	}, nil
 
+}
+
+func (p *aksClusterProvider) printLoginDetails() {
+	if p.config.LoginType == LoginTypeResourceOwnerPassword {
+		fmt.Fprintf(os.Stderr, "\033[33mSet the AAD_USER_PRINCIPAL_NAME and AAD_USER_PRINCIPAL_PASSWORD environment variables before running kubectl\033[0m\n")
+	}
+	if p.config.LoginType == LoginTypeServicePrincipal {
+		fmt.Fprintf(os.Stderr, "\033[33mSet the AAD_SERVICE_PRINCIPAL_CLIENT_ID and AAD_SERVICE_PRINCIPAL_CLIENT_SECRET environment variables before running kubectl\033[0m\n")
+	}
+
+	if p.config.AzureEnvironment == EnvironmentStackCloud {
+		fmt.Fprintf(os.Stderr, "\033[33mSet the Azure Stack URLs in a config file and set the AZURE_ENVIRONMENT_FILEPATH environment variable to the path of that file\033[0m\n")
+	}
+}
+
+func (p *aksClusterProvider) addKubelogin(cfg *api.Config) {
+	contextName := cfg.CurrentContext
+	context := cfg.Contexts[contextName]
+	userName := context.AuthInfo
+
+	execConfig := &api.ExecConfig{
+		APIVersion: "client.authentication.k8s.io/v1beta1",
+		Command:    "kubelogin",
+		Args: []string{
+			"get-token",
+			"--environment",
+			mapAzureEnvironment(p.config.AzureEnvironment),
+			"--server-id",
+			AKSAADServerAppID,
+			"--client-id",
+			p.config.ClientID,
+			"--tenant-id",
+			p.config.TenantID,
+			"--login",
+			string(p.config.LoginType),
+		},
+	}
+
+	cfg.AuthInfos = map[string]*api.AuthInfo{
+		userName: {
+			Exec: execConfig,
+		},
+	}
 }
 
 func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discovery.Cluster) (*api.Config, error) {
@@ -78,4 +131,19 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discove
 	}
 
 	return kubeCfg, err
+}
+
+func mapAzureEnvironment(env Environment) string {
+	switch env {
+	case EnvironmentPublicCloud:
+		return "AzurePublicCloud"
+	case EnvironmentChinaCloud:
+		return "AzureChinaCloud"
+	case EnvironmentUSGovCloud:
+		return "AzureUSGovernmentCloud"
+	case EnvironmentStackCloud:
+		return "AzureStackCloud"
+	default:
+		return ""
+	}
 }

@@ -60,6 +60,7 @@ brews:
     description: "Kubernetes Connection Manager CLI"
     dependencies:
       - aws-iam-authenticator
+      - Azure/kubelogin/kubelogin
       - kubernetes-cli
     folder: Formula
 
