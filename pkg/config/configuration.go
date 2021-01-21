@@ -30,6 +30,11 @@ import (
 	"github.com/fidelity/kconnect/internal/defaults"
 )
 
+const (
+	// ListPrefix is the prefix for a list name
+	ListPrefix = "$"
+)
+
 type AppConfiguration interface {
 	Get() (*kconnectv1alpha.Configuration, error)
 	Save(configuration *kconnectv1alpha.Configuration) error

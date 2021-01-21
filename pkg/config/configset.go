@@ -16,7 +16,11 @@ limitations under the License.
 
 package config
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 var (
 	ErrConfigExistsAlready = errors.New("config item with same name already exists in set")
@@ -70,6 +74,8 @@ type ConfigurationSet interface {
 	GetAll() []*Item
 	Exists(name string) bool
 	ExistsWithValue(name string) bool
+	ValueIsList(name string) bool
+	ValueString(name string) string
 	Add(item *Item) error
 	AddSet(set ConfigurationSet) error
 	SetSensitive(name string) error
@@ -105,7 +111,46 @@ func (s *configSet) ExistsWithValue(name string) bool {
 		return false
 	}
 
-	return item.HasValue()
+	if !item.HasValue() {
+		return false
+	}
+
+	val := item.Value.(string)
+	return !strings.HasPrefix(val, ListPrefix)
+}
+
+func (s *configSet) ValueIsList(name string) bool {
+	item := s.Get(name)
+	if item == nil {
+		return false
+	}
+
+	if !item.HasValue() {
+		return false
+	}
+
+	val := s.ValueString(name)
+	return strings.HasPrefix(val, ListPrefix)
+}
+
+func (s *configSet) ValueString(name string) string {
+	item := s.Get(name)
+	if item == nil {
+		return ""
+	}
+
+	switch item.Type {
+	case ItemTypeString:
+		return item.Value.(string)
+	case ItemTypeInt:
+		intVal := item.Value.(int)
+		return fmt.Sprintf("%d", intVal)
+	case ItemTypeBool:
+		boolVal := item.Value.(bool)
+		return fmt.Sprintf("%t", boolVal)
+	default:
+		return ""
+	}
 }
 
 func (s *configSet) Get(name string) *Item {
