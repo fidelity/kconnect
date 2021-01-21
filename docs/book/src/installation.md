@@ -36,7 +36,13 @@ Alternatively you can download a binary from the latest [release](https://github
 
 ## Linux
 
-The latest [release](https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.
+To install on Linux you can use homebrew:
+
+```bash
+brew install fidelity/tap/kconnect
+```
+
+Alternatively, the latest [release](https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.
 
 We are working on publishing as a snap.
 
@@ -54,3 +60,14 @@ You can also use kconnect via Docker by using the images we publish to Docker Hu
 docker pull docker.io/kconnectcli/kconnect:latest
 docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml
 ```
+## Install script
+
+You can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:
+
+```bash
+curl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh
+chmod 700 install-kconnect.sh
+./install-kconnect.sh
+```
+
+This works on Linux, Macos and Windows (using GitBash terminal)
