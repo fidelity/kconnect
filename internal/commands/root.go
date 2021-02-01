@@ -34,6 +34,7 @@ import (
 	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	configcmd "github.com/fidelity/kconnect/internal/commands/config"
+	"github.com/fidelity/kconnect/internal/commands/history"
 	"github.com/fidelity/kconnect/internal/commands/logout"
 	"github.com/fidelity/kconnect/internal/commands/ls"
 	"github.com/fidelity/kconnect/internal/commands/to"
@@ -221,6 +222,12 @@ func addRootCommands(rootCmd *cobra.Command) error {
 		return fmt.Errorf("creating logout command: %w", err)
 	}
 	rootCmd.AddCommand(logoutCmd)
+
+	historyCmd, err := history.Command()
+	if err != nil {
+		return fmt.Errorf("creating history command: %w", err)
+	}
+	rootCmd.AddCommand(historyCmd)
 	return nil
 }
 

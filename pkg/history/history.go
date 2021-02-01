@@ -24,6 +24,7 @@ import (
 type Store interface {
 	Add(entry *historyv1alpha.HistoryEntry) error
 	Remove(entries []*historyv1alpha.HistoryEntry) error
+	SetHistoryList(historyList *historyv1alpha.HistoryEntryList) error
 
 	GetAll() (*historyv1alpha.HistoryEntryList, error)
 	GetByID(id string) (*historyv1alpha.HistoryEntry, error)

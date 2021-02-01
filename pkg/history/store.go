@@ -73,6 +73,11 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 	return s.loader.Save(historyList)
 }
 
+func (s *storeImpl) SetHistoryList(historyList *historyv1alpha.HistoryEntryList) error {
+
+	return s.loader.Save(historyList)
+}
+
 func (s *storeImpl) Remove(entries []*historyv1alpha.HistoryEntry) error {
 	historyList, err := s.loader.Load()
 	if err != nil {

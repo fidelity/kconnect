@@ -18,6 +18,8 @@ package history
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 )
@@ -80,7 +82,6 @@ func FilterEntry(entry *historyv1alpha.HistoryEntry, filterSpec *FilterSpec, fil
 			return false
 		}
 	}
-
 	return true
 }
 
@@ -88,38 +89,35 @@ func ByHistoryID(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.HistoryID == nil || *spec.HistoryID == "" {
 		return true
 	}
-
-	return entry.ObjectMeta.Name == *spec.HistoryID
+	return equalsWithWildcard(*spec.HistoryID, entry.ObjectMeta.Name)
 }
 
 func ByProviderID(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.ProviderID == nil || *spec.ProviderID == "" {
 		return true
 	}
-
-	return entry.Spec.ProviderID == *spec.ProviderID
+	return equalsWithWildcard(*spec.ProviderID, entry.Spec.ProviderID)
 }
 
 func ByAlias(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.Alias == nil || *spec.Alias == "" {
 		return true
 	}
-
-	return *entry.Spec.Alias == *spec.Alias
+	return equalsWithWildcard(*spec.Alias, *entry.Spec.Alias)
 }
 
 func ByClusterProvider(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.ClusterProvider == nil || *spec.ClusterProvider == "" {
 		return true
 	}
-	return entry.Spec.Provider == *spec.ClusterProvider
+	return equalsWithWildcard(*spec.ClusterProvider, entry.Spec.Provider)
 }
 
 func ByIdentityProvider(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.IdentityProvider == nil || *spec.IdentityProvider == "" {
 		return true
 	}
-	return entry.Spec.Identity == *spec.IdentityProvider
+	return equalsWithWildcard(*spec.IdentityProvider, entry.Spec.Identity)
 }
 
 func ByFlags(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
@@ -136,10 +134,53 @@ func entryHasFlags(entry *historyv1alpha.HistoryEntry, flags map[string]string) 
 		if !ok {
 			return false
 		}
-		if entryValue != flagValue {
-			return false
-		}
+		return equalsWithWildcard(flagValue, entryValue)
+	}
+	return true
+}
+
+func CreateFilterFromMap(filterMap map[string]string) *FilterSpec {
+	var alias, clusterProvider, historyID, identityProvider, kubeconfig, providerID string
+	if val, ok := filterMap["alias"]; ok {
+		alias = val
+		delete(filterMap, "alias")
+	}
+	if val, ok := filterMap["clusterProvider"]; ok {
+		clusterProvider = val
+		delete(filterMap, "clusterProvider")
+	}
+	if val, ok := filterMap["historyID"]; ok {
+		historyID = val
+		delete(filterMap, "historyID")
+	}
+	if val, ok := filterMap["identityProvider"]; ok {
+		identityProvider = val
+		delete(filterMap, "identityProvider")
+	}
+	if val, ok := filterMap["kubeconfig"]; ok {
+		kubeconfig = val
+		delete(filterMap, "kubeconfig")
+	}
+	if val, ok := filterMap["providerID"]; ok {
+		identityProvider = val
+		delete(filterMap, "providerID")
+	}
+	filterSpec := &FilterSpec{
+		Alias:            &alias,
+		ClusterProvider:  &clusterProvider,
+		Flags:            filterMap,
+		HistoryID:        &historyID,
+		IdentityProvider: &identityProvider,
+		Kubeconfig:       &kubeconfig,
+		ProviderID:       &providerID,
 	}
 
-	return true
+	return filterSpec
+}
+
+func equalsWithWildcard(s1, s2 string) bool {
+
+	regexString := "^" + strings.ReplaceAll(s1, "*", ".*") + "$"
+	regex := regexp.MustCompile(regexString)
+	return regex.MatchString(s2)
 }
