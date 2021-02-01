@@ -262,14 +262,14 @@ func Test_GetLastModified(t *testing.T) {
 	testCases := []struct {
 		name              string
 		input             *historyv1alpha.HistoryEntryList
-		lastModifiedN	  int
+		lastModifiedN     int
 		expectedEntryName string
 		errorExpected     bool
 	}{
 		{
-			name:  "Single item",
+			name: "Single item",
 			input: &historyv1alpha.HistoryEntryList{
-				Items: []historyv1alpha.HistoryEntry {
+				Items: []historyv1alpha.HistoryEntry{
 					historyv1alpha.HistoryEntry{
 						ObjectMeta: v1.ObjectMeta{
 							Name: "test1",
@@ -280,23 +280,23 @@ func Test_GetLastModified(t *testing.T) {
 					},
 				},
 			},
-			lastModifiedN: 0,
+			lastModifiedN:     0,
 			expectedEntryName: "test1",
-			errorExpected: false,
+			errorExpected:     false,
 		},
 		{
-			name:  "No items (error)",
+			name: "No items (error)",
 			input: &historyv1alpha.HistoryEntryList{
-				Items: []historyv1alpha.HistoryEntry {},
+				Items: []historyv1alpha.HistoryEntry{},
 			},
-			lastModifiedN: 0,
+			lastModifiedN:     0,
 			expectedEntryName: "",
-			errorExpected: true,
+			errorExpected:     true,
 		},
 		{
-			name:  "Multiple items",
+			name: "Multiple items",
 			input: &historyv1alpha.HistoryEntryList{
-				Items: []historyv1alpha.HistoryEntry {
+				Items: []historyv1alpha.HistoryEntry{
 					historyv1alpha.HistoryEntry{
 						ObjectMeta: v1.ObjectMeta{
 							Name: "test1",
@@ -323,14 +323,14 @@ func Test_GetLastModified(t *testing.T) {
 					},
 				},
 			},
-			lastModifiedN: 1,
+			lastModifiedN:     1,
 			expectedEntryName: "test1",
-			errorExpected: false,
+			errorExpected:     false,
 		},
 		{
-			name:  "Out of range",
+			name: "Out of range",
 			input: &historyv1alpha.HistoryEntryList{
-				Items: []historyv1alpha.HistoryEntry {
+				Items: []historyv1alpha.HistoryEntry{
 					historyv1alpha.HistoryEntry{
 						ObjectMeta: v1.ObjectMeta{
 							Name: "test1",
@@ -357,9 +357,9 @@ func Test_GetLastModified(t *testing.T) {
 					},
 				},
 			},
-			lastModifiedN: 3,
+			lastModifiedN:     3,
 			expectedEntryName: "",
-			errorExpected: true,
+			errorExpected:     true,
 		},
 	}
 
@@ -378,7 +378,7 @@ func Test_GetLastModified(t *testing.T) {
 			if !tc.errorExpected && err != nil {
 				t.Fatalf("got an unexpected error: %v", err)
 			}
-			if  !tc.errorExpected && tc.expectedEntryName != actualLastModified.GetName(){
+			if !tc.errorExpected && tc.expectedEntryName != actualLastModified.GetName() {
 				t.Fatalf("expected entry %v, but got %v", tc.expectedEntryName, actualLastModified.GetName())
 			}
 		})
@@ -387,15 +387,15 @@ func Test_GetLastModified(t *testing.T) {
 
 func Test_GetAllSortedByLastUsed(t *testing.T) {
 	testCases := []struct {
-		name              string
-		input             *historyv1alpha.HistoryEntryList
+		name                  string
+		input                 *historyv1alpha.HistoryEntryList
 		expectedEntryNameList []string
-		errorExpected     bool
+		errorExpected         bool
 	}{
 		{
-			name:  "Multiple items sorted by last used timestamp",
+			name: "Multiple items sorted by last used timestamp",
 			input: &historyv1alpha.HistoryEntryList{
-				Items: []historyv1alpha.HistoryEntry {
+				Items: []historyv1alpha.HistoryEntry{
 					historyv1alpha.HistoryEntry{
 						ObjectMeta: v1.ObjectMeta{
 							Name: "test1",
@@ -422,13 +422,13 @@ func Test_GetAllSortedByLastUsed(t *testing.T) {
 					},
 				},
 			},
-			expectedEntryNameList: []string{"test2","test1","test3"},
-			errorExpected: false,
+			expectedEntryNameList: []string{"test2", "test1", "test3"},
+			errorExpected:         false,
 		},
 		{
-			name:  "Single item sorted by last used timestamp",
+			name: "Single item sorted by last used timestamp",
 			input: &historyv1alpha.HistoryEntryList{
-				Items: []historyv1alpha.HistoryEntry {
+				Items: []historyv1alpha.HistoryEntry{
 					historyv1alpha.HistoryEntry{
 						ObjectMeta: v1.ObjectMeta{
 							Name: "test1",
@@ -439,8 +439,8 @@ func Test_GetAllSortedByLastUsed(t *testing.T) {
 					},
 				},
 			},
-			expectedEntryNameList:  []string{"test1"},
-			errorExpected: false,
+			expectedEntryNameList: []string{"test1"},
+			errorExpected:         false,
 		},
 	}
 
@@ -463,7 +463,7 @@ func Test_GetAllSortedByLastUsed(t *testing.T) {
 				t.Fatalf("expected no of entry %v, but got %v", len(tc.expectedEntryNameList), len(actualSortedByLastUsed.Items))
 			}
 			for i, _ := range tc.expectedEntryNameList {
-				if  !tc.errorExpected && tc.expectedEntryNameList[i] != actualSortedByLastUsed.Items[i].GetName(){
+				if !tc.errorExpected && tc.expectedEntryNameList[i] != actualSortedByLastUsed.Items[i].GetName() {
 					t.Fatalf("expected entry name %v, but got %v", tc.expectedEntryNameList[i], actualSortedByLastUsed.Items[i].GetName())
 				}
 			}
@@ -510,7 +510,7 @@ func createStore(ctrl *gomock.Controller, entriesList *historyv1alpha.HistoryEnt
 	}
 
 	mockLoader.
-	    EXPECT().
+		EXPECT().
 		Load().
 		DoAndReturn(func() (*historyv1alpha.HistoryEntryList, error) {
 			return entriesList, nil

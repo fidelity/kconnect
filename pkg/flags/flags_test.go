@@ -63,6 +63,39 @@ func TestExistsWithValue(t *testing.T) {
 	}
 }
 
+func TestParseFlagMultiValueToMap(t *testing.T) {
+	testCases := []struct {
+		name   string
+		flag   string
+		expect map[string]string
+	}{
+		{
+			name:   "flag has no value",
+			flag:   "",
+			expect: map[string]string{},
+		},
+		{
+			name:   "flag has 1 value",
+			flag:   "key1=val1",
+			expect: map[string]string{"key1": "val1"},
+		},
+		{
+			name:   "flag has multiple value",
+			flag:   "key1=val1,key2=val2",
+			expect: map[string]string{"key1": "val1", "key2": "val2"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewWithT(t)
+
+			actual := flags.ParseFlagMultiValueToMap(tc.flag)
+			g.Expect(actual).To(Equal(tc.expect)) //nolint:scopelint
+		})
+	}
+}
+
 func createTestFlagSet(t *testing.T, name, value string) *pflag.FlagSet {
 	fs := pflag.NewFlagSet("", pflag.PanicOnError)
 	fs.String(name, "", "test flag")

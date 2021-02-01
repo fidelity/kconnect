@@ -85,6 +85,7 @@ kconnect [flags]
 
 * [kconnect alias](alias.md)	 - Query and manipulate connection history entry aliases.
 * [kconnect config](config.md)	 - Set and view your kconnect configuration.
+* [kconnect history](history.md)	 - Import and export history
 * [kconnect logout](logout.md)	 - Logs out of a cluster
 * [kconnect ls](ls.md)	 - Query the user's connection history
 * [kconnect to](to.md)	 - Reconnect to a connection history entry.

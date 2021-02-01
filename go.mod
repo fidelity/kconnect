@@ -16,6 +16,7 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.10.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
@@ -53,6 +54,7 @@ require (
 	golang.org/x/mod v0.4.0
 	golang.org/x/tools v0.0.0-20201103235415-b653051172e4 // indirect
 	gopkg.in/ini.v1 v1.62.0
+	gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0
 	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/apimachinery v0.19.1
 	k8s.io/cli-runtime v0.19.1
