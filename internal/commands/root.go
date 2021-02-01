@@ -31,7 +31,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/fidelity/kconnect/internal/app"
 	"github.com/fidelity/kconnect/internal/commands/alias"
 	configcmd "github.com/fidelity/kconnect/internal/commands/config"
 	"github.com/fidelity/kconnect/internal/commands/history"
@@ -40,9 +39,10 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
-	"github.com/fidelity/kconnect/internal/defaults"
 	appver "github.com/fidelity/kconnect/internal/version"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
@@ -130,16 +130,16 @@ func RootCmd() (*cobra.Command, error) {
 			}
 		},
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := flags.CopyFlagValue(app.NonInteractiveConfigItem, app.NoInputConfigItem, cmd.Flags(), true); err != nil {
+				return fmt.Errorf("copying flag value from %s to %s: %w", app.NonInteractiveConfigItem, app.NoInputConfigItem, err)
+			}
+
 			inTerminal := isRunningInTerminal()
 			if !inTerminal {
 				zap.S().Debug("Not running in a terminal, setting no-input to true")
 				cmd.Flags().Set(app.NoInputConfigItem, "true") //nolint: errcheck
-				return nil
 			}
 
-			if err := flags.CopyFlagValue(app.NonInteractiveConfigItem, app.NoInputConfigItem, cmd.Flags(), true); err != nil {
-				return fmt.Errorf("copying flag value from %s to %s: %w", app.NonInteractiveConfigItem, app.NoInputConfigItem, err)
-			}
 			checkPrereqs()
 			return nil
 		},

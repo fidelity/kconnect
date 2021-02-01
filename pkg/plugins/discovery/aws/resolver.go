@@ -19,30 +19,12 @@ package aws
 import (
 	"fmt"
 
-	awsclient "github.com/aws/aws-sdk-go/aws/client"
-
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
-// NewConfigResolver creates a new config resolver for AWS
-func NewConfigResolver(session awsclient.ConfigProvider) (provider.ConfigResolver, error) {
-	if session == nil {
-		return nil, ErrNoSession
-	}
-
-	return &awsConfigResolver{
-		session: session,
-	}, nil
-}
-
-// awsConfigResolver is used to resolve the config values for AWS interactively.
-type awsConfigResolver struct {
-	session awsclient.ConfigProvider
-}
-
-func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
+func (p *eksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 	errsValidation := &kerrors.ValidationFailed{}
 
 	for _, item := range cfg.GetAll() {
@@ -60,6 +42,6 @@ func (r *awsConfigResolver) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (r *awsConfigResolver) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
+func (p *eksClusterProvider) Resolve(config config.ConfigurationSet, userID identity.Identity) error {
 	return nil
 }

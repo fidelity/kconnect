@@ -25,26 +25,57 @@ import (
 
 	azid "github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
+	khttp "github.com/fidelity/kconnect/pkg/http"
 	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
 const (
-	providerName = "aks"
+	ProviderName = "aks"
+	UsageExample = `  # Discover AKS clusters using Azure AD
+	{{.CommandPath}} use aks --idp-protocol aad
+
+	# Discover AKS clusters using file based credentials
+	export AZURE_TENANT_ID="123455"
+	export AZURE_CLIENT_ID="76849"
+	export AZURE_CLIENT_SECRET="supersecret"
+	{{.CommandPath}} use aks --idp-protocol az-env
+  `
 )
 
 func init() {
-	if err := provider.RegisterClusterProviderPlugin(providerName, newAKSProvider()); err != nil {
-		zap.S().Fatalw("Failed to register AKS cluster provider plugin", "error", err)
+	if err := registry.RegisterDiscoveryPlugin(&registry.DiscoveryPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           UsageExample,
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc:                 New,
+		SupportedIdentityProviders: []string{"aad", "az-env"},
+	}); err != nil {
+		zap.S().Fatalw("Failed to register AKS discovery plugin", "error", err)
 	}
 }
 
-func newAKSProvider() *aksClusterProvider {
-	return &aksClusterProvider{}
+// New will create a new Azure discovery plugin
+func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
+	if input.HTTPClient == nil {
+		return nil, provider.ErrHTTPClientRequired
+	}
+
+	return &aksClusterProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+		httpClient:  input.HTTPClient,
+	}, nil
 }
 
 type aksClusterProviderConfig struct {
-	provider.ClusterProviderConfig
+	common.ClusterProviderConfig
 	SubscriptionID   *string `json:"subscription-id"`
 	SubscriptionName *string `json:"subscription-name"`
 	ResourceGroup    *string `json:"resource-group"`
@@ -56,19 +87,49 @@ type aksClusterProvider struct {
 	config     *aksClusterProviderConfig
 	authorizer autorest.Authorizer
 
-	logger *zap.SugaredLogger
+	httpClient  khttp.Client
+	interactive bool
+	logger      *zap.SugaredLogger
 }
 
 func (p *aksClusterProvider) Name() string {
-	return providerName
+	return ProviderName
 }
 
-func (p *aksClusterProvider) SupportedIDs() []string {
-	return []string{"aad", "az-env"}
+func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+	cfg := &aksClusterProviderConfig{}
+	if err := config.Unmarshall(cs, cfg); err != nil {
+		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
+	}
+	p.config = cfg
+
+	// TODO: should we just return a AuthorizerIdentity from the aad provider?
+	switch userID.(type) { //nolint:gocritic,gosimple
+	case *oidc.Identity:
+		id := userID.(*oidc.Identity)
+		p.logger.Debugw("creating bearer authorizer")
+		bearerAuth := autorest.NewBearerAuthorizer(id)
+		p.authorizer = bearerAuth
+	case *azid.AuthorizerIdentity:
+		id := userID.(*azid.AuthorizerIdentity)
+		p.authorizer = id.Authorizer()
+	default:
+		return ErrUnsupportedIdentity
+	}
+
+	return nil
+}
+
+func (p *aksClusterProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
+}
+
+func (p *aksClusterProvider) CheckPreReqs() error {
+	return nil
 }
 
 // ConfigurationItems returns the configuration items for this provider
-func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 
 	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use (specified by ID)")     //nolint: errcheck
@@ -79,58 +140,5 @@ func (p *aksClusterProvider) ConfigurationItems() config.ConfigurationSet {
 
 	cs.SetShort(ResourceGroupConfigItem, "r") //nolint: errcheck
 
-	return cs
-}
-
-// ConfigurationResolver returns the resolver to use for config with this provider
-func (p *aksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return p
-}
-
-func (p *aksClusterProvider) setup(cs config.ConfigurationSet, identity provider.Identity) error {
-	p.ensureLogger()
-	cfg := &aksClusterProviderConfig{}
-	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
-	}
-	p.config = cfg
-
-	// TODO: should we just return a AuthorizerIdentity from the aad provider?
-	switch identity.(type) { //nolint:gocritic,gosimple
-	case *oidc.Identity:
-		id := identity.(*oidc.Identity)
-		p.logger.Debugw("creating bearer authorizer")
-		bearerAuth := autorest.NewBearerAuthorizer(id)
-		p.authorizer = bearerAuth
-	case *azid.AuthorizerIdentity:
-		id := identity.(*azid.AuthorizerIdentity)
-		p.authorizer = id.Authorizer()
-	default:
-		return ErrUnsupportedIdentity
-	}
-
-	return nil
-}
-
-func (p *aksClusterProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", providerName)
-	}
-}
-
-// UsageExample will provide an example of the usage of this provider
-func (p *aksClusterProvider) UsageExample() string {
-	return `  # Discover AKS clusters using Azure AD
-  {{.CommandPath}} use aks --idp-protocol aad
-
-  # Discover AKS clusters using file based credentials
-  export AZURE_TENANT_ID="123455"
-  export AZURE_CLIENT_ID="76849"
-  export AZURE_CLIENT_SECRET="supersecret"
-  {{.CommandPath}} use aks --idp-protocol az-env
-`
-}
-
-func (p *aksClusterProvider) CheckPreReqs() error {
-	return nil
+	return cs, nil
 }

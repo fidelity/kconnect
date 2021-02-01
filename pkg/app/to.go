@@ -18,6 +18,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -30,10 +31,11 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/printer"
 	"github.com/fidelity/kconnect/pkg/prompt"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
-type ConnectToParams struct {
+type ConnectToInput struct {
 	CommonConfig
 	HistoryConfig
 	KubernetesConfig
@@ -41,11 +43,10 @@ type ConnectToParams struct {
 	AliasOrIDORPosition string
 	Password            string `json:"password"`
 	SetCurrent          bool   `json:"set-current,omitempty"`
-	Context             *provider.Context
 }
 
-func (a *App) ConnectTo(params *ConnectToParams) error {
-	zap.S().Debug("running connectto")
+func (a *App) ConnectTo(ctx context.Context, params *ConnectToInput) error {
+	a.logger.Debug("running connectto")
 
 	entry, err := a.getHistoryEntry(params)
 	if err != nil {
@@ -56,16 +57,31 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	}
 	historyID := entry.ObjectMeta.Name
 
-	idProvider, err := provider.GetIdentityProvider(entry.Spec.Identity)
-	if err != nil {
-		return fmt.Errorf("getting identity provider %s: %w", entry.Spec.Identity, err)
-	}
-	clusterProvider, err := provider.GetClusterProvider(entry.Spec.Provider)
-	if err != nil {
-		return fmt.Errorf("getting cluster provider %s: %w", entry.Spec.Provider, err)
-	}
+	// idProviderInput := &provider.PluginCreationInput{
+	// 	Logger:        a.logger.With("provider", entry.Spec.Identity, "type", "identity"),
+	// 	IsInteractice: a.interactive,
+	// 	ItemSelector:  a.itemSelector,
+	// 	ScopedTo:      &entry.Spec.Provider,
+	// 	HttpClient:    a.httpClient,
+	// }
+	// idProvider, err := registry.GetIdentityProvider(entry.Spec.Identity, idProviderInput)
+	// if err != nil {
+	// 	return fmt.Errorf("getting identity provider %s: %w", entry.Spec.Identity, err)
+	// }
 
-	cs, err := a.buildConnectToConfig(idProvider, clusterProvider, entry)
+	// clusterProviderInput := &provider.PluginCreationInput{
+	// 	Logger:        a.logger.With("provider", entry.Spec.Provider, "type", "discovery"),
+	// 	IsInteractice: a.interactive,
+	// 	ItemSelector:  a.itemSelector,
+	// 	ScopedTo:      &entry.Spec.Provider,
+	// 	HttpClient:    a.httpClient,
+	// }
+	// clusterProvider, err := a.getDiscoveryProvider(&entry.Spec.Provider, &entry.Spec.Identity)
+	// if err != nil {
+	// 	return fmt.Errorf("getting cluster provider %s: %w", entry.Spec.Provider, err)
+	// }
+
+	cs, err := a.buildConnectToConfig(entry.Spec.Provider, entry.Spec.Identity, entry)
 	if err != nil {
 		return fmt.Errorf("building connectTo config set: %w", err)
 	}
@@ -76,14 +92,10 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 		}
 	}
 
-	ctx := provider.NewContext(
-		provider.WithConfig(cs),
-	)
-
-	useParams := &UseParams{
-		Context:          ctx,
-		IdentityProvider: idProvider,
-		Provider:         clusterProvider,
+	useParams := &UseInput{
+		IdentityProvider:  entry.Spec.Identity,
+		DiscoveryProvider: entry.Spec.Provider,
+		ConfigSet:         cs,
 	}
 
 	if err := config.Unmarshall(cs, useParams); err != nil {
@@ -96,16 +108,10 @@ func (a *App) ConnectTo(params *ConnectToParams) error {
 	useParams.IgnoreAlias = true
 	useParams.Alias = entry.Spec.Alias
 
-	identity, err := useParams.IdentityProvider.Authenticate(useParams.Context, useParams.Provider.Name())
-	if err != nil {
-		return fmt.Errorf("authenticating using provider %s: %w", useParams.IdentityProvider.Name(), err)
-	}
-	useParams.Identity = identity
-
-	return a.Use(useParams)
+	return a.Use(ctx, useParams)
 }
 
-func (a *App) getHistoryEntry(params *ConnectToParams) (*historyv1alpha.HistoryEntry, error) {
+func (a *App) getHistoryEntry(params *ConnectToInput) (*historyv1alpha.HistoryEntry, error) {
 
 	idOrAliasORPosition := params.AliasOrIDORPosition
 	if idOrAliasORPosition == "" {
@@ -152,7 +158,7 @@ func (a *App) getHistoryEntry(params *ConnectToParams) (*historyv1alpha.HistoryE
 	return entry, nil
 }
 
-func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEntry, error) {
+func (a *App) getInteractive(params *ConnectToInput) (*historyv1alpha.HistoryEntry, error) {
 
 	entries, err := a.historyStore.GetAllSortedByLastUsed()
 	if err != nil {
@@ -181,7 +187,7 @@ func (a *App) getInteractive(params *ConnectToParams) (*historyv1alpha.HistoryEn
 	return entry, nil
 }
 
-func (a *App) generateOptions(params *ConnectToParams, entries *historyv1alpha.HistoryEntryList) ([]string, error) {
+func (a *App) generateOptions(params *ConnectToInput, entries *historyv1alpha.HistoryEntryList) ([]string, error) {
 
 	options := []string{}
 	// Make the history entries table, same output  as the kconnect ls command
@@ -205,24 +211,36 @@ func (a *App) generateOptions(params *ConnectToParams, entries *historyv1alpha.H
 	return options, nil
 }
 
-func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, clusterProvider provider.ClusterProvider, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
+func (a *App) buildConnectToConfig(idProvider string, discoveryProvider string, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 
-	idCfg, err := idProvider.ConfigurationItems(clusterProvider.Name())
+	idProviderReg, err := registry.GetIdentityProviderRegistration(idProvider)
+	if err != nil {
+		return nil, fmt.Errorf("getting identity provider registration: %w", err)
+	}
+	idCfg, err := idProviderReg.ConfigurationItemsFunc(discoveryProvider)
 	if err != nil {
 		return nil, fmt.Errorf("getting identity provider config: %w", err)
+	}
+	discoProviderReg, err := registry.GetDiscoveryProviderRegistration(discoveryProvider)
+	if err != nil {
+		return nil, fmt.Errorf("getting discovery provider registration: %w", err)
+	}
+	discoCfg, err := discoProviderReg.ConfigurationItemsFunc(idProvider)
+	if err != nil {
+		return nil, fmt.Errorf("getting discovery provider config: %w", err)
 	}
 
 	if err := cs.AddSet(idCfg); err != nil {
 		return nil, fmt.Errorf("adding identity provider config items: %w", err)
 	}
-	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
+	if err := cs.AddSet(discoCfg); err != nil {
 		return nil, fmt.Errorf("adding cluster provider config items: %w", err)
 	}
-	if err := provider.AddCommonIdentityConfig(cs); err != nil {
+	if err := common.AddCommonIdentityConfig(cs); err != nil {
 		return nil, fmt.Errorf("adding common identity config items: %w", err)
 	}
-	if err := provider.AddCommonClusterConfig(cs); err != nil {
+	if err := common.AddCommonClusterConfig(cs); err != nil {
 		return nil, fmt.Errorf("adding common cluster config items: %w", err)
 	}
 	if err := AddKubeconfigConfigItems(cs); err != nil {
@@ -262,7 +280,7 @@ func (a *App) buildConnectToConfig(idProvider provider.IdentityProvider, cluster
 		}
 	}
 
-	if err := config.ApplyToConfigSetWithProvider(cs, clusterProvider.Name()); err != nil {
+	if err := config.ApplyToConfigSetWithProvider(cs, discoveryProvider); err != nil {
 		return nil, fmt.Errorf("applying app config: %w", err)
 	}
 

@@ -17,6 +17,7 @@ limitations under the License.
 package env
 
 import (
+	"context"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -27,6 +28,8 @@ import (
 	"github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
+	provid "github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
 const (
@@ -34,17 +37,29 @@ const (
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newProvider()); err != nil {
-		zap.S().Fatalw("failed to register azure env identity provider plugin", "error", err)
+	if err := registry.RegisterIdentityPlugin(&registry.IdentityPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           "",
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc: New,
+	}); err != nil {
+		zap.S().Fatalw("Failed to register Azure environment identity plugin", "error", err)
 	}
 }
 
-func newProvider() *envIdentityProvider {
-	return &envIdentityProvider{}
+// New will create a new azure env identity provider
+func New(input *provider.PluginCreationInput) (provid.Provider, error) {
+	return &envIdentityProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+	}, nil
 }
 
 type envIdentityProvider struct {
-	logger *zap.SugaredLogger
+	logger      *zap.SugaredLogger
+	interactive bool
 }
 
 type providerConfig struct {
@@ -56,12 +71,11 @@ func (p *envIdentityProvider) Name() string {
 }
 
 // Authenticate will authenticate a user and return details of their envIdentityProvider.
-func (p *envIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.ensureLogger()
+func (p *envIdentityProvider) Authenticate(ctx context.Context, input *provid.AuthenticateInput) (*provid.AuthenticateOutput, error) {
 	p.logger.Info("using azure environment for authentication")
 
 	cfg := &providerConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into providerConfig: %w", err)
 	}
 
@@ -79,27 +93,16 @@ func (p *envIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 
 	id := identity.NewAuthorizerIdentity("", ProviderName, authorizer)
 
-	return id, nil
+	return &provid.AuthenticateOutput{
+		Identity: id,
+	}, nil
 }
 
 // ConfigurationItems will return the configuration items for the intentity plugin based
 // of the cluster provider that its being used in conjunction with
-func (p *envIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
-	p.ensureLogger()
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
-
 	cs.Bool("use-file", false, "Use file based authorization") //nolint:errcheck
 
 	return cs, nil
-}
-
-// Usage returns a string to display for help
-func (p *envIdentityProvider) Usage(clusterProvider string) (string, error) {
-	return "", nil
-}
-
-func (p *envIdentityProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
-	}
 }

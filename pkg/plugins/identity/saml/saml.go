@@ -17,9 +17,9 @@ limitations under the License.
 package saml
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/versent/saml2aws"
@@ -29,10 +29,11 @@ import (
 
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
 var (
@@ -47,24 +48,45 @@ const (
 	defaultSession = 3600
 )
 
+var (
+	ErrRequiresScope = errors.New("saml provider required to be scoped")
+)
+
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newSAMLProvider()); err != nil {
-		zap.S().Fatalw("failed to register SAML identity provider plugin", "error", err)
+	if err := registry.RegisterIdentityPlugin(&registry.IdentityPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           "",
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc: New,
+	}); err != nil {
+		zap.S().Fatalw("Failed to register SAML identity plugin", "error", err)
 	}
 }
 
-func newSAMLProvider() *samlIdentityProvider {
-	return &samlIdentityProvider{
-		itemSelector: provider.DefaultItemSelection,
+// New will create a new saml identity provider
+func New(input *provider.PluginCreationInput) (identity.Provider, error) {
+	if input.ScopedTo == nil || *input.ScopedTo == "" {
+		return nil, ErrRequiresScope
 	}
+
+	return &samlIdentityProvider{
+		logger:            input.Logger,
+		interactive:       input.IsInteractice,
+		itemSelector:      input.ItemSelector,
+		scopedToDiscovery: *input.ScopedTo,
+	}, nil
 }
 
 type samlIdentityProvider struct {
-	config          *sp.ProviderConfig
-	serviceProvider sp.ServiceProvider
-	itemSelector    provider.SelectItemFunc
+	config            *sp.ProviderConfig
+	serviceProvider   sp.ServiceProvider
+	scopedToDiscovery string
 
-	logger *zap.SugaredLogger
+	itemSelector provider.SelectItemFunc
+	interactive  bool
+	logger       *zap.SugaredLogger
 }
 
 // Name returns the name of the plugin
@@ -72,54 +94,28 @@ func (p *samlIdentityProvider) Name() string {
 	return ProviderName
 }
 
-func (p *samlIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
-	p.ensureLogger()
-	cs := config.NewConfigurationSet()
-
-	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
-	cs.String("idp-provider", "", "the name of the idp provider")                        //nolint: errcheck
-	cs.SetRequired("idp-endpoint")                                                       //nolint: errcheck
-	cs.SetRequired("idp-provider")                                                       //nolint: errcheck
-
-	// get the service provider flags
-	if clusterProviderName != "" {
-		sp, err := p.createServiceProvider(clusterProviderName)
-		if err != nil {
-			return nil, fmt.Errorf("creating saml service provider: %w", err)
-		}
-
-		spConfig := sp.ConfigurationItems()
-		if err := cs.AddSet(spConfig); err != nil {
-			return nil, fmt.Errorf("adding service provider config: %w", err)
-		}
-	}
-
-	return cs, nil
-}
-
 // Authenticate will authenticate a user and returns their identity
-func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.ensureLogger()
+func (p *samlIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("authenticating user")
 
-	sp, err := p.createServiceProvider(clusterProvider)
+	sp, err := createServiceProvider(p.scopedToDiscovery, p.itemSelector)
 	if err != nil {
 		return nil, fmt.Errorf("creating saml service provider: %w", err)
 	}
 	p.serviceProvider = sp
 
-	if err := p.resolveConfig(ctx); err != nil {
+	if err := p.resolveConfig(input.ConfigSet); err != nil {
 		return nil, err
 	}
 
-	if err := p.bindAndValidateConfig(ctx.ConfigurationItems()); err != nil {
+	if err := p.bindAndValidateConfig(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("binding and validation config: %w", err)
 	}
-	if err := p.serviceProvider.Validate(ctx.ConfigurationItems()); err != nil {
+	if err := p.serviceProvider.Validate(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("validating service provider: %w", err)
 	}
 
-	account, err := p.createAccount(ctx.ConfigurationItems())
+	account, err := p.createAccount(input.ConfigSet)
 	if err != nil {
 		return nil, ErrCreatingAccount
 	}
@@ -149,14 +145,14 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, ErrNoSAMLAssertions
 	}
 
-	userID, err := p.serviceProvider.ProcessAssertions(account, samlAssertion, ctx.ConfigurationItems())
+	userID, err := p.serviceProvider.ProcessAssertions(account, samlAssertion, input.ConfigSet)
 	if err != nil {
-		return nil, fmt.Errorf("processing assertions for: %s: %w", clusterProvider, err)
+		return nil, fmt.Errorf("processing assertions for: %s: %w", p.scopedToDiscovery, err)
 	}
 
-	store, err := p.createIdentityStore(ctx, clusterProvider)
+	store, err := p.createIdentityStore(input.ConfigSet)
 	if err != nil {
-		return nil, fmt.Errorf("creating identity store for %s: %w", clusterProvider, err)
+		return nil, fmt.Errorf("creating identity store for %s: %w", p.scopedToDiscovery, err)
 	}
 
 	err = store.Save(userID)
@@ -164,7 +160,9 @@ func (p *samlIdentityProvider) Authenticate(ctx *provider.Context, clusterProvid
 		return nil, fmt.Errorf("saving identity: %w", err)
 	}
 
-	return userID, nil
+	return &identity.AuthenticateOutput{
+		Identity: userID,
+	}, nil
 }
 
 func (p *samlIdentityProvider) bindAndValidateConfig(cs config.ConfigurationSet) error {
@@ -198,21 +196,12 @@ func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.I
 	return account, nil
 }
 
-func (p *samlIdentityProvider) createServiceProvider(clusterProviderName string) (sp.ServiceProvider, error) {
-	switch clusterProviderName {
-	case "eks":
-		return aws.NewServiceProvider(p.itemSelector), nil
-	default:
-		return nil, ErrUnsuportedProvider
-	}
-}
-
-func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
+func (p *samlIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
 	sp := p.serviceProvider
 
-	if ctx.IsInteractive() {
+	if p.interactive {
 		p.logger.Debug("resolving SAML provider flags")
-		if err := sp.ResolveConfiguration(ctx.ConfigurationItems()); err != nil {
+		if err := sp.ResolveConfiguration(cfg); err != nil {
 			return fmt.Errorf("resolving flags: %w", err)
 		}
 	} else {
@@ -222,16 +211,16 @@ func (p *samlIdentityProvider) resolveConfig(ctx *provider.Context) error {
 	return nil
 }
 
-func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, clusterProviderName string) (provider.IdentityStore, error) {
-	var store provider.IdentityStore
+func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) (identity.Store, error) {
+	var store identity.Store
 	var err error
 
-	switch clusterProviderName {
+	switch p.scopedToDiscovery {
 	case "eks":
-		if !ctx.ConfigurationItems().ExistsWithValue("aws-profile") {
+		if !cfg.ExistsWithValue("aws-profile") {
 			return nil, kaws.ErrNoProfile
 		}
-		profileCfg := ctx.ConfigurationItems().Get("aws-profile")
+		profileCfg := cfg.Get("aws-profile")
 		profile := profileCfg.Value.(string)
 		store, err = kaws.NewIdentityStore(profile, ProviderName)
 	default:
@@ -244,28 +233,33 @@ func (p *samlIdentityProvider) createIdentityStore(ctx *provider.Context, cluste
 	return store, nil
 }
 
-// Usage returns the usage for the provider
-func (p *samlIdentityProvider) Usage(clusterProvider string) (string, error) {
-	p.ensureLogger()
-	usage := []string{"SAML idp-protocol Flags:"}
-
-	cfg, err := p.ConfigurationItems(clusterProvider)
-	if err != nil {
-		return "", fmt.Errorf("getting provider configuration: %w", err)
+func createServiceProvider(clusterProviderName string, itemSelector provider.SelectItemFunc) (sp.ServiceProvider, error) {
+	switch clusterProviderName {
+	case "eks":
+		return aws.NewServiceProvider(itemSelector), nil
+	default:
+		return nil, ErrUnsuportedProvider
 	}
-
-	fs, err := flags.CreateFlagsFromConfig(cfg)
-	if err != nil {
-		return "", err
-	}
-
-	usage = append(usage, fs.FlagUsages())
-
-	return strings.Join(usage, "\n"), nil
 }
 
-func (p *samlIdentityProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
+func ConfigurationItems(scopedToDiscovery string) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+
+	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
+	cs.String("idp-provider", "", "the name of the idp provider")                        //nolint: errcheck
+	cs.SetRequired("idp-endpoint")                                                       //nolint: errcheck
+	cs.SetRequired("idp-provider")                                                       //nolint: errcheck
+
+	// get the service provider flags
+	sp, err := createServiceProvider(scopedToDiscovery, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating saml service provider: %w", err)
 	}
+
+	spConfig := sp.ConfigurationItems()
+	if err := cs.AddSet(spConfig); err != nil {
+		return nil, fmt.Errorf("adding service provider config: %w", err)
+	}
+
+	return cs, nil
 }

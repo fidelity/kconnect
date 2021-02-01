@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package provider
+package common
 
 import (
 	"fmt"
@@ -66,7 +66,7 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 
 // AddCommonIdentityConfig will add common identity related config
 func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
-	newCS := CommonIdentityConfig()
+	newCS := IdentityConfig()
 
 	if err := cs.AddSet(newCS); err != nil {
 		return fmt.Errorf("adding common identity config items: %w", err)
@@ -75,8 +75,8 @@ func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
 	return nil
 }
 
-// CommonIdentityConfig creates a configset with the common identity config items
-func CommonIdentityConfig() config.ConfigurationSet {
+// IdentityConfig creates a configset with the common identity config items
+func IdentityConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
 	cs.String("username", "", "The username used for authentication")                                      //nolint: errcheck
 	cs.String("password", "", "The password to use for authentication")                                    //nolint: errcheck

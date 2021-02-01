@@ -25,21 +25,21 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
-	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
-	ErrMissingProvider       = errors.New("required provider name argument")
-	ErrMissingIdpProtocol    = errors.New("missing idp protocol")
-	ErrMustBeDirectory       = errors.New("specified config directory is not a directory")
-	ErrUnsuportedIdpProtocol = errors.New("unsupported idp protocol")
+	ErrMissingProvider    = errors.New("required provider name argument")
+	ErrMissingIdpProtocol = errors.New("missing idp protocol")
+	ErrMustBeDirectory    = errors.New("specified config directory is not a directory")
 )
 
 const (
@@ -110,10 +110,10 @@ func Command() (*cobra.Command, error) {
 	utils.FormatCommand(useCmd)
 
 	// Add the provider subcommands
-	for _, provider := range provider.ListClusterProviders() {
-		providerCmd, err := createProviderCmd(provider)
+	for _, registration := range registry.ListDiscoveryPluginRegistrations() {
+		providerCmd, err := createProviderCmd(registration)
 		if err != nil {
-			return nil, fmt.Errorf("creating provider command for %s: %w", provider.Name(), err)
+			return nil, fmt.Errorf("creating provider command for %s: %w", registration.Name, err)
 		}
 		useCmd.AddCommand(providerCmd)
 	}
@@ -121,22 +121,22 @@ func Command() (*cobra.Command, error) {
 	return useCmd, nil
 }
 
-func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command, error) {
-	params := &app.UseParams{
-		Context:     provider.NewContext(),
-		Provider:    clusterProvider,
-		IgnoreAlias: false,
+func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cobra.Command, error) {
+	params := &app.UseInput{
+		IgnoreAlias:       false,
+		ConfigSet:         config.NewConfigurationSet(),
+		DiscoveryProvider: registration.Name,
 	}
 
-	providerLongDesc := fmt.Sprintf(longDescProviderHead, clusterProvider.Name()) + longDescBody
-	if clusterProvider.Name() == "eks" {
+	providerLongDesc := fmt.Sprintf(longDescProviderHead, registration.Name) + longDescBody
+	if registration.Name == "eks" {
 		providerLongDesc += eksDescNote
 	}
-	providerUsageExample := clusterProvider.UsageExample() + usageExampleFoot
+	providerUsageExample := registration.UsageExample + usageExampleFoot
 
 	providerCmd := &cobra.Command{
-		Use:     clusterProvider.Name(),
-		Short:   fmt.Sprintf(shortDescProvider, clusterProvider.Name()),
+		Use:     registration.Name,
+		Short:   fmt.Sprintf(shortDescProvider, registration.Name),
 		Long:    providerLongDesc,
 		Example: providerUsageExample,
 		AdditionalSetupE: func(cmd *cobra.Command, args []string) error {
@@ -144,7 +144,7 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 				return fmt.Errorf("additional command setup: %w", err)
 			}
 
-			if err := flags.CreateCommandFlags(cmd, params.Context.ConfigurationItems()); err != nil {
+			if err := flags.CreateCommandFlags(cmd, params.ConfigSet); err != nil {
 				return err
 			}
 
@@ -152,23 +152,18 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
-			flags.PopulateConfigFromCommand(cmd, params.Context.ConfigurationItems())
-			if err := config.ApplyToConfigSetWithProvider(params.Context.ConfigurationItems(), clusterProvider.Name()); err != nil {
+			flags.PopulateConfigFromCommand(cmd, params.ConfigSet)
+			if err := config.ApplyToConfigSetWithProvider(params.ConfigSet, registration.Name); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
 
-			if err := config.Unmarshall(params.Context.ConfigurationItems(), params); err != nil {
+			if err := config.Unmarshall(params.ConfigSet, params); err != nil {
 				return fmt.Errorf("unmarshalling config into use params: %w", err)
 			}
-
-			if params.IdentityProvider == nil {
-				return ErrMissingIdpProtocol
-			}
-
-			return preRun(params)
+			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Debugw("running `use` command", "provider", clusterProvider.Name())
+			zap.S().Debugw("running `use` command", "provider", registration.Name)
 
 			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
@@ -183,32 +178,36 @@ func createProviderCmd(clusterProvider provider.ClusterProvider) (*cobra.Command
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
-			a := app.New(app.WithHistoryStore(store))
+			a := app.New(app.WithHistoryStore(store), app.WithInteractive(!params.NoInput))
 
-			return a.Use(params)
+			return a.Use(cmd.Context(), params)
 		},
 	}
 
-	if err := addConfig(params.Context.ConfigurationItems(), params.Provider); err != nil {
+	if err := addConfig(params.ConfigSet, registration); err != nil {
 		return nil, fmt.Errorf("add command config: %w", err)
 	}
 
-	if err := flags.CreateCommandFlags(providerCmd, params.Context.ConfigurationItems()); err != nil {
+	if err := flags.CreateCommandFlags(providerCmd, params.ConfigSet); err != nil {
 		return nil, err
 	}
 
-	providerCmd.SetUsageFunc(providerUsage(clusterProvider.Name()))
+	providerCmd.SetUsageFunc(providerUsage(registration.Name))
 
 	utils.FormatCommand(providerCmd)
 	return providerCmd, nil
 }
 
-func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvider) error {
+func addConfig(cs config.ConfigurationSet, registration *registry.DiscoveryPluginRegistration) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
-		return fmt.Errorf("adding common config %s: %w", clusterProvider.Name(), err)
+		return fmt.Errorf("adding common config %s: %w", registration.Name, err)
 	}
-	if err := cs.AddSet(clusterProvider.ConfigurationItems()); err != nil {
-		return fmt.Errorf("adding cluster provider config %s: %w", clusterProvider.Name(), err)
+	providerCS, err := registration.ConfigurationItemsFunc("")
+	if err != nil {
+		return fmt.Errorf("getting configuration items for %s: %w", registration.Name, err)
+	}
+	if err := cs.AddSet(providerCS); err != nil {
+		return fmt.Errorf("adding cluster provider config %s: %w", registration.Name, err)
 	}
 	if _, err := cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol."); err != nil {
 		return fmt.Errorf("adding idp-protocol config: %w", err)
@@ -216,10 +215,10 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
 		return fmt.Errorf("adding set-current config: %w", err)
 	}
-	if err := provider.AddCommonIdentityConfig(cs); err != nil {
+	if err := common.AddCommonIdentityConfig(cs); err != nil {
 		return fmt.Errorf("adding common identity config items: %w", err)
 	}
-	if err := provider.AddCommonClusterConfig(cs); err != nil {
+	if err := common.AddCommonClusterConfig(cs); err != nil {
 		return fmt.Errorf("adding common cluster config items: %w", err)
 	}
 	if err := app.AddHistoryConfigItems(cs); err != nil {
@@ -237,7 +236,7 @@ func addConfig(cs config.ConfigurationSet, clusterProvider provider.ClusterProvi
 	return nil
 }
 
-func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseParams) error {
+func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) error {
 	idpProtocol, hasFlagValue, err := getIdpProtocol(args, params)
 	if err != nil {
 		return fmt.Errorf("getting idp-protocol: %w", err)
@@ -247,10 +246,6 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseParams) 
 		return ErrMissingIdpProtocol
 	}
 
-	if !isIdpSupported(idpProtocol, params.Provider) {
-		zap.S().Warnw("Unsupported IdP protocol", "allowed", params.Provider.SupportedIDs(), "used", idpProtocol)
-		return fmt.Errorf("using identity provider %s: %w", idpProtocol, ErrUnsuportedIdpProtocol)
-	}
 	params.IdpProtocol = idpProtocol
 	if !hasFlagValue {
 		// If the flag wasn't supplied and we are using a default then
@@ -258,44 +253,27 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseParams) 
 		cmd.Flags().Set("idp-protocol", idpProtocol) //nolint: errcheck
 	}
 
-	idProvider, err := provider.GetIdentityProvider(idpProtocol)
+	idProviderReg, err := registry.GetIdentityProviderRegistration(idpProtocol)
 	if err != nil {
-		return fmt.Errorf("creating identity provider %s: %w", idpProtocol, err)
+		return fmt.Errorf("getting identity provider registration for %s: %w", idpProtocol, err)
 	}
-	if err := params.Context.ConfigurationItems().SetValue("idp-protocol", idpProtocol); err != nil {
+	if err := params.ConfigSet.SetValue("idp-protocol", idpProtocol); err != nil {
 		return fmt.Errorf("setting idp-protocol value: %w", err)
 	}
-	params.IdentityProvider = idProvider
+	params.IdentityProvider = idProviderReg.Name
 
-	idProviderCfg, _ := idProvider.ConfigurationItems(params.Provider.Name())
-	if err := params.Context.ConfigurationItems().AddSet(idProviderCfg); err != nil {
+	idProviderCfg, err := idProviderReg.ConfigurationItemsFunc(params.DiscoveryProvider)
+	if err != nil {
+		return fmt.Errorf("getting config itemsd for %s: %w", idProviderReg.Name, err)
+	}
+	if err := params.ConfigSet.AddSet(idProviderCfg); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func preRun(params *app.UseParams) error {
-	params.Context = provider.NewContext(
-		provider.WithInteractive(!params.NoInput),
-		provider.WithConfig(params.Context.ConfigurationItems()),
-	)
-
-	err := params.Provider.CheckPreReqs()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "\033[33m%s\033[0m\n", err.Error())
-	}
-
-	identity, err := params.IdentityProvider.Authenticate(params.Context, params.Provider.Name())
-	if err != nil {
-		return fmt.Errorf("authenticating using provider %s: %w", params.IdentityProvider.Name(), err)
-	}
-	params.Identity = identity
-
-	return params.Provider.ConfigurationResolver().Resolve(params.Context.ConfigurationItems(), params.Identity)
-}
-
-func getIdpProtocol(args []string, params *app.UseParams) (string, bool, error) {
+func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	// look for a flag first
 	for i, arg := range args {
 		if arg == "--idp-protocol" {
@@ -304,30 +282,21 @@ func getIdpProtocol(args []string, params *app.UseParams) (string, bool, error) 
 	}
 
 	// look in app config
-	idProtocol, err := config.GetValue("idp-protocol", params.Provider.Name())
+	idProtocol, err := config.GetValue("idp-protocol", params.DiscoveryProvider)
 	if err != nil {
 		return "", false, fmt.Errorf("getting idp-protocol from config: %w", err)
 	}
 	// Default to the first supported provider if empty
 	if idProtocol == "" {
-		supportedIDProviders := params.Provider.SupportedIDs()
-		idProtocol = supportedIDProviders[0]
+		discoReg, err := registry.GetDiscoveryProviderRegistration(params.DiscoveryProvider)
+		if err != nil {
+			return "", false, err
+		}
+		idProtocol = discoReg.SupportedIdentityProviders[0]
 		zap.S().Debugw("no idp-protocol, using default for provider", "idp-protocol", idProtocol)
 	}
 
 	return idProtocol, false, nil
-}
-
-func isIdpSupported(idProviderName string, clusterprovider provider.ClusterProvider) bool {
-	supportedIDProviders := clusterprovider.SupportedIDs()
-
-	for _, supportedIDProvider := range supportedIDProviders {
-		if supportedIDProvider == idProviderName {
-			return true
-		}
-	}
-
-	return false
 }
 
 func ensureConfigFolder(path string) error {
@@ -366,20 +335,20 @@ func providerUsage(providerName string) func(cmd *cobra.Command) error {
 		usage = append(usage, "\nGlobal Flags:")
 		usage = append(usage, cmd.InheritedFlags().FlagUsages())
 
-		clusterProvider, err := provider.GetClusterProvider(providerName)
+		clusterProviderReg, err := registry.GetDiscoveryProviderRegistration(providerName)
 		if err != nil {
 			return err
 		}
 
-		for _, idProviderName := range clusterProvider.SupportedIDs() {
-			idProvider, err := provider.GetIdentityProvider(idProviderName)
+		for _, idProviderName := range clusterProviderReg.SupportedIdentityProviders {
+			idProviderReg, err := registry.GetIdentityProviderRegistration(idProviderName)
 			if err != nil {
 				return err
 			}
-			usage = append(usage, fmt.Sprintf("\n%s Flags:", strings.ToUpper(idProvider.Name())))
-			usage = append(usage, fmt.Sprintf("(use --idp-protocol=%s)\n", idProvider.Name()))
+			usage = append(usage, fmt.Sprintf("\n%s Flags:", strings.ToUpper(idProviderReg.Name)))
+			usage = append(usage, fmt.Sprintf("(use --idp-protocol=%s)\n", idProviderReg.Name))
 
-			cfg, err := idProvider.ConfigurationItems(providerName)
+			cfg, err := idProviderReg.ConfigurationItemsFunc(providerName)
 			if err != nil {
 				return err
 			}

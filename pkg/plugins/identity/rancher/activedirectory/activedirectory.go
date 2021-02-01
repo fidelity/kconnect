@@ -17,6 +17,7 @@ limitations under the License.
 package activedirectory
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,10 +26,13 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	khttp "github.com/fidelity/kconnect/pkg/http"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 	"github.com/fidelity/kconnect/pkg/rancher"
 )
 
@@ -43,21 +47,38 @@ var (
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newProvider()); err != nil {
-		zap.S().Fatalw("failed to register Rancher AD identity provider plugin", "error", err)
+	if err := registry.RegisterIdentityPlugin(&registry.IdentityPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           "",
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc: New,
+	}); err != nil {
+		zap.S().Fatalw("Failed to register Rancher Active Directory identity plugin", "error", err)
 	}
 }
 
-func newProvider() *radIdentityProvider {
-	return &radIdentityProvider{}
+// New will create a new Rancher Active Directory identity provider
+func New(input *provider.PluginCreationInput) (identity.Provider, error) {
+	if input.HTTPClient == nil {
+		return nil, provider.ErrHTTPClientRequired
+	}
+
+	return &radIdentityProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+	}, nil
 }
 
 type radIdentityProvider struct {
-	logger *zap.SugaredLogger
+	interactive bool
+	logger      *zap.SugaredLogger
+	httpClient  khttp.Client
 }
 
 type radConfig struct {
-	provider.IdentityProviderConfig
+	common.IdentityProviderConfig
 	rancher.CommonConfig
 }
 
@@ -67,16 +88,15 @@ func (p *radIdentityProvider) Name() string {
 
 // Authenticate will authenticate a user and return details of
 // their identity.
-func (p *radIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.ensureLogger()
+func (p *radIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("authenticating user")
 
-	if err := p.resolveConfig(ctx); err != nil {
+	if err := p.resolveConfig(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("resolving config: %w", err)
 	}
 
 	cfg := &radConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use radConfig: %w", err)
 	}
 
@@ -89,22 +109,21 @@ func (p *radIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		return nil, fmt.Errorf("vreating endpoint resolver: %w", err)
 	}
 
-	input := &loginRequest{
+	loginRequest := &loginRequest{
 		Type:        "token",
 		Description: "automation",
 		Username:    cfg.Username,
 		Password:    cfg.Password,
 	}
 
-	data, err := json.Marshal(input)
+	data, err := json.Marshal(loginRequest)
 	if err != nil {
 		return nil, fmt.Errorf("marshalling ad request: %w", err)
 	}
 
 	headers := defaults.Headers(defaults.WithNoCache(), defaults.WithContentTypeJSON())
-	httpClient := khttp.NewHTTPClient()
 
-	resp, err := httpClient.Post(resolver.ActiveDirectoryAuth(), string(data), headers)
+	resp, err := p.httpClient.Post(resolver.ActiveDirectoryAuth(), string(data), headers)
 	if err != nil {
 		return nil, fmt.Errorf("performing AD auth: %w", err)
 	}
@@ -118,36 +137,11 @@ func (p *radIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		return nil, fmt.Errorf("unmarshalling login response: %w", err)
 	}
 
-	id := provider.NewTokenIdentity(loginResponse.UserID, loginResponse.Token, ProviderName)
+	id := identity.NewTokenIdentity(loginResponse.UserID, loginResponse.Token, ProviderName)
 
-	return id, nil
-}
-
-// ConfigurationItems will return the configuration items for the intentity plugin based
-// of the cluster provider that its being used in conjunction with
-func (p *radIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
-	p.ensureLogger()
-	cs := config.NewConfigurationSet()
-
-	if err := provider.AddCommonIdentityConfig(cs); err != nil {
-		return nil, ErrAddingCommonCfg
-	}
-	if err := rancher.AddCommonConfig(cs); err != nil {
-		return nil, ErrAddingCommonCfg
-	}
-
-	return cs, nil
-}
-
-// Usage returns a string to display for help
-func (p *radIdentityProvider) Usage(clusterProvider string) (string, error) {
-	return "", nil
-}
-
-func (p *radIdentityProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
-	}
+	return &identity.AuthenticateOutput{
+		Identity: id,
+	}, nil
 }
 
 func (p *radIdentityProvider) validateConfig(cfg *radConfig) error {
@@ -156,4 +150,19 @@ func (p *radIdentityProvider) validateConfig(cfg *radConfig) error {
 		return fmt.Errorf("validating aad config: %w", err)
 	}
 	return nil
+}
+
+// ConfigurationItems will return the configuration items for the intentity plugin based
+// of the cluster provider that its being used in conjunction with
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+
+	if err := common.AddCommonIdentityConfig(cs); err != nil {
+		return nil, ErrAddingCommonCfg
+	}
+	if err := rancher.AddCommonConfig(cs); err != nil {
+		return nil, ErrAddingCommonCfg
+	}
+
+	return cs, nil
 }

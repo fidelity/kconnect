@@ -20,11 +20,12 @@ import (
 	"github.com/versent/saml2aws/pkg/cfg"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 type ProviderConfig struct {
-	provider.IdentityProviderConfig
+	common.IdentityProviderConfig
 	IdpEndpoint string `json:"idp-endpoint" validate:"required"`
 	IdpProvider string `json:"idp-provider" validate:"required"`
 }
@@ -35,5 +36,5 @@ type ServiceProvider interface {
 	Validate(configItems config.ConfigurationSet) error
 	ResolveConfiguration(configItems config.ConfigurationSet) error
 	PopulateAccount(account *cfg.IDPAccount, configItems config.ConfigurationSet) error
-	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, configItems config.ConfigurationSet) (provider.Identity, error)
+	ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, configItems config.ConfigurationSet) (identity.Identity, error)
 }

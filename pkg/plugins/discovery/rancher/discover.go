@@ -17,26 +17,28 @@ limitations under the License.
 package rancher
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	khttp "github.com/fidelity/kconnect/pkg/http"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 	"github.com/fidelity/kconnect/pkg/rancher"
 )
 
-func (p *rancherClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
-	if err := p.setup(ctx.ConfigurationItems(), identity); err != nil {
+func (p *rancherClusterProvider) Discover(ctx context.Context, input *discovery.DiscoverInput) (*discovery.DiscoverOutput, error) {
+	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up rancher provider: %w", err)
 	}
 
 	p.logger.Info("discovering clusters via Rancher")
 
-	id, ok := identity.(*provider.TokenIdentity)
+	id, ok := input.Identity.(*identity.TokenIdentity)
 	if !ok {
-		return nil, provider.ErrNotTokenIdentity
+		return nil, identity.ErrNotTokenIdentity
 	}
 
 	clusters, err := p.listClusters()
@@ -44,10 +46,10 @@ func (p *rancherClusterProvider) Discover(ctx *provider.Context, identity provid
 		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
 
-	discoverOutput := &provider.DiscoverOutput{
-		ClusterProviderName:  ProviderName,
-		IdentityProviderName: id.IdentityProviderName(),
-		Clusters:             make(map[string]*provider.Cluster),
+	discoverOutput := &discovery.DiscoverOutput{
+		DiscoveryProvider: ProviderName,
+		IdentityProvider:  id.IdentityProviderName(),
+		Clusters:          make(map[string]*discovery.Cluster),
 	}
 	for _, v := range clusters {
 		discoverOutput.Clusters[v.ID] = v
@@ -56,10 +58,10 @@ func (p *rancherClusterProvider) Discover(ctx *provider.Context, identity provid
 	return discoverOutput, nil
 }
 
-func (p *rancherClusterProvider) listClusters() ([]*provider.Cluster, error) {
+func (p *rancherClusterProvider) listClusters() ([]*discovery.Cluster, error) {
 	p.logger.Debug("listing clusters using rancker api")
 
-	clusters := []*provider.Cluster{}
+	clusters := []*discovery.Cluster{}
 
 	resolver, err := rancher.NewStaticEndpointsResolver(p.config.APIEndpoint)
 	if err != nil {
@@ -84,7 +86,7 @@ func (p *rancherClusterProvider) listClusters() ([]*provider.Cluster, error) {
 	}
 
 	for _, val := range listClustersResponse.Clusters {
-		cluster := &provider.Cluster{
+		cluster := &discovery.Cluster{
 			Name: val.Name,
 			ID:   val.ID,
 		}

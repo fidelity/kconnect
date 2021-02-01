@@ -22,26 +22,54 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	khttp "github.com/fidelity/kconnect/pkg/http"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 	rshared "github.com/fidelity/kconnect/pkg/rancher"
 )
 
 const (
 	ProviderName = "rancher"
+	UsageExample = `  # Discover Rancher clusters using Active Directory
+	{{.CommandPath}} use rancher --idp-protocol rancher-ad
+
+	# Discover clusters via Rancher using a API key
+	{{.CommandPath}} use rancher --idp-protocol static-token --token ABCDEF
+  `
 )
 
 func init() {
-	if err := provider.RegisterClusterProviderPlugin(ProviderName, newProvider()); err != nil {
-		zap.S().Fatalw("Failed to register Rancher cluster provider plugin", "error", err)
+	if err := registry.RegisterDiscoveryPlugin(&registry.DiscoveryPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           UsageExample,
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc:                 New,
+		SupportedIdentityProviders: []string{"static-token", "rancher-ad"},
+	}); err != nil {
+		zap.S().Fatalw("Failed to register Rancher discovery plugin", "error", err)
 	}
 }
 
-func newProvider() *rancherClusterProvider {
-	return &rancherClusterProvider{}
+// New will create a new Rancher discovery plugin
+func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
+	if input.HTTPClient == nil {
+		return nil, provider.ErrHTTPClientRequired
+	}
+
+	return &rancherClusterProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+		httpClient:  input.HTTPClient,
+	}, nil
 }
 
 type rancherClusterProviderConfig struct {
-	provider.ClusterProviderConfig
+	common.ClusterProviderConfig
 	rshared.CommonConfig
 }
 
@@ -49,61 +77,42 @@ type rancherClusterProvider struct {
 	config *rancherClusterProviderConfig
 	token  string
 
-	logger *zap.SugaredLogger
+	httpClient  khttp.Client
+	interactive bool
+	logger      *zap.SugaredLogger
 }
 
 func (p *rancherClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *rancherClusterProvider) SupportedIDs() []string {
-	return []string{"static-token", "rancher-ad"}
-}
-
-func (p *rancherClusterProvider) ConfigurationItems() config.ConfigurationSet {
-	cs := config.NewConfigurationSet()
-	rshared.AddCommonConfig(cs) //nolint: errcheck
-
-	return cs
-}
-
-func (p *rancherClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return p
-}
-
-func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, identity provider.Identity) error {
-	p.ensureLogger()
+func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
 	cfg := &rancherClusterProviderConfig{}
 	if err := config.Unmarshall(cs, cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into rancherClusterProviderConfig: %w", err)
 	}
 	p.config = cfg
 
-	id, ok := identity.(*provider.TokenIdentity)
+	id, ok := userID.(*identity.TokenIdentity)
 	if !ok {
-		return provider.ErrNotTokenIdentity
+		return identity.ErrNotTokenIdentity
 	}
 	p.token = id.Token()
 
 	return nil
 }
 
-func (p *rancherClusterProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
-	}
-}
-
-// UsageExample will provide an example of the usage of this provider
-func (p *rancherClusterProvider) UsageExample() string {
-	return `  # Discover Rancher clusters using Active Directory
-  {{.CommandPath}} use rancher --idp-protocol rancher-ad
-
-  # Discover clusters via Rancher using a API key
-  {{.CommandPath}} use rancher --idp-protocol static-token --token ABCDEF
-`
+func (p *rancherClusterProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
 }
 
 func (p *rancherClusterProvider) CheckPreReqs() error {
 	return nil
+}
+
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+	rshared.AddCommonConfig(cs) //nolint: errcheck
+
+	return cs, nil
 }

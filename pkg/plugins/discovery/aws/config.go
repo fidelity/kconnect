@@ -17,28 +17,29 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
-func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, namespace string) (*api.Config, string, error) {
-	clusterName := fmt.Sprintf("eks-%s", cluster.Name)
+func (p *eksClusterProvider) GetConfig(ctx context.Context, input *discovery.GetConfigInput) (*discovery.GetConfigOutput, error) {
+	clusterName := fmt.Sprintf("eks-%s", input.Cluster.Name)
 	userName := p.identity.ProfileName
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
 
-	certData, err := base64.StdEncoding.DecodeString(*cluster.CertificateAuthorityData)
+	certData, err := base64.StdEncoding.DecodeString(*input.Cluster.CertificateAuthorityData)
 	if err != nil {
-		return nil, "", fmt.Errorf("decoding certificate: %w", err)
+		return nil, fmt.Errorf("decoding certificate: %w", err)
 	}
 
 	cfg := &api.Config{
 		Clusters: map[string]*api.Cluster{
 			clusterName: {
-				Server:                   *cluster.ControlPlaneEndpoint,
+				Server:                   *input.Cluster.ControlPlaneEndpoint,
 				CertificateAuthorityData: certData,
 			},
 		},
@@ -56,7 +57,7 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 		Args: []string{
 			"token",
 			"-i",
-			cluster.Name,
+			input.Cluster.Name,
 		},
 		Env: []api.ExecEnvVar{
 			{
@@ -74,10 +75,13 @@ func (p *eksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *pr
 
 	cfg.CurrentContext = contextName
 
-	if namespace != "" {
-		p.logger.Debugw("setting kubernetes namespace", "namespace", namespace)
-		cfg.Contexts[contextName].Namespace = namespace
+	if input.Namespace != nil && *input.Namespace != "" {
+		p.logger.Debugw("setting kubernetes namespace", "namespace", *input.Namespace)
+		cfg.Contexts[contextName].Namespace = *input.Namespace
 	}
 
-	return cfg, contextName, nil
+	return &discovery.GetConfigOutput{
+		KubeConfig:  cfg,
+		ContextName: &contextName,
+	}, nil
 }

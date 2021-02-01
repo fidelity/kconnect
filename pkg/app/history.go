@@ -17,13 +17,13 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"go.uber.org/zap"
 )
 
@@ -47,7 +47,7 @@ type HistoryRemoveInput struct {
 }
 
 // AliasList implements the alias listing functionality
-func (a *App) HistoryImport(ctx *provider.Context, input *HistoryImportInput) error {
+func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) error {
 	zap.S().Infow("importing history")
 
 	filterSpec := createFilter(input.Filter)
@@ -99,7 +99,7 @@ func (a *App) HistoryImport(ctx *provider.Context, input *HistoryImportInput) er
 }
 
 // AliasList implements the alias listing functionality
-func (a *App) HistoryExport(ctx *provider.Context, input *HistoryExportInput) error {
+func (a *App) HistoryExport(ctx context.Context, input *HistoryExportInput) error {
 	zap.S().Infow("exporting history")
 
 	filterSpec := createFilter(input.Filter)
@@ -129,7 +129,7 @@ func (a *App) HistoryExport(ctx *provider.Context, input *HistoryExportInput) er
 	return nil
 }
 
-func (a *App) HistoryRemove(ctx *provider.Context, input *HistoryRemoveInput) error {
+func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) error {
 	zap.S().Infow("removing history")
 
 	historyList, err := a.historyStore.GetAll()

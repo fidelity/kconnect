@@ -17,6 +17,7 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,7 +29,6 @@ import (
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/printer"
-	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // ConfigureInput is the input type for the configure command
@@ -38,7 +38,7 @@ type ConfigureInput struct {
 }
 
 // Configuration implements the configure command
-func (a *App) Configuration(ctx *provider.Context, input *ConfigureInput) error {
+func (a *App) Configuration(ctx context.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
 		return a.printConfiguration(input.Output)
 	}

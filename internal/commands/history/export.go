@@ -22,28 +22,27 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
 	shortDescExport = "Export history to an external file"
 	longDescExport  = `
-Allows users to export history to an external file. This file can then be 
+Allows users to export history to an external file. This file can then be
 imported by another user using the import command"
 `
 	examplesExport = `
   # Export your history into a file
   {{.CommandPath}} history export -f exportfile.yaml
-  
+
   # Set username and namespace for exported entries
   {{.CommandPath}} history export -f exportfile.yaml --set username=MYUSER,namespace=kube-system
-  
+
   # Only export entries that match filter
   {{.CommandPath}} history export -f exportfile.yaml --filter region=us-east-1,alias=*dev*
 `
@@ -86,11 +85,7 @@ func exportCommand() (*cobra.Command, error) {
 
 			a := app.New(app.WithHistoryStore(store))
 
-			ctx := provider.NewContext(
-				provider.WithConfig(cfg),
-			)
-
-			return a.HistoryExport(ctx, params)
+			return a.HistoryExport(cmd.Context(), params)
 		},
 	}
 	utils.FormatCommand(importCmd)
