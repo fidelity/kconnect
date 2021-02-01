@@ -19,12 +19,13 @@ package aws
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/versent/saml2aws/pkg/awsconfig"
+
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 // NewIdentityStore will create a new AWS identity store
-func NewIdentityStore(profile, idProviderName string) (provider.IdentityStore, error) {
+func NewIdentityStore(profile, idProviderName string) (identity.Store, error) {
 	return &awsIdentityStore{
 		configProvider: awsconfig.NewSharedCredentials(profile),
 		idProviderName: idProviderName,
@@ -40,17 +41,17 @@ func (s *awsIdentityStore) CredsExists() (bool, error) {
 	return s.configProvider.CredsExists()
 }
 
-func (s *awsIdentityStore) Save(identity provider.Identity) error {
-	awsIdentity, ok := identity.(*Identity)
+func (s *awsIdentityStore) Save(userID identity.Identity) error {
+	awsIdentity, ok := userID.(*Identity)
 	if !ok {
-		return fmt.Errorf("expected AWSIdentity but got a %T: %w", identity, ErrUnexpectedIdentity)
+		return fmt.Errorf("expected AWSIdentity but got a %T: %w", userID, ErrUnexpectedIdentity)
 	}
 	awsCreds := MapIdentityToCreds(awsIdentity)
 
 	return s.configProvider.Save(awsCreds)
 }
 
-func (s *awsIdentityStore) Load() (provider.Identity, error) {
+func (s *awsIdentityStore) Load() (identity.Identity, error) {
 	creds, err := s.configProvider.Load()
 	if err != nil {
 		return nil, fmt.Errorf("loading credentials: %w", err)

@@ -22,31 +22,30 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 const (
 	shortDescImport = "Import history from an external file"
 	longDescImport  = `
-Allows users to import history from an external file. This can then be viewed 
+Allows users to import history from an external file. This can then be viewed
 using the ls command, or connected to using the to command.
 
-These imported entries will be merged with existing ones. If there is a 
-conflict, then the conflicting entry will not be imported (unless 
+These imported entries will be merged with existing ones. If there is a
+conflict, then the conflicting entry will not be imported (unless
 --overwrite flag is supplied).
 
 Users can optionally set any fields in the imported entry
 `
 	examplesImport = `
-  # Imports the file into your history 
+  # Imports the file into your history
   {{.CommandPath}} history import -f importfile.yaml
-  
+
   # Overwrite conflicting entries
   {{.CommandPath}} history import -f importfile.yaml --overwrite
 
@@ -98,11 +97,7 @@ func importCommand() (*cobra.Command, error) {
 
 			a := app.New(app.WithHistoryStore(store))
 
-			ctx := provider.NewContext(
-				provider.WithConfig(cfg),
-			)
-
-			return a.HistoryImport(ctx, params)
+			return a.HistoryImport(cmd.Context(), params)
 		},
 	}
 	utils.FormatCommand(importCmd)

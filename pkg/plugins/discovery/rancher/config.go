@@ -17,6 +17,7 @@ limitations under the License.
 package rancher
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,9 +25,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	khttp "github.com/fidelity/kconnect/pkg/http"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 	"github.com/fidelity/kconnect/pkg/rancher"
 )
 
@@ -34,26 +35,29 @@ const (
 	generateKubeconfigActionName = "generateKubeconfig"
 )
 
-func (p *rancherClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, namespace string) (*api.Config, string, error) {
+func (p *rancherClusterProvider) GetConfig(ctx context.Context, input *discovery.GetConfigInput) (*discovery.GetConfigOutput, error) {
 	p.logger.Debug("getting cluster config")
 
-	p.logger.Debugw("getting cluster details from Rancher api", "cluster", cluster.ID)
-	clusterDetail, err := p.getClusterDetails(cluster.ID)
+	p.logger.Debugw("getting cluster details from Rancher api", "cluster", input.Cluster.ID)
+	clusterDetail, err := p.getClusterDetails(input.Cluster.ID)
 	if err != nil {
-		return nil, "", fmt.Errorf("getting cluster detail: %w", err)
+		return nil, fmt.Errorf("getting cluster detail: %w", err)
 	}
 
 	cfg, err := p.getKubeconfig(clusterDetail)
 	if err != nil {
-		return nil, "", fmt.Errorf("getting kubeconfig: %w", err)
+		return nil, fmt.Errorf("getting kubeconfig: %w", err)
 	}
 
-	if namespace != "" {
-		p.logger.Debugw("setting kubernetes namespace", "namespace", namespace)
-		cfg.Contexts[cfg.CurrentContext].Namespace = namespace
+	if input.Namespace != nil && *input.Namespace != "" {
+		p.logger.Debugw("setting kubernetes namespace", "namespace", *input.Namespace)
+		cfg.Contexts[cfg.CurrentContext].Namespace = *input.Namespace
 	}
 
-	return cfg, cfg.CurrentContext, nil
+	return &discovery.GetConfigOutput{
+		KubeConfig:  cfg,
+		ContextName: &cfg.CurrentContext,
+	}, nil
 }
 
 func (p *rancherClusterProvider) getClusterDetails(clusterID string) (*clusterDetails, error) {

@@ -17,20 +17,20 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
 
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
-func (p *aksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
-	if err := p.setup(ctx.ConfigurationItems(), identity); err != nil {
+func (p *aksClusterProvider) Discover(ctx context.Context, input *discovery.DiscoverInput) (*discovery.DiscoverOutput, error) {
+	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up aks provider: %w", err)
 	}
-
 	p.logger.Info("discovering AKS clusters")
 
 	clusters, err := p.listClusters(ctx)
@@ -38,10 +38,10 @@ func (p *aksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
 
-	discoverOutput := &provider.DiscoverOutput{
-		ClusterProviderName:  "aks",
-		IdentityProviderName: identity.IdentityProviderName(),
-		Clusters:             make(map[string]*provider.Cluster),
+	discoverOutput := &discovery.DiscoverOutput{
+		DiscoveryProvider: ProviderName,
+		IdentityProvider:  input.Identity.IdentityProviderName(),
+		Clusters:          make(map[string]*discovery.Cluster),
 	}
 	for _, v := range clusters {
 		discoverOutput.Clusters[v.ID] = v
@@ -50,17 +50,17 @@ func (p *aksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 	return discoverOutput, nil
 }
 
-func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cluster, error) {
+func (p *aksClusterProvider) listClusters(ctx context.Context) ([]*discovery.Cluster, error) {
 	p.logger.Debugw("listing clusters", "subscription", *p.config.SubscriptionID)
 	client := azclient.NewContainerClient(*p.config.SubscriptionID, p.authorizer)
 
-	clusters := []*provider.Cluster{}
+	clusters := []*discovery.Cluster{}
 	var list containerservice.ManagedClusterListResultPage
 	var err error
 	if p.config.ResourceGroup == nil || *p.config.ResourceGroup == "" {
-		list, err = client.List(ctx.Context)
+		list, err = client.List(ctx)
 	} else {
-		list, err = client.ListByResourceGroup(ctx.Context, *p.config.ResourceGroup)
+		list, err = client.ListByResourceGroup(ctx, *p.config.ResourceGroup)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("querying for AKS clusters: %w", err)
@@ -72,7 +72,7 @@ func (p *aksClusterProvider) listClusters(ctx *provider.Context) ([]*provider.Cl
 			if err != nil {
 				return nil, fmt.Errorf("create cluster id: %w", err)
 			}
-			cluster := &provider.Cluster{
+			cluster := &discovery.Cluster{
 				Name: *val.Name,
 				ID:   clusterID,
 			}

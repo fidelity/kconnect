@@ -17,28 +17,31 @@ limitations under the License.
 package rancher
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
 // Get will get the details of a Rancher cluster.
-func (p *rancherClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
-	if err := p.setup(ctx.ConfigurationItems(), identity); err != nil {
+func (p *rancherClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
+	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up rancher provider: %w", err)
 	}
-	p.logger.Infow("getting cluster via Rancher", "id", clusterID)
+	p.logger.Infow("getting cluster via Rancher", "id", input.ClusterID)
 
-	p.logger.Debugw("getting cluster details from Rancher api", "cluster", clusterID)
-	clusterDetail, err := p.getClusterDetails(clusterID)
+	p.logger.Debugw("getting cluster details from Rancher api", "cluster", input.ClusterID)
+	clusterDetail, err := p.getClusterDetails(input.ClusterID)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster detail: %w", err)
 	}
 
-	cluster := &provider.Cluster{
+	cluster := &discovery.Cluster{
 		Name: clusterDetail.Name,
-		ID:   clusterID,
+		ID:   input.ClusterID,
 	}
 
-	return cluster, nil
+	return &discovery.GetClusterOutput{
+		Cluster: cluster,
+	}, nil
 }

@@ -22,19 +22,18 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 var (
 	shortDescRemove = "Remove connection history entry aliases."
 	longDescRemove  = `
-Remove an alias from a single connection history entry by the entry ID or the 
+Remove an alias from a single connection history entry by the entry ID or the
 alias.
 
 Set the --all flag on this command to remove all connection history aliases from
@@ -95,11 +94,7 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 
 			a := app.New(app.WithHistoryStore(store))
 
-			ctx := provider.NewContext(
-				provider.WithConfig(cfg),
-			)
-
-			return a.AliasRemove(ctx, params)
+			return a.AliasRemove(cmd.Context(), params)
 		},
 	}
 	utils.FormatCommand(rmCmd)

@@ -19,8 +19,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/printer"
 )
 

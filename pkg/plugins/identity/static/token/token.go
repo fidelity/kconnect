@@ -17,6 +17,7 @@ limitations under the License.
 package token
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -25,6 +26,8 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
 const (
@@ -33,17 +36,29 @@ const (
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newProvider()); err != nil {
-		zap.S().Fatalw("failed to register static token identity provider plugin", "error", err)
+	if err := registry.RegisterIdentityPlugin(&registry.IdentityPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           "",
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc: New,
+	}); err != nil {
+		zap.S().Fatalw("Failed to register static token identity plugin", "error", err)
 	}
 }
 
-func newProvider() *staticTokenIdentityProvider {
-	return &staticTokenIdentityProvider{}
+// New will create a new static token identity provider
+func New(input *provider.PluginCreationInput) (identity.Provider, error) {
+	return &staticTokenIdentityProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+	}, nil
 }
 
 type staticTokenIdentityProvider struct {
-	logger *zap.SugaredLogger
+	logger      *zap.SugaredLogger
+	interactive bool
 }
 
 type providerConfig struct {
@@ -54,18 +69,16 @@ func (p *staticTokenIdentityProvider) Name() string {
 	return ProviderName
 }
 
-// Authenticate will authenticate a user and return details of
-// their identity.
-func (p *staticTokenIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.ensureLogger()
+// Authenticate will authenticate a user and return details of their identity.
+func (p *staticTokenIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("using static token for authentication")
 
-	if err := p.resolveConfig(ctx); err != nil {
+	if err := p.resolveConfig(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("resolving config: %w", err)
 	}
 
 	cfg := &providerConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into providerConfig: %w", err)
 	}
 
@@ -73,34 +86,10 @@ func (p *staticTokenIdentityProvider) Authenticate(ctx *provider.Context, cluste
 		return nil, err
 	}
 
-	id := provider.NewTokenIdentity("static-token", cfg.Token, ProviderName)
+	return &identity.AuthenticateOutput{
+		Identity: identity.NewTokenIdentity("static-token", cfg.Token, ProviderName),
+	}, nil
 
-	return id, nil
-}
-
-// ConfigurationItems will return the configuration items for the intentity plugin based
-// of the cluster provider that its being used in conjunction with
-func (p *staticTokenIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
-	p.ensureLogger()
-	cs := config.NewConfigurationSet()
-
-	cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml). Each protocol has its own flags.") //nolint:errcheck
-	cs.String(tokenConfigItem, "", "the token to use for authentication")                                  //nolint:errcheck
-	cs.SetRequired(tokenConfigItem)                                                                        //nolint:errcheck
-	cs.SetSensitive(tokenConfigItem)                                                                       //nolint:errcheck
-
-	return cs, nil
-}
-
-// Usage returns a string to display for help
-func (p *staticTokenIdentityProvider) Usage(clusterProvider string) (string, error) {
-	return "", nil
-}
-
-func (p *staticTokenIdentityProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
-	}
 }
 
 func (p *staticTokenIdentityProvider) validateConfig(cfg *providerConfig) error {
@@ -111,16 +100,27 @@ func (p *staticTokenIdentityProvider) validateConfig(cfg *providerConfig) error 
 	return nil
 }
 
-func (p *staticTokenIdentityProvider) resolveConfig(ctx *provider.Context) error {
-	if !ctx.IsInteractive() {
+func (p *staticTokenIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
+	if !p.interactive {
 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
 	}
-
-	cfg := ctx.ConfigurationItems()
 
 	if err := prompt.InputAndSet(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
 	}
 
 	return nil
+}
+
+// ConfigurationItems will return the configuration items for the intentity plugin based
+// of the cluster provider that its being used in conjunction with
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+
+	cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml). Each protocol has its own flags.") //nolint:errcheck
+	cs.String(tokenConfigItem, "", "the token to use for authentication")                                  //nolint:errcheck
+	cs.SetRequired(tokenConfigItem)                                                                        //nolint:errcheck
+	cs.SetSensitive(tokenConfigItem)                                                                       //nolint:errcheck
+
+	return cs, nil
 }

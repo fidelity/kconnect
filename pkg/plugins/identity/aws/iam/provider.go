@@ -14,6 +14,7 @@ limitations under the License.
 package iam
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -22,6 +23,8 @@ import (
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
 const (
@@ -35,17 +38,29 @@ var (
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newProvider()); err != nil {
-		zap.S().Fatalw("failed to register aws iam identity provider plugin", "error", err)
+	if err := registry.RegisterIdentityPlugin(&registry.IdentityPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           "",
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc: New,
+	}); err != nil {
+		zap.S().Fatalw("Failed to register AWS IAM identity plugin", "error", err)
 	}
 }
 
-func newProvider() *iamIdentityProvider {
-	return &iamIdentityProvider{}
+// New will create a new AWS IAM identity provider
+func New(input *provider.PluginCreationInput) (identity.Provider, error) {
+	return &iamIdentityProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+	}, nil
 }
 
 type iamIdentityProvider struct {
-	logger *zap.SugaredLogger
+	logger      *zap.SugaredLogger
+	interactive bool
 }
 
 type providerConfig struct {
@@ -61,14 +76,12 @@ func (p *iamIdentityProvider) Name() string {
 	return ProviderName
 }
 
-// Authenticate will authenticate a user and return details of
-// their identity.
-func (p *iamIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.ensureLogger()
+// Authenticate will authenticate a user and return details of their identity.
+func (p *iamIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("using aws iam for authentication")
 
 	cfg := &providerConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into providerConfig: %w", err)
 	}
 
@@ -87,37 +100,17 @@ func (p *iamIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 	}
 	p.logger.Debugw("found aws iam credentials", "provider", creds.ProviderName)
 
-	return &kaws.Identity{
+	id := &kaws.Identity{
 		ProfileName:     cfg.Profile,
 		AWSAccessKey:    creds.AccessKeyID,
 		AWSSecretKey:    creds.SecretAccessKey,
 		AWSSessionToken: creds.SessionToken,
 		Region:          cfg.Region,
-	}, nil
-}
-
-// ConfigurationItems will return the configuration items for the intentity plugin based
-// of the cluster provider that its being used in conjunction with
-func (p *iamIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
-	p.ensureLogger()
-	cs := config.NewConfigurationSet()
-
-	kaws.AddRegionConfig(cs)
-	kaws.AddPartitionConfig(cs)
-	kaws.AddIAMConfigs(cs)
-
-	return cs, nil
-}
-
-// Usage returns a string to display for help
-func (p *iamIdentityProvider) Usage(clusterProvider string) (string, error) {
-	return "", nil
-}
-
-func (p *iamIdentityProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
 	}
+
+	return &identity.AuthenticateOutput{
+		Identity: id,
+	}, nil
 }
 
 func (p *iamIdentityProvider) validateConfig(cfg *providerConfig) error {
@@ -135,4 +128,16 @@ func (p *iamIdentityProvider) validateConfig(cfg *providerConfig) error {
 	}
 
 	return nil
+}
+
+// ConfigurationItems will return the configuration items for the intentity plugin based
+// of the cluster provider that its being used in conjunction with
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+
+	kaws.AddRegionConfig(cs)
+	kaws.AddPartitionConfig(cs)
+	kaws.AddIAMConfigs(cs)
+
+	return cs, nil
 }

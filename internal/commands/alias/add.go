@@ -22,12 +22,11 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
@@ -36,7 +35,7 @@ const (
 	longDescAdd  = `
 Adds a user-friendly alias to a connection history entry.
 
-The user can then reconnect and refresh the access token for that cluster using 
+The user can then reconnect and refresh the access token for that cluster using
 the alias instead of the connection history entry's unique ID.
 `
 	examplesAdd = `
@@ -91,11 +90,7 @@ func addCommand() (*cobra.Command, error) { //nolint: dupl
 
 			a := app.New(app.WithHistoryStore(store))
 
-			ctx := provider.NewContext(
-				provider.WithConfig(cfg),
-			)
-
-			return a.AliasAdd(ctx, params)
+			return a.AliasAdd(cmd.Context(), params)
 		},
 	}
 	utils.FormatCommand(addCmd)

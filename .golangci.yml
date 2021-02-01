@@ -17,7 +17,7 @@ issues:
 
 linters-settings:
   funlen:
-    lines: 90
+    lines: 95
     statements: 60
 
 linters:
@@ -36,5 +36,6 @@ linters:
     - exhaustivestruct
     - gofumpt
     - gci
+    - ifshort
     - wrapcheck # enable in the future
     - ifshort

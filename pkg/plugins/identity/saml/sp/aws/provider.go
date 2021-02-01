@@ -38,6 +38,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 const (
@@ -88,7 +89,7 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 	return nil
 }
 
-func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (provider.Identity, error) {
+func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (identity.Identity, error) {
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -201,10 +202,9 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 	}
 
 	role, err := p.getRoleFromPrompt(awsAccounts, roleFilter)
-	if err == nil {
+	if err != nil {
 		return nil, fmt.Errorf("getting role: %w", err)
 	}
-	p.logger.Info("Error selecting role, try again")
 
 	return role, nil
 }
@@ -253,6 +253,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, rol
 	if err != nil {
 		return nil, fmt.Errorf("selected aws role: %w", err)
 	}
+	p.logger.Debugw("selected aws role", "name", selected, "arn", roles[selected].RoleARN)
 
 	return roles[selected], nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -26,7 +27,6 @@ import (
 	apiv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/printer"
-	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // AliasListInput defines the inputs for AliasList
@@ -52,7 +52,7 @@ type AliasRemoveInput struct {
 }
 
 // AliasList implements the alias listing functionality
-func (a *App) AliasList(ctx *provider.Context, input *AliasListInput) error {
+func (a *App) AliasList(ctx context.Context, input *AliasListInput) error {
 	zap.S().Infow("listing aliases")
 
 	list, err := a.historyStore.GetAll()
@@ -81,7 +81,7 @@ func (a *App) AliasList(ctx *provider.Context, input *AliasListInput) error {
 }
 
 // AliasAdd will add an alias to an existing history entry
-func (a *App) AliasAdd(ctx *provider.Context, input *AliasAddInput) error {
+func (a *App) AliasAdd(ctx context.Context, input *AliasAddInput) error {
 	zap.S().Infow("adding alias to history entry", "id", input.ID, "alias", input.Alias)
 	if input.Alias == "" {
 		return ErrAliasRequired
@@ -119,7 +119,7 @@ func (a *App) AliasAdd(ctx *provider.Context, input *AliasAddInput) error {
 
 // AliasRemove will remove an alias from history entries. You can also remove all
 // aliases.
-func (a *App) AliasRemove(ctx *provider.Context, input *AliasRemoveInput) error {
+func (a *App) AliasRemove(ctx context.Context, input *AliasRemoveInput) error {
 	zap.S().Infow("removing aliases from history entries", "id", input.ID, "alias", input.Alias, "all", input.All)
 
 	if input.Alias == "" && input.ID == "" && !input.All {

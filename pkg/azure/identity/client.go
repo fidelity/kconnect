@@ -30,8 +30,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/azure/wstrust"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
 

@@ -25,21 +25,51 @@ import (
 	"github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
+const (
+	ProviderName = "eks"
+	UsageExample = `
+  # Discover EKS clusters using SAML
+  {{.CommandPath}} use eks --idp-protocol saml
+
+  # Discover EKS clusters using SAML with a specific role
+  {{.CommandPath}} use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
+
+  # Discover an EKS cluster and add an alias to its connection history entry
+  {{.CommandPath}} use eks --alias mycluster
+  `
+)
+
 func init() {
-	if err := provider.RegisterClusterProviderPlugin("eks", newEKSProvider()); err != nil {
-		zap.S().Fatalw("Failed to register EKS cluster provider plugin", "error", err)
+	if err := registry.RegisterDiscoveryPlugin(&registry.DiscoveryPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           UsageExample,
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc:                 New,
+		SupportedIdentityProviders: []string{"aws-iam", "saml"},
+	}); err != nil {
+		zap.S().Fatalw("Failed to register EKS discovery plugin", "error", err)
 	}
 }
 
-func newEKSProvider() *eksClusterProvider {
-	return &eksClusterProvider{}
+// New will create a new EKS discovery plugin
+func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
+	return &eksClusterProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+	}, nil
 }
 
 type eksClusteProviderConfig struct {
-	provider.ClusterProviderConfig
+	common.ClusterProviderConfig
 	Region       *string `json:"region"`
 	RegionFilter *string `json:"region-filter"`
 	RoleArn      *string `json:"role-arn"`
@@ -52,43 +82,23 @@ type eksClusterProvider struct {
 	identity  *aws.Identity
 	eksClient eksiface.EKSAPI
 
-	logger *zap.SugaredLogger
+	interactive bool
+	logger      *zap.SugaredLogger
 }
 
 // Name returns the name of the provider
 func (p *eksClusterProvider) Name() string {
-	return "eks"
+	return ProviderName
 }
 
-func (p *eksClusterProvider) SupportedIDs() []string {
-	return []string{"aws-iam", "saml"}
-}
-
-// ConfigurationItems returns the configuration items for this provider
-func (p *eksClusterProvider) ConfigurationItems() config.ConfigurationSet {
-	cs := aws.SharedConfig()
-
-	cs.String("region-filter", "", "A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions")                 //nolint: errcheck
-	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                    //nolint: errcheck
-	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name") //nolint: errcheck
-
-	return cs
-}
-
-// ConfigurationResolver returns the resolver to use for config with this provider
-func (p *eksClusterProvider) ConfigurationResolver() provider.ConfigResolver {
-	return &awsConfigResolver{}
-}
-
-func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Identity) error {
-	p.ensureLogger()
+func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
 	cfg := &eksClusteProviderConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(cs, cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
 	}
 	p.config = cfg
 
-	awsID, ok := identity.(*aws.Identity)
+	awsID, ok := userID.(*aws.Identity)
 	if !ok {
 		return ErrNotAWSIdentity
 	}
@@ -105,27 +115,21 @@ func (p *eksClusterProvider) setup(ctx *provider.Context, identity provider.Iden
 	return nil
 }
 
-func (p *eksClusterProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", "eks")
-	}
-}
-
-// UsageExample will provide an example of the usage of this provider
-func (p *eksClusterProvider) UsageExample() string {
-	return `
-  # Discover EKS clusters using SAML
-  {{.CommandPath}} use eks --idp-protocol saml
-
-  # Discover EKS clusters using SAML with a specific role
-  {{.CommandPath}} use eks --idp-protocol saml --role-arn arn:aws:iam::000000000000:role/KubernetesAdmin
-
-  # Discover an EKS cluster and add an alias to its connection history entry
-  {{.CommandPath}} use eks --alias mycluster
-`
+func (p *eksClusterProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
 }
 
 func (p *eksClusterProvider) CheckPreReqs() error {
-
 	return utils.CheckAWSIAMAuthPrereq()
+}
+
+// ConfigurationItems returns the configuration items for this provider
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
+	cs := aws.SharedConfig()
+
+	cs.String("region-filter", "", "A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions")                 //nolint: errcheck
+	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                    //nolint: errcheck
+	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name") //nolint: errcheck
+
+	return cs, nil
 }

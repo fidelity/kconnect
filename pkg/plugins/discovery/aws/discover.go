@@ -17,16 +17,17 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
 	awsgo "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/eks"
 
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
-func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.Identity) (*provider.DiscoverOutput, error) {
-	if err := p.setup(ctx, identity); err != nil {
+func (p *eksClusterProvider) Discover(ctx context.Context, input *discovery.DiscoverInput) (*discovery.DiscoverOutput, error) {
+	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up eks provider: %w", err)
 	}
 
@@ -37,10 +38,10 @@ func (p *eksClusterProvider) Discover(ctx *provider.Context, identity provider.I
 		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
 
-	discoverOutput := &provider.DiscoverOutput{
-		ClusterProviderName:  "eks",
-		IdentityProviderName: "aws",
-		Clusters:             make(map[string]*provider.Cluster),
+	discoverOutput := &discovery.DiscoverOutput{
+		DiscoveryProvider: ProviderName,
+		IdentityProvider:  "aws",
+		Clusters:          make(map[string]*discovery.Cluster),
 	}
 
 	if len(clusters) == 0 {
@@ -75,7 +76,7 @@ func (p *eksClusterProvider) listClusters() ([]*string, error) {
 	return clusters, nil
 }
 
-func (p *eksClusterProvider) getClusterConfig(clusterName string) (*provider.Cluster, error) {
+func (p *eksClusterProvider) getClusterConfig(clusterName string) (*discovery.Cluster, error) {
 
 	input := &eks.DescribeClusterInput{
 		Name: awsgo.String(clusterName),
@@ -86,7 +87,7 @@ func (p *eksClusterProvider) getClusterConfig(clusterName string) (*provider.Clu
 		return nil, fmt.Errorf("describing cluster %s: %w", clusterName, err)
 	}
 
-	return &provider.Cluster{
+	return &discovery.Cluster{
 		ID:                       *output.Cluster.Arn,
 		Name:                     *output.Cluster.Name,
 		ControlPlaneEndpoint:     output.Cluster.Endpoint,

@@ -19,9 +19,9 @@ package aws
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/defaults"
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/prompt"
 )
 

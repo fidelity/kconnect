@@ -17,12 +17,13 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
 const (
@@ -30,18 +31,25 @@ const (
 )
 
 // Get will get the details of a EKS cluster. The clusterID maps to a ARN
-func (p *eksClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
-	if err := p.setup(ctx, identity); err != nil {
+func (p *eksClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
+	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up eks provider: %w", err)
 	}
 
-	p.logger.Infow("getting EKS cluster", "id", clusterID)
-	clusterName, err := p.getClusterName(clusterID)
+	p.logger.Infow("getting EKS cluster", "id", input.ClusterID)
+	clusterName, err := p.getClusterName(input.ClusterID)
 	if err != nil {
-		return nil, fmt.Errorf("getting cluster name for cluster id %s: %w", clusterID, err)
+		return nil, fmt.Errorf("getting cluster name for cluster id %s: %w", input.ClusterID, err)
 	}
 
-	return p.getClusterConfig(clusterName)
+	cluster, err := p.getClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("getting cluster config for %s: %w", input.ClusterID, err)
+	}
+
+	return &discovery.GetClusterOutput{
+		Cluster: cluster,
+	}, nil
 }
 
 func (p *eksClusterProvider) getClusterName(clusterID string) (string, error) {

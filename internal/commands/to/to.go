@@ -23,12 +23,11 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
@@ -100,29 +99,28 @@ func Command() (*cobra.Command, error) {
 			if len(args) > 0 {
 				aliasOrIDORPosition = args[0]
 			}
-			params := &app.ConnectToParams{
-				Context:             provider.NewContext(provider.WithConfig(cfg)),
+			input := &app.ConnectToInput{
 				AliasOrIDORPosition: aliasOrIDORPosition,
 			}
 
-			if err := config.Unmarshall(cfg, params); err != nil {
+			if err := config.Unmarshall(cfg, input); err != nil {
 				return fmt.Errorf("unmarshalling config into to params: %w", err)
 			}
 
-			historyLoader, err := loader.NewFileLoader(params.Location)
+			historyLoader, err := loader.NewFileLoader(input.Location)
 			if err != nil {
-				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
+				return fmt.Errorf("getting history loader with path %s: %w", input.Location, err)
 			}
 			// using to command should never increase number of history items, so set to arbitrary large number
-			params.MaxItems = 10000
-			store, err := history.NewStore(params.MaxItems, historyLoader)
+			input.MaxItems = 10000
+			store, err := history.NewStore(input.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
 			a := app.New(app.WithHistoryStore(store))
 
-			return a.ConnectTo(params)
+			return a.ConnectTo(cmd.Context(), input)
 		},
 	}
 	utils.FormatCommand(toCmd)

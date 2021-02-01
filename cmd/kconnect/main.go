@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -40,11 +41,12 @@ func main() {
 	zap.S().Infow("kconnect - the Kubernetes Connection Manager CLI", "version", v.Version)
 	zap.S().Debugw("build information", "date", v.BuildDate, "commit", v.CommitHash, "gover", v.GoVersion)
 
+	ctx := context.Background()
 	rootCmd, err := commands.RootCmd()
 	if err != nil {
 		zap.S().Fatalw("failed getting root command", "error", err.Error())
 	}
-	if err := rootCmd.Execute(); err != nil {
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		zap.S().Fatalw("failed executing root command", "error", err.Error())
 	}
 }

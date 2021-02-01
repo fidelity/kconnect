@@ -19,12 +19,11 @@ package history
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -38,16 +37,16 @@ Allows users to delete history entries from their history
 	examplesRm = `
   # Display history entries
   {{.CommandPath}} ls
-  
+
   # Delete a history entry with specific ID
   {{.CommandPath}} history rm 01exm3ty400w9sr28jawc8fkae
-  
+
   # Delete multiple history entries with specific IDs
   {{.CommandPath}} history rm 01exm3ty400w9sr28jawc8fkae 01exm3tvw2f5snkj18rk1ngmyb
 
   # Delete all history entries
   {{.CommandPath}} history rm --all
-  
+
   # Delete all history entries that match the filter (e.g. alias that have "prod" in them)
   {{.CommandPath}} history rm --filter alias=*prod*
 `
@@ -94,11 +93,7 @@ func rmCommand() (*cobra.Command, error) {
 
 			a := app.New(app.WithHistoryStore(store))
 
-			ctx := provider.NewContext(
-				provider.WithConfig(cfg),
-			)
-
-			return a.HistoryRemove(ctx, params)
+			return a.HistoryRemove(cmd.Context(), params)
 		},
 	}
 	utils.FormatCommand(importCmd)
