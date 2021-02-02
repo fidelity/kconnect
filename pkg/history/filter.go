@@ -145,17 +145,17 @@ func CreateFilterFromMap(filterMap map[string]string) *FilterSpec {
 		alias = val
 		delete(filterMap, "alias")
 	}
-	if val, ok := filterMap["clusterProvider"]; ok {
+	if val, ok := filterMap["cluster-provider"]; ok {
 		clusterProvider = val
-		delete(filterMap, "clusterProvider")
+		delete(filterMap, "cluster-provider")
 	}
-	if val, ok := filterMap["historyID"]; ok {
+	if val, ok := filterMap["id"]; ok {
 		historyID = val
-		delete(filterMap, "historyID")
+		delete(filterMap, "id")
 	}
-	if val, ok := filterMap["identityProvider"]; ok {
+	if val, ok := filterMap["identity-provider"]; ok {
 		identityProvider = val
-		delete(filterMap, "identityProvider")
+		delete(filterMap, "identity-provider")
 	}
 	if val, ok := filterMap["kubeconfig"]; ok {
 		kubeconfig = val

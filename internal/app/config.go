@@ -21,6 +21,7 @@ import (
 
 	"github.com/fidelity/kconnect/internal/defaults"
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/printer"
 )
 
 const (
@@ -147,24 +148,24 @@ func AddHistoryIdentifierConfig(cs config.ConfigurationSet) error {
 	return nil
 }
 
-func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
-	if err := AddHistoryIdentifierConfig(cs); err != nil {
-		return fmt.Errorf("adding history identifier config items: %w", err)
-	}
-	if _, err := cs.String("cluster-provider", "", "Name of a cluster provider (i.e. eks)"); err != nil {
-		return fmt.Errorf("adding cluster-provider-id config: %w", err)
-	}
-	if _, err := cs.String("identity-provider", "", "Name of a identity provider (i.e. saml)"); err != nil {
-		return fmt.Errorf("adding identity-provider-id config: %w", err)
-	}
-	if _, err := cs.String("provider-id", "", "Provider specific for a cluster"); err != nil {
-		return fmt.Errorf("adding provider-id config: %w", err)
-	}
-	cs.SetHistoryIgnore("cluster-provider")  //nolint
-	cs.SetHistoryIgnore("identity-provider") //nolint
-	cs.SetHistoryIgnore("provider-id")       //nolint
-	return nil
+type HistoryQueryConfig struct {
+	Filter string                 `json:"filter,omitempty"`
+	Output *printer.OutputPrinter `json:"output,omitempty"`
+}
 
+func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
+
+	if _, err := cs.String("filter", "", "filter to apply to import. Can specify multiple filters by using commas, and supports wilcards (*)"); err != nil {
+		return fmt.Errorf("adding filter config: %w", err)
+	}
+	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
+		return fmt.Errorf("adding output config item: %w", err)
+	}
+	if err := cs.SetShort("output", "o"); err != nil {
+		return fmt.Errorf("adding output short flag: %w", err)
+	}
+	cs.SetHistoryIgnore("output") //nolint
+	return nil
 }
 
 type HistoryImportConfig struct {

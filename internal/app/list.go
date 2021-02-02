@@ -32,19 +32,7 @@ import (
 type HistoryQueryInput struct {
 	HistoryConfig
 	KubernetesConfig
-
-	ClusterProvider  *string `json:"cluster-provider,omitempty"`
-	IdentityProvider *string `json:"identity-provider,omitempty"`
-
-	ProviderID *string `json:"provider-id,omitempty"`
-	HistoryID  *string `json:"id,omitempty"`
-	Alias      *string `json:"alias,omitempty"`
-
-	Flags map[string]string `json:"flags,omitempty"`
-
-	Output *printer.OutputPrinter `json:"output,omitempty"`
-
-	Context *provider.Context
+	HistoryQueryConfig
 }
 
 func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) error {
@@ -55,15 +43,7 @@ func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) erro
 		return fmt.Errorf("getting history entries: %w", err)
 	}
 
-	filterSpec := &history.FilterSpec{
-		Alias:            input.Alias,
-		ClusterProvider:  input.ClusterProvider,
-		Flags:            input.Flags,
-		HistoryID:        input.HistoryID,
-		IdentityProvider: input.IdentityProvider,
-		Kubeconfig:       &input.Kubeconfig,
-		ProviderID:       input.ProviderID,
-	}
+	filterSpec := createFilter(input.Filter)
 
 	if err := history.FilterHistory(list, filterSpec); err != nil {
 		return fmt.Errorf("filtering history list: %w", err)

@@ -50,13 +50,19 @@ via the connection history entry's ID or alias.
   {{.CommandPath}} ls --output yaml
 
   # Display a specific connection history entry by entry id
-  {{.CommandPath}} ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
+  {{.CommandPath}} ls --filter id=01EM615GB2YX3C6WZ9MCWBDWBF
 
   # Display a specific connection history entry by its alias
-  {{.CommandPath}} ls --alias mydev
+  {{.CommandPath}} ls --filter alias=mydev
+
+  # Display all connection history entries that have "dev" in its alias
+  {{.CommandPath}} ls --filter alias=*dev*
 
   # Display all connection history entries for the EKS managed cluster provider
-  {{.CommandPath}} ls --cluster-provider eks
+  {{.CommandPath}} ls --filter cluster-provider=eks
+
+  # Display all connection history entries for entries with namespace kube-system
+  {{.CommandPath}} ls --filter namespace=kube-system
 
   # Reconnect using the connection history entry alias
   {{.CommandPath}} to mydev
@@ -131,17 +137,9 @@ func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddHistoryConfigItems(cs); err != nil {
 		return fmt.Errorf("adding history config items: %w", err)
 	}
+
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}
-	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
-		return fmt.Errorf("adding output config item: %w", err)
-	}
-	if err := cs.SetShort("output", "o"); err != nil {
-		return fmt.Errorf("adding output short flag: %w", err)
-	}
-
-	cs.SetHistoryIgnore("output") //nolint
-
 	return nil
 }
