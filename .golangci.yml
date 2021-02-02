@@ -37,3 +37,4 @@ linters:
     - gofumpt
     - gci
     - wrapcheck # enable in the future
+    - ifshort
