@@ -20,6 +20,7 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
+	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect

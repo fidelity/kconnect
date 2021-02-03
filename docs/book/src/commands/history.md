@@ -50,6 +50,7 @@ kconnect history [flags]
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
 * [kconnect history export](history_export.md)	 - Export history to an external file
 * [kconnect history import](history_import.md)	 - Import history from an external file
+* [kconnect history rm](history_rm.md)	 - Remove history entries
 
 
 > NOTE: this page is auto-generated from the cobra commands

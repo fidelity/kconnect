@@ -219,3 +219,18 @@ func AddHistoryExportConfig(cs config.ConfigurationSet) error {
 	}
 	return nil
 }
+
+type HistoryRemoveConfig struct {
+	All    bool   `json:"all,omitempty"`
+	Filter string `json:"filter,omitempty"`
+}
+
+func AddHistoryRemoveConfig(cs config.ConfigurationSet) error {
+	if _, err := cs.String("filter", "", "filter to apply to import. Can specify multiple filters by using commas, and supports wilcards (*)"); err != nil {
+		return fmt.Errorf("adding filter config: %w", err)
+	}
+	if _, err := cs.Bool("all", false, "remove all entries"); err != nil {
+		return fmt.Errorf("adding all config: %w", err)
+	}
+	return nil
+}
