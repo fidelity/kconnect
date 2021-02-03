@@ -88,6 +88,12 @@ func Command() (*cobra.Command, error) {
 	}
 	historyCmd.AddCommand(exportCmd)
 
+	rmCmd, err := rmCommand()
+	if err != nil {
+		return nil, fmt.Errorf("creating history rm command: %w", err)
+	}
+	historyCmd.AddCommand(rmCmd)
+
 	return historyCmd, nil
 
 }
