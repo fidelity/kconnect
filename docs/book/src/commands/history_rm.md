@@ -18,16 +18,16 @@ kconnect history rm [flags]
 
   # Display history entries
   kconnect ls
-  
+
   # Delete a history entry with specific ID
   kconnect history rm 01exm3ty400w9sr28jawc8fkae
-  
+
   # Delete multiple history entries with specific IDs
   kconnect history rm 01exm3ty400w9sr28jawc8fkae 01exm3tvw2f5snkj18rk1ngmyb
 
   # Delete all history entries
   kconnect history rm --all
-  
+
   # Delete all history entries that match the filter (e.g. alias that have "prod" in them)
   kconnect history rm --filter alias=*prod*
 

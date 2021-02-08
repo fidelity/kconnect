@@ -28,14 +28,14 @@ kconnect use aks [flags]
 
 ```bash
   # Discover AKS clusters using Azure AD
-  kconnect use aks --idp-protocol aad
+	kconnect use aks --idp-protocol aad
 
-  # Discover AKS clusters using file based credentials
-  export AZURE_TENANT_ID="123455"
-  export AZURE_CLIENT_ID="76849"
-  export AZURE_CLIENT_SECRET="supersecret"
-  kconnect use aks --idp-protocol az-env
-
+	# Discover AKS clusters using file based credentials
+	export AZURE_TENANT_ID="123455"
+	export AZURE_CLIENT_ID="76849"
+	export AZURE_CLIENT_SECRET="supersecret"
+	kconnect use aks --idp-protocol az-env
+  
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 

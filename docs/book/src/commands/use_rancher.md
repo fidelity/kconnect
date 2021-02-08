@@ -28,11 +28,11 @@ kconnect use rancher [flags]
 
 ```bash
   # Discover Rancher clusters using Active Directory
-  kconnect use rancher --idp-protocol rancher-ad
+	kconnect use rancher --idp-protocol rancher-ad
 
-  # Discover clusters via Rancher using a API key
-  kconnect use rancher --idp-protocol static-token --token ABCDEF
-
+	# Discover clusters via Rancher using a API key
+	kconnect use rancher --idp-protocol static-token --token ABCDEF
+  
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 

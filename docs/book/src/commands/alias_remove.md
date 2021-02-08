@@ -5,7 +5,7 @@ Remove connection history entry aliases.
 ### Synopsis
 
 
-Remove an alias from a single connection history entry by the entry ID or the 
+Remove an alias from a single connection history entry by the entry ID or the
 alias.
 
 Set the --all flag on this command to remove all connection history aliases from

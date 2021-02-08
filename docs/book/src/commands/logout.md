@@ -5,7 +5,7 @@ Logs out of a cluster
 ### Synopsis
 
 
-Logs out of a cluster. Can logout of specific cluster by their alias or entry ID. 
+Logs out of a cluster. Can logout of specific cluster by their alias or entry ID.
 Log out of all clusters by using the --all flag
 If neither above options are selected, will log out of current cluster
 
