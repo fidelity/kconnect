@@ -31,7 +31,7 @@ import (
 	"github.com/fidelity/kconnect/internal/commands"
 	"github.com/fidelity/kconnect/pkg/flags"
 	_ "github.com/fidelity/kconnect/pkg/plugins" // Import all the plugins
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 
 	"github.com/spf13/cobra"
 )
@@ -178,13 +178,13 @@ func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
 func printIDPProtocolOptions(buf *bytes.Buffer, cmd *cobra.Command, name string, providerName string) error {
 	buf.WriteString("### IDP Protocol Options\n\n")
 
-	clusterProvider, err := provider.GetClusterProvider(providerName)
+	clusterProviderReg, err := registry.GetDiscoveryProviderRegistration(providerName)
 	if err != nil {
 		return err
 	}
 
-	for _, idProviderName := range clusterProvider.SupportedIDs() {
-		idProvider, err := provider.GetIdentityProvider(idProviderName)
+	for _, idProviderName := range clusterProviderReg.SupportedIdentityProviders {
+		idProviderReg, err := registry.GetIdentityProviderRegistration(idProviderName)
 		if err != nil {
 			return nil
 		}
@@ -193,7 +193,7 @@ func printIDPProtocolOptions(buf *bytes.Buffer, cmd *cobra.Command, name string,
 		buf.WriteString(fmt.Sprintf("Use `--idp-protocol=%s`\n\n", idProviderName))
 		buf.WriteString("```bash\n")
 
-		cfg, err := idProvider.ConfigurationItems(providerName)
+		cfg, err := idProviderReg.ConfigurationItemsFunc(providerName)
 		if err != nil {
 			return err
 		}

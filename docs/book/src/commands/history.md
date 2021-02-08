@@ -7,7 +7,7 @@ Import and export history
 
 Command to allow users to import or export history files.
 
-A common use case would be for one member of a team to generate the history + 
+A common use case would be for one member of a team to generate the history +
 alias config for their teams cluster(s). They could then send this file out to
 the rest of the team, who can then import it. On import, they can set their
 username for all of the history entries.

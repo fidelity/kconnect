@@ -7,7 +7,7 @@ Add an alias to a connection history entry
 
 Adds a user-friendly alias to a connection history entry.
 
-The user can then reconnect and refresh the access token for that cluster using 
+The user can then reconnect and refresh the access token for that cluster using
 the alias instead of the connection history entry's unique ID.
 
 

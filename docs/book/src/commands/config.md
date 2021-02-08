@@ -5,16 +5,16 @@ Set and view your kconnect configuration.
 ### Synopsis
 
 
-The configure command creates kconnect configuration files and displays 
+The configure command creates kconnect configuration files and displays
 previously-defined configurations in a user-friendly display format.
 
-If run with no flags, the command displays the configurations stored in the 
+If run with no flags, the command displays the configurations stored in the
 current user's $HOME/.kconnect/config.yaml file.
 
-The configure command can create a set of default configurations for a new 
+The configure command can create a set of default configurations for a new
 system or a new user via the -f flag and a local filename or remote URL.
 
-The user typically only needs to use this command the first time they use 
+The user typically only needs to use this command the first time they use
 kconnect.
 
 

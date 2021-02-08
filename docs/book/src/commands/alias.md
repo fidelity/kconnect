@@ -5,8 +5,8 @@ Query and manipulate connection history entry aliases.
 ### Synopsis
 
 
-An alias is a user-friendly name for a connection history entry, otherwise 
-referred to by its entry ID. 
+An alias is a user-friendly name for a connection history entry, otherwise
+referred to by its entry ID.
 
 The alias command and sub-commands allow you to query and manipulate aliases for
 connection history entries.
