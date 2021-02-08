@@ -199,11 +199,7 @@ func (a *App) filterConfig(params *UseInput) map[string]string {
 
 	for _, configItem := range params.ConfigSet.GetAll() {
 
-		if configItem.Sensitive {
-			continue
-		}
-
-		if configItem.HistoryIgnore {
+		if configItem.Sensitive || configItem.HistoryIgnore {
 			continue
 		}
 

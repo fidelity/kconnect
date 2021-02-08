@@ -57,30 +57,6 @@ func (a *App) ConnectTo(ctx context.Context, params *ConnectToInput) error {
 	}
 	historyID := entry.ObjectMeta.Name
 
-	// idProviderInput := &provider.PluginCreationInput{
-	// 	Logger:        a.logger.With("provider", entry.Spec.Identity, "type", "identity"),
-	// 	IsInteractice: a.interactive,
-	// 	ItemSelector:  a.itemSelector,
-	// 	ScopedTo:      &entry.Spec.Provider,
-	// 	HttpClient:    a.httpClient,
-	// }
-	// idProvider, err := registry.GetIdentityProvider(entry.Spec.Identity, idProviderInput)
-	// if err != nil {
-	// 	return fmt.Errorf("getting identity provider %s: %w", entry.Spec.Identity, err)
-	// }
-
-	// clusterProviderInput := &provider.PluginCreationInput{
-	// 	Logger:        a.logger.With("provider", entry.Spec.Provider, "type", "discovery"),
-	// 	IsInteractice: a.interactive,
-	// 	ItemSelector:  a.itemSelector,
-	// 	ScopedTo:      &entry.Spec.Provider,
-	// 	HttpClient:    a.httpClient,
-	// }
-	// clusterProvider, err := a.getDiscoveryProvider(&entry.Spec.Provider, &entry.Spec.Identity)
-	// if err != nil {
-	// 	return fmt.Errorf("getting cluster provider %s: %w", entry.Spec.Provider, err)
-	// }
-
 	cs, err := a.buildConnectToConfig(entry.Spec.Provider, entry.Spec.Identity, entry)
 	if err != nil {
 		return fmt.Errorf("building connectTo config set: %w", err)
