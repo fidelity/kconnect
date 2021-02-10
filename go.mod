@@ -16,7 +16,6 @@ require (
 	github.com/beevik/etree v1.1.0
 	github.com/blang/semver v3.5.0+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.10.1
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/golangci/golangci-lint v1.31.0 // indirect
