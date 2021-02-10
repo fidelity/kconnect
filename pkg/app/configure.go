@@ -17,8 +17,8 @@ limitations under the License.
 package app
 
 import (
-	"errors"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -47,7 +47,7 @@ func (a *App) Configuration(ctx context.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
 		return a.printConfiguration(input.Output)
 	}
-	return a.importConfiguration(input)
+	return a.importConfiguration(ctx, input)
 }
 
 func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
@@ -75,7 +75,7 @@ func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 	return objPrinter.Print(cfg, os.Stdout)
 }
 
-func (a *App) importConfiguration(input *ConfigureInput) error {
+func (a *App) importConfiguration(ctx context.Context, input *ConfigureInput) error {
 
 	sourceLocation := *input.SourceLocation
 	zap.S().Infow("importing configuration", "file", sourceLocation)
@@ -89,7 +89,7 @@ func (a *App) importConfiguration(input *ConfigureInput) error {
 		return fmt.Errorf("creating app config: %w", err)
 	}
 
-	reader, err := getReader(sourceLocation, input.Username, input.Password)
+	reader, err := getReader(ctx, sourceLocation, input.Username, input.Password)
 	if err != nil {
 		return fmt.Errorf("getting reader from location: %w", err)
 	}
@@ -108,7 +108,7 @@ func (a *App) importConfiguration(input *ConfigureInput) error {
 	return nil
 }
 
-func getReader(location, username, password string) (io.Reader, error) {
+func getReader(ctx context.Context, location, username, password string) (io.Reader, error) {
 	switch {
 	case location == "-":
 		return os.Stdin, nil
@@ -118,7 +118,7 @@ func getReader(location, username, password string) (io.Reader, error) {
 			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
 		client := &http.Client{}
-		req, err := http.NewRequest("GET", url.String(), nil) //nolint
+		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
 		if err != nil {
 			return nil, fmt.Errorf("making request: %w", err)
 		}
