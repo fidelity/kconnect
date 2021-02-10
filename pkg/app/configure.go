@@ -18,7 +18,6 @@ package app
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -121,9 +120,7 @@ func getReader(location, username, password string) (io.Reader, error) {
 		client := http.NewHTTPClient()
 		headers := make(map[string]string)
 		if username != "" && password != "" {
-			authStr := fmt.Sprintf("%s:%s", username, password)
-			encodedAuth := base64.StdEncoding.EncodeToString([]byte(authStr))
-			headers["Authorization"] = "Basic " + encodedAuth
+			http.SetBasicAuthHeaders(headers, username, password)
 		}
 		resp, err := client.Get(url.String(), headers)
 		if err != nil {
