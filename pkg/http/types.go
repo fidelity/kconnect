@@ -16,6 +16,10 @@ limitations under the License.
 
 package http
 
+const (
+	StatusCodeOK = 200
+)
+
 // Client represents an http client
 type Client interface {
 	Do(req *ClientRequest) (ClientResponse, error)
