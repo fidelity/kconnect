@@ -150,7 +150,7 @@ func RootCmd() (*cobra.Command, error) {
 			}
 			if !params.DisableVersionCheck {
 				if err := reportNewerVersion(); err != nil {
-					return fmt.Errorf("reporting newer version: %w", err)
+					zap.S().Warnf("problem reporting newer version: %s", err.Error())
 				}
 			}
 
