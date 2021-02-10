@@ -124,8 +124,17 @@ func addConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("setting shorthand for file config item: %w", err)
 	}
 
+	if _, err := cs.String("username", "", "The username used for authentication"); err != nil {
+		return fmt.Errorf("adding username config item: %w", err)
+	}
+	if _, err := cs.String("password", "", "The password used for authentication"); err != nil {
+		return fmt.Errorf("adding password config item: %w", err)
+	}
+
 	cs.SetHistoryIgnore("file")   //nolint
 	cs.SetHistoryIgnore("output") //nolint
+	cs.SetHistoryIgnore("password") //nolint
+	cs.SetSensitive("password") //nolint
 
 	return nil
 }

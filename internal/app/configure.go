@@ -17,6 +17,7 @@ limitations under the License.
 package app
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,14 +36,18 @@ import (
 type ConfigureInput struct {
 	SourceLocation *string                `json:"file,omitempty"`
 	Output         *printer.OutputPrinter `json:"output,omitempty"`
+	Username       string                 `json:"username,omitempty"`
+	Password       string                 `json:"password,omitempty"`
 }
+
+var ErrNotOKHTTPStatusCode = errors.New("non 200 status code")
 
 // Configuration implements the configure command
 func (a *App) Configuration(ctx *provider.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
 		return a.printConfiguration(input.Output)
 	}
-	return a.importConfiguration(*input.SourceLocation)
+	return a.importConfiguration(input)
 }
 
 func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
@@ -70,7 +75,9 @@ func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 	return objPrinter.Print(cfg, os.Stdout)
 }
 
-func (a *App) importConfiguration(sourceLocation string) error {
+func (a *App) importConfiguration(input *ConfigureInput) error {
+
+	sourceLocation := *input.SourceLocation
 	zap.S().Infow("importing configuration", "file", sourceLocation)
 
 	if sourceLocation == "" {
@@ -82,7 +89,7 @@ func (a *App) importConfiguration(sourceLocation string) error {
 		return fmt.Errorf("creating app config: %w", err)
 	}
 
-	reader, err := getReader(sourceLocation)
+	reader, err := getReader(sourceLocation, input.Username, input.Password)
 	if err != nil {
 		return fmt.Errorf("getting reader from location: %w", err)
 	}
@@ -101,7 +108,7 @@ func (a *App) importConfiguration(sourceLocation string) error {
 	return nil
 }
 
-func getReader(location string) (io.Reader, error) {
+func getReader(location, username, password string) (io.Reader, error) {
 	switch {
 	case location == "-":
 		return os.Stdin, nil
@@ -110,9 +117,27 @@ func getReader(location string) (io.Reader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
-		resp, err := http.Get(url.String()) //nolint
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", url.String(), nil) //nolint
 		if err != nil {
-			return nil, fmt.Errorf("getting configuration from %s: %w", location, err)
+			return nil, fmt.Errorf("making request: %w", err)
+		}
+		if username != "" && password != "" {
+			req.SetBasicAuth(username, password)
+		}
+		resp, err := client.Do(req) //nolint
+		if err != nil {
+			return nil, fmt.Errorf("executing request: %w", err)
+		}
+		if resp.StatusCode != http.StatusOK {
+
+			errMsg := ""
+			buf := new(strings.Builder)
+			_, err := io.Copy(buf, resp.Body)
+			if err == nil {
+				errMsg = buf.String()
+			}
+			return nil, fmt.Errorf("received status code %d, %s: %w", resp.StatusCode, errMsg, ErrNotOKHTTPStatusCode)
 		}
 		return resp.Body, nil
 	default:
