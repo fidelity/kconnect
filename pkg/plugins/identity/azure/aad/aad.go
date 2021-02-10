@@ -17,6 +17,7 @@ limitations under the License.
 package aad
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -31,6 +32,9 @@ import (
 	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
+	provid "github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
 
 const (
@@ -43,21 +47,39 @@ var (
 )
 
 func init() {
-	if err := provider.RegisterIdentityProviderPlugin(ProviderName, newProvider()); err != nil {
-		zap.S().Fatalw("failed to register Azure AD identity provider plugin", "error", err)
+	if err := registry.RegisterIdentityPlugin(&registry.IdentityPluginRegistration{
+		PluginRegistration: registry.PluginRegistration{
+			Name:                   ProviderName,
+			UsageExample:           "",
+			ConfigurationItemsFunc: ConfigurationItems,
+		},
+		CreateFunc: New,
+	}); err != nil {
+		zap.S().Fatalw("Failed to register Azure Active Directory identity plugin", "error", err)
 	}
 }
 
-func newProvider() *aadIdentityProvider {
-	return &aadIdentityProvider{}
+// New will create a new saml identity provider
+func New(input *provider.PluginCreationInput) (provid.Provider, error) {
+	if input.HTTPClient == nil {
+		return nil, provider.ErrHTTPClientRequired
+	}
+
+	return &aadIdentityProvider{
+		logger:      input.Logger,
+		interactive: input.IsInteractice,
+		httpClient:  input.HTTPClient,
+	}, nil
 }
 
 type aadIdentityProvider struct {
-	logger *zap.SugaredLogger
+	interactive bool
+	logger      *zap.SugaredLogger
+	httpClient  khttp.Client
 }
 
 type aadConfig struct {
-	provider.IdentityProviderConfig
+	common.IdentityProviderConfig
 
 	TenantID string           `json:"tenant-id" validate:"required"`
 	ClientID string           `json:"client-id" validate:"required"`
@@ -68,18 +90,16 @@ func (p *aadIdentityProvider) Name() string {
 	return ProviderName
 }
 
-// Authenticate will authenticate a user and return details of
-// their identity.
-func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvider string) (provider.Identity, error) {
-	p.ensureLogger()
+// Authenticate will authenticate a user and return details of their identity.
+func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.AuthenticateInput) (*provid.AuthenticateOutput, error) {
 	p.logger.Info("authenticating user")
 
-	if err := p.resolveConfig(ctx); err != nil {
+	if err := p.resolveConfig(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("resolving config: %w", err)
 	}
 
 	cfg := &aadConfig{}
-	if err := config.Unmarshall(ctx.ConfigurationItems(), cfg); err != nil {
+	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use aadconfig: %w", err)
 	}
 
@@ -98,15 +118,14 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		Password: cfg.Password,
 	}
 
-	httpClient := khttp.NewHTTPClient()
-	endpointResolver := identity.NewOAuthEndpointsResolver(httpClient)
+	endpointResolver := identity.NewOAuthEndpointsResolver(p.httpClient)
 	endpoints, err := endpointResolver.Resolve(authCfg.Authority)
 	if err != nil {
 		return nil, fmt.Errorf("getting endpoints: %w", err)
 	}
 	authCfg.Endpoints = endpoints
 
-	identityClient := identity.NewClient(httpClient)
+	identityClient := identity.NewClient(p.httpClient)
 	userRealm, err := identityClient.GetUserRealm(authCfg)
 	if err != nil {
 		return nil, fmt.Errorf("getting user realm: %w", err)
@@ -152,38 +171,9 @@ func (p *aadIdentityProvider) Authenticate(ctx *provider.Context, clusterProvide
 		return nil, fmt.Errorf("creating identity from oauth token: %w", err)
 	}
 
-	return id, nil
-}
-
-// ConfigurationItems will return the configuration items for the intentity plugin based
-// of the cluster provider that its being used in conjunction with
-func (p *aadIdentityProvider) ConfigurationItems(clusterProviderName string) (config.ConfigurationSet, error) {
-	p.ensureLogger()
-	cs := config.NewConfigurationSet()
-
-	if err := provider.AddCommonIdentityConfig(cs); err != nil {
-		return nil, ErrAddingCommonCfg
-	}
-
-	cs.String(azure.TenantIDConfigItem, "", "The azure tenant id")                                        //nolint: errcheck
-	cs.String(azure.ClientIDConfigItem, "04b07795-8ddb-461a-bbee-02f9e1bf7b46", "The azure ad client id") //nolint: errcheck
-	cs.String(azure.AADHostConfigItem, string(identity.AADHostWorldwide), "The AAD host to use")          //nolint: errcheck
-
-	cs.SetShort(azure.TenantIDConfigItem, "t") //nolint: errcheck
-	cs.SetRequired(azure.TenantIDConfigItem)   //nolint: errcheck
-
-	return cs, nil
-}
-
-// Usage returns a string to display for help
-func (p *aadIdentityProvider) Usage(clusterProvider string) (string, error) {
-	return "", nil
-}
-
-func (p *aadIdentityProvider) ensureLogger() {
-	if p.logger == nil {
-		p.logger = zap.S().With("provider", ProviderName)
-	}
+	return &provid.AuthenticateOutput{
+		Identity: id,
+	}, nil
 }
 
 func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken) (*oidc.Identity, error) {
@@ -224,4 +214,23 @@ func (p *aadIdentityProvider) validateConfig(cfg *aadConfig) error {
 		return fmt.Errorf("validating aad config: %w", err)
 	}
 	return nil
+}
+
+// ConfigurationItems will return the configuration items for the intentity plugin based
+// of the cluster provider that its being used in conjunction with
+func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
+	cs := config.NewConfigurationSet()
+
+	if err := common.AddCommonIdentityConfig(cs); err != nil {
+		return nil, ErrAddingCommonCfg
+	}
+
+	cs.String(azure.TenantIDConfigItem, "", "The azure tenant id")                                        //nolint: errcheck
+	cs.String(azure.ClientIDConfigItem, "04b07795-8ddb-461a-bbee-02f9e1bf7b46", "The azure ad client id") //nolint: errcheck
+	cs.String(azure.AADHostConfigItem, string(identity.AADHostWorldwide), "The AAD host to use")          //nolint: errcheck
+
+	cs.SetShort(azure.TenantIDConfigItem, "t") //nolint: errcheck
+	cs.SetRequired(azure.TenantIDConfigItem)   //nolint: errcheck
+
+	return cs, nil
 }

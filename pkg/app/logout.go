@@ -17,30 +17,29 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"errors"
 	"strings"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/k8s/kubeconfig"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"go.uber.org/zap"
 	"gopkg.in/ini.v1"
 
 	"github.com/fidelity/kconnect/pkg/aws/awsconfig"
 )
 
-type LogoutParams struct {
+type LogoutInput struct {
 	CommonConfig
 	HistoryConfig
 	KubernetesConfig
 
-	All     bool
-	Alias   string
-	IDs     string
-	Context *provider.Context
+	All   bool
+	Alias string
+	IDs   string
 }
 
-func (a *App) Logout(params *LogoutParams) error {
+func (a *App) Logout(ctx context.Context, params *LogoutInput) error {
 
 	entries, err := a.getClustersToLogout(params)
 	if err != nil {
@@ -58,7 +57,7 @@ func (a *App) Logout(params *LogoutParams) error {
 	return nil
 }
 
-func (a *App) getClustersToLogout(params *LogoutParams) (*historyv1alpha.HistoryEntryList, error) {
+func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryEntryList, error) {
 	entries := historyv1alpha.NewHistoryEntryList()
 	var err error
 
@@ -105,7 +104,7 @@ func (a *App) getClustersToLogout(params *LogoutParams) (*historyv1alpha.History
 	return entries, nil
 }
 
-func (a *App) doLogout(params *LogoutParams, entry *historyv1alpha.HistoryEntry) error {
+func (a *App) doLogout(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
 
 	// TODO use const for provider
 	switch entry.Spec.Provider {
@@ -150,13 +149,13 @@ func (a *App) doLogoutEKS(entry *historyv1alpha.HistoryEntry) error {
 	return cfg.SaveTo(path)
 }
 
-func (a *App) doLogoutAKS(params *LogoutParams, entry *historyv1alpha.HistoryEntry) error {
+func (a *App) doLogoutAKS(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
 
 	zap.S().Infof("logging out of entry (aks): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
 	return a.deleteUserFromKubeconfigByEntryID(params.Kubeconfig, entry.Name)
 }
 
-func (a *App) doLogoutRancher(params *LogoutParams, entry *historyv1alpha.HistoryEntry) error {
+func (a *App) doLogoutRancher(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
 
 	zap.S().Infof("logging out of entry (rancher): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
 	return a.deleteUserFromKubeconfigByEntryID(params.Kubeconfig, entry.Name)

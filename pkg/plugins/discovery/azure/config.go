@@ -26,26 +26,30 @@ import (
 
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
-func (p *aksClusterProvider) GetClusterConfig(ctx *provider.Context, cluster *provider.Cluster, namespace string) (*api.Config, string, error) {
+func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.GetConfigInput) (*discovery.GetConfigOutput, error) {
 	p.logger.Debug("getting cluster config")
 
-	cfg, err := p.getKubeconfig(ctx.Context, cluster)
+	cfg, err := p.getKubeconfig(ctx, input.Cluster)
 	if err != nil {
-		return nil, "", fmt.Errorf("getting kubeconfig: %w", err)
+		return nil, fmt.Errorf("getting kubeconfig: %w", err)
 	}
 
-	if namespace != "" {
-		p.logger.Debugw("setting kubernetes namespace", "namespace", namespace)
-		cfg.Contexts[cfg.CurrentContext].Namespace = namespace
+	if input.Namespace != nil && *input.Namespace != "" {
+		p.logger.Debugw("setting kubernetes namespace", "namespace", *input.Namespace)
+		cfg.Contexts[cfg.CurrentContext].Namespace = *input.Namespace
 	}
 
-	return cfg, cfg.CurrentContext, nil
+	return &discovery.GetConfigOutput{
+		KubeConfig:  cfg,
+		ContextName: &cfg.CurrentContext,
+	}, nil
+
 }
 
-func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *provider.Cluster) (*api.Config, error) {
+func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discovery.Cluster) (*api.Config, error) {
 	resourceID, err := id.FromClusterID(cluster.ID)
 	if err != nil {
 		return nil, fmt.Errorf("parsing cluster id: %w", err)

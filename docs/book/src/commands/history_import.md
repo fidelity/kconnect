@@ -5,11 +5,11 @@ Import history from an external file
 ### Synopsis
 
 
-Allows users to import history from an external file. This can then be viewed 
+Allows users to import history from an external file. This can then be viewed
 using the ls command, or connected to using the to command.
 
-These imported entries will be merged with existing ones. If there is a 
-conflict, then the conflicting entry will not be imported (unless 
+These imported entries will be merged with existing ones. If there is a
+conflict, then the conflicting entry will not be imported (unless
 --overwrite flag is supplied).
 
 Users can optionally set any fields in the imported entry
@@ -23,9 +23,9 @@ kconnect history import [flags]
 
 ```bash
 
-  # Imports the file into your history 
+  # Imports the file into your history
   kconnect history import -f importfile.yaml
-  
+
   # Overwrite conflicting entries
   kconnect history import -f importfile.yaml --overwrite
 

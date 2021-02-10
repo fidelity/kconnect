@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	kconnectv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
-	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/defaults"
 )
 
 const (

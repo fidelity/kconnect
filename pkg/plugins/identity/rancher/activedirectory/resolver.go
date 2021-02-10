@@ -19,18 +19,17 @@ package activedirectory
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/defaults"
+	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/prompt"
-	"github.com/fidelity/kconnect/pkg/provider"
 	rshared "github.com/fidelity/kconnect/pkg/rancher"
 )
 
-func (p *radIdentityProvider) resolveConfig(ctx *provider.Context) error {
-	if !ctx.IsInteractive() {
+func (p *radIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
+	if !p.interactive {
 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
+		return nil
 	}
-
-	cfg := ctx.ConfigurationItems()
 
 	if err := prompt.InputAndSet(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)

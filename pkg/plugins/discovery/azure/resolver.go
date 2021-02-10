@@ -24,7 +24,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/prompt"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
@@ -45,8 +45,8 @@ func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
-	if err := p.setup(cfg, identity); err != nil {
+func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, userID identity.Identity) error {
+	if err := p.setup(cfg, userID); err != nil {
 		return fmt.Errorf("setting up aks provider: %w", err)
 	}
 	p.logger.Debug("resolving Azure configuration items")

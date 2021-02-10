@@ -22,12 +22,11 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
 
@@ -94,11 +93,7 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 
 			a := app.New(app.WithHistoryStore(store))
 
-			ctx := provider.NewContext(
-				provider.WithConfig(cfg),
-			)
-
-			return a.AliasList(ctx, params)
+			return a.AliasList(cmd.Context(), params)
 		},
 	}
 	utils.FormatCommand(lsCmd)

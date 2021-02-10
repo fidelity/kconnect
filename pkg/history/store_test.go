@@ -232,6 +232,34 @@ func Test_FileStoreRemove(t *testing.T) {
 			},
 			errorExpected: true,
 		},
+		{
+			name:            "Existing history, remove middle entry",
+			input:           createEntry("1"),
+			existingHistory: createHistoryList(3),
+			maxItems:        10,
+			expect: func(mockLoader *mock_loader.MockLoader, input *historyv1alpha.HistoryEntry, existing *historyv1alpha.HistoryEntryList) {
+				expectedList := historyv1alpha.NewHistoryEntryList()
+				entry := createEntry("0")
+				expectedList.Items = append(expectedList.Items, *entry)
+				entry2 := createEntry("2")
+				expectedList.Items = append(expectedList.Items, *entry2)
+				
+				mockLoader.
+					EXPECT().
+					Load().
+					DoAndReturn(func() (*historyv1alpha.HistoryEntryList, error) {
+						return existing, nil
+					}).Times(1)
+
+				mockLoader.
+					EXPECT().
+					Save(matchers.MatchHistoryList(expectedList)).
+					DoAndReturn(func(historyList *historyv1alpha.HistoryEntryList) error {
+						return nil
+					}).Times(1)
+			},
+			errorExpected: false,
+		},
 	}
 
 	for _, tc := range testCases {

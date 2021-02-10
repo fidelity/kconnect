@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/utils"
@@ -32,8 +32,8 @@ const (
 	maxHistoryEntries = 100
 	shortDesc         = "Query and manipulate connection history entry aliases."
 	longDesc          = `
-An alias is a user-friendly name for a connection history entry, otherwise 
-referred to by its entry ID. 
+An alias is a user-friendly name for a connection history entry, otherwise
+referred to by its entry ID.
 
 The alias command and sub-commands allow you to query and manipulate aliases for
 connection history entries.

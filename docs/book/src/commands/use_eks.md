@@ -40,7 +40,7 @@ kconnect use eks [flags]
 
   # Discover an EKS cluster and add an alias to its connection history entry
   kconnect use eks --alias mycluster
-
+  
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 

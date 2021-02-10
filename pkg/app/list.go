@@ -17,6 +17,7 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -26,16 +27,26 @@ import (
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/k8s/kubeconfig"
 	"github.com/fidelity/kconnect/pkg/printer"
-	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 type HistoryQueryInput struct {
 	HistoryConfig
 	KubernetesConfig
 	HistoryQueryConfig
+
+	ClusterProvider  *string `json:"cluster-provider,omitempty"`
+	IdentityProvider *string `json:"identity-provider,omitempty"`
+
+	ProviderID *string `json:"provider-id,omitempty"`
+	HistoryID  *string `json:"id,omitempty"`
+	Alias      *string `json:"alias,omitempty"`
+
+	Flags map[string]string `json:"flags,omitempty"`
+
+	Output *printer.OutputPrinter `json:"output,omitempty"`
 }
 
-func (a *App) QueryHistory(ctx *provider.Context, input *HistoryQueryInput) error {
+func (a *App) QueryHistory(ctx context.Context, input *HistoryQueryInput) error {
 	zap.S().Debug("querying history")
 
 	list, err := a.historyStore.GetAllSortedByLastUsed()

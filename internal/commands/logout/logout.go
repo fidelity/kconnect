@@ -19,12 +19,11 @@ package logout
 import (
 	"fmt"
 
-	"github.com/fidelity/kconnect/internal/app"
+	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/utils"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -33,7 +32,7 @@ import (
 var (
 	shortDesc = "Logs out of a cluster"
 	longDesc  = `
-Logs out of a cluster. Can logout of specific cluster by their alias or entry ID. 
+Logs out of a cluster. Can logout of specific cluster by their alias or entry ID.
 Log out of all clusters by using the --all flag
 If neither above options are selected, will log out of current cluster
 `
@@ -58,26 +57,24 @@ func Command() (*cobra.Command, error) {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zap.S().Debug("running `ls` command")
-			params := &app.LogoutParams{
-				Context: provider.NewContext(provider.WithConfig(cfg)),
-			}
+			input := &app.LogoutInput{}
 
-			if err := config.Unmarshall(cfg, params); err != nil {
+			if err := config.Unmarshall(cfg, input); err != nil {
 				return fmt.Errorf("unmarshalling config into logout params: %w", err)
 			}
 
-			historyLoader, err := loader.NewFileLoader(params.Location)
+			historyLoader, err := loader.NewFileLoader(input.Location)
 			if err != nil {
-				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
+				return fmt.Errorf("getting history loader with path %s: %w", input.Location, err)
 			}
-			store, err := history.NewStore(params.MaxItems, historyLoader)
+			store, err := history.NewStore(input.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)
 			}
 
 			a := app.New(app.WithHistoryStore(store))
 
-			return a.Logout(params)
+			return a.Logout(cmd.Context(), input)
 		},
 	}
 	utils.FormatCommand(logoutCmd)

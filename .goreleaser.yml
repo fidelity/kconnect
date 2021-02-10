@@ -5,7 +5,7 @@ before:
 builds:
     -
       id: default
-      main: .
+      main: ./cmd/kconnect
       binary: kconnect
       env:
         - CGO_ENABLED=0

@@ -5,7 +5,7 @@ Export history to an external file
 ### Synopsis
 
 
-Allows users to export history to an external file. This file can then be 
+Allows users to export history to an external file. This file can then be
 imported by another user using the import command"
 
 
@@ -19,10 +19,10 @@ kconnect history export [flags]
 
   # Export your history into a file
   kconnect history export -f exportfile.yaml
-  
+
   # Set username and namespace for exported entries
   kconnect history export -f exportfile.yaml --set username=MYUSER,namespace=kube-system
-  
+
   # Only export entries that match filter
   kconnect history export -f exportfile.yaml --filter region=us-east-1,alias=*dev*
 

@@ -17,13 +17,13 @@ limitations under the License.
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
-	"github.com/fidelity/kconnect/pkg/provider"
 	"go.uber.org/zap"
 )
 
@@ -39,8 +39,15 @@ type HistoryExportInput struct {
 	HistoryExportConfig
 }
 
+type HistoryRemoveInput struct {
+	CommonConfig
+	HistoryLocationConfig
+	HistoryRemoveConfig
+	RemoveList []string
+}
+
 // AliasList implements the alias listing functionality
-func (a *App) HistoryImport(ctx *provider.Context, input *HistoryImportInput) error {
+func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) error {
 	zap.S().Infow("importing history")
 
 	filterSpec := createFilter(input.Filter)
@@ -92,7 +99,7 @@ func (a *App) HistoryImport(ctx *provider.Context, input *HistoryImportInput) er
 }
 
 // AliasList implements the alias listing functionality
-func (a *App) HistoryExport(ctx *provider.Context, input *HistoryExportInput) error {
+func (a *App) HistoryExport(ctx context.Context, input *HistoryExportInput) error {
 	zap.S().Infow("exporting history")
 
 	filterSpec := createFilter(input.Filter)
@@ -114,10 +121,52 @@ func (a *App) HistoryExport(ctx *provider.Context, input *HistoryExportInput) er
 		historyExportList.Items = append(historyExportList.Items, *newEntry)
 		exportCount++
 	}
-	zap.S().Infof("Exporting %d entries", exportCount)
+	zap.S().Infof("exporting %d entries", exportCount)
 	err = writeExportFile(input.File, historyExportList)
 	if err != nil {
 		return fmt.Errorf("writing export file: %w", err)
+	}
+	return nil
+}
+
+func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) error {
+	zap.S().Infow("removing history")
+
+	historyList, err := a.historyStore.GetAll()
+	if err != nil {
+		return fmt.Errorf("getting history list: %w", err)
+	}
+	var entriesToRemove []*v1alpha1.HistoryEntry
+
+	switch {
+	case input.All:
+		for i := range historyList.Items {
+			entriesToRemove = append(entriesToRemove, &historyList.Items[i])
+		}
+	case input.Filter != "":
+		filterSpec := createFilter(input.Filter)
+		err = history.FilterHistory(historyList, filterSpec)
+		if err != nil {
+			return fmt.Errorf("filtering history list: %w", err)
+		}
+		for i := range historyList.Items {
+			entriesToRemove = append(entriesToRemove, &historyList.Items[i])
+		}
+	default:
+		for _, entryID := range input.RemoveList {
+			entry, err := a.historyStore.GetByID(entryID)
+			if err != nil {
+				return fmt.Errorf("getting history entry: %w", err)
+			}
+			entriesToRemove = append(entriesToRemove, entry)
+		}
+	}
+
+	zap.S().Infof("removing %d entries", len(entriesToRemove))
+
+	err = a.historyStore.Remove(entriesToRemove)
+	if err != nil {
+		return fmt.Errorf("removing history entries: %w", err)
 	}
 	return nil
 }

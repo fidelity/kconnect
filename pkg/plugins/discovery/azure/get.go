@@ -17,35 +17,38 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
-	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
 // Get will get the details of a AKS cluster.
-func (p *aksClusterProvider) Get(ctx *provider.Context, clusterID string, identity provider.Identity) (*provider.Cluster, error) {
-	if err := p.setup(ctx.ConfigurationItems(), identity); err != nil {
+func (p *aksClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
+	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up aks provider: %w", err)
 	}
-	p.logger.Infow("getting AKS cluster", "id", clusterID)
+	p.logger.Infow("getting AKS cluster", "id", input.ClusterID)
 
-	resourceID, err := id.FromClusterID(clusterID)
+	resourceID, err := id.FromClusterID(input.ClusterID)
 	if err != nil {
 		return nil, fmt.Errorf("getting resource id: %w", err)
 	}
 
 	client := azclient.NewContainerClient(resourceID.SubscriptionID, p.authorizer)
-	result, err := client.Get(ctx.Context, resourceID.ResourceGroupName, resourceID.ResourceName)
+	result, err := client.Get(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster: %w", err)
 	}
 
-	cluster := &provider.Cluster{
+	cluster := &discovery.Cluster{
 		Name: *result.Name,
-		ID:   clusterID,
+		ID:   input.ClusterID,
 	}
 
-	return cluster, nil
+	return &discovery.GetClusterOutput{
+		Cluster: cluster,
+	}, nil
 }
