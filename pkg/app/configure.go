@@ -18,10 +18,10 @@ package app
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -29,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/http"
 	"github.com/fidelity/kconnect/pkg/printer"
 )
 
@@ -47,7 +48,7 @@ func (a *App) Configuration(ctx context.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
 		return a.printConfiguration(input.Output)
 	}
-	return a.importConfiguration(ctx, input)
+	return a.importConfiguration(input)
 }
 
 func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
@@ -75,7 +76,7 @@ func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 	return objPrinter.Print(cfg, os.Stdout)
 }
 
-func (a *App) importConfiguration(ctx context.Context, input *ConfigureInput) error {
+func (a *App) importConfiguration(input *ConfigureInput) error {
 
 	sourceLocation := *input.SourceLocation
 	zap.S().Infow("importing configuration", "file", sourceLocation)
@@ -89,7 +90,7 @@ func (a *App) importConfiguration(ctx context.Context, input *ConfigureInput) er
 		return fmt.Errorf("creating app config: %w", err)
 	}
 
-	reader, err := getReader(ctx, sourceLocation, input.Username, input.Password)
+	reader, err := getReader(sourceLocation, input.Username, input.Password)
 	if err != nil {
 		return fmt.Errorf("getting reader from location: %w", err)
 	}
@@ -108,7 +109,7 @@ func (a *App) importConfiguration(ctx context.Context, input *ConfigureInput) er
 	return nil
 }
 
-func getReader(ctx context.Context, location, username, password string) (io.Reader, error) {
+func getReader(location, username, password string) (io.Reader, error) {
 	switch {
 	case location == "-":
 		return os.Stdin, nil
@@ -117,29 +118,23 @@ func getReader(ctx context.Context, location, username, password string) (io.Rea
 		if err != nil {
 			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
-		client := &http.Client{}
-		req, err := http.NewRequestWithContext(ctx, "GET", url.String(), nil)
-		if err != nil {
-			return nil, fmt.Errorf("making request: %w", err)
-		}
+		client := http.NewHTTPClient()
+		headers := make(map[string]string)
 		if username != "" && password != "" {
-			req.SetBasicAuth(username, password)
+			authStr := fmt.Sprintf("%s:%s", username, password)
+			encodedAuth := base64.StdEncoding.EncodeToString([]byte(authStr))
+			headers["Authorization"] = "Basic " + encodedAuth
 		}
-		resp, err := client.Do(req) //nolint
+		resp, err := client.Get(url.String(), headers)
 		if err != nil {
-			return nil, fmt.Errorf("executing request: %w", err)
+			return nil, fmt.Errorf("error executing request: %w", err)
 		}
-		if resp.StatusCode != http.StatusOK {
+		if resp.ResponseCode() != http.StatusCodeOK {
 
-			errMsg := ""
-			buf := new(strings.Builder)
-			_, err := io.Copy(buf, resp.Body)
-			if err == nil {
-				errMsg = buf.String()
-			}
-			return nil, fmt.Errorf("received status code %d, %s: %w", resp.StatusCode, errMsg, ErrNotOKHTTPStatusCode)
+			return nil, fmt.Errorf("received status code %d, %s: %w", resp.ResponseCode(), resp.Body(), ErrNotOKHTTPStatusCode)
 		}
-		return resp.Body, nil
+		reader := strings.NewReader(resp.Body())
+		return reader, nil
 	default:
 		return os.Open(location)
 	}
