@@ -89,7 +89,7 @@ func (a *App) importConfiguration(input *ConfigureInput) error {
 		return fmt.Errorf("creating app config: %w", err)
 	}
 
-	reader, err := getReader(sourceLocation, input.Username, input.Password)
+	reader, err := a.getReader(sourceLocation, input.Username, input.Password)
 	if err != nil {
 		return fmt.Errorf("getting reader from location: %w", err)
 	}
@@ -108,7 +108,7 @@ func (a *App) importConfiguration(input *ConfigureInput) error {
 	return nil
 }
 
-func getReader(location, username, password string) (io.Reader, error) {
+func (a *App) getReader(location, username, password string) (io.Reader, error) {
 	switch {
 	case location == "-":
 		return os.Stdin, nil
@@ -117,12 +117,11 @@ func getReader(location, username, password string) (io.Reader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
-		client := http.NewHTTPClient()
 		headers := make(map[string]string)
 		if username != "" && password != "" {
 			http.SetBasicAuthHeaders(headers, username, password)
 		}
-		resp, err := client.Get(url.String(), headers)
+		resp, err := a.httpClient.Get(url.String(), headers)
 		if err != nil {
 			return nil, fmt.Errorf("error executing request: %w", err)
 		}
