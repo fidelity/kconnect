@@ -22,18 +22,18 @@ import (
 )
 
 // ApplyToConfigSet will apply the saved app configuration to the supplied config set.
-func ApplyToConfigSet(cs ConfigurationSet) error {
-	return applyConfiguration(cs, "")
+func ApplyToConfigSet(configPath string, cs ConfigurationSet) error {
+	return applyConfiguration(configPath, cs, "")
 }
 
 // ApplyToConfigSetWithProvider will apply the saved app configuration to the supplied config set and
 // will take into consideration provider specific overrides
-func ApplyToConfigSetWithProvider(cs ConfigurationSet, provider string) error {
-	return applyConfiguration(cs, provider)
+func ApplyToConfigSetWithProvider(configPath string, cs ConfigurationSet, provider string) error {
+	return applyConfiguration(configPath, cs, provider)
 }
 
-func applyConfiguration(cs ConfigurationSet, provider string) error {
-	appConfig, err := NewAppConfiguration()
+func applyConfiguration(configPath string, cs ConfigurationSet, provider string) error {
+	appConfig, err := NewAppConfigurationWithPath(configPath)
 	if err != nil {
 		return fmt.Errorf("creating app config store: %w", err)
 	}
