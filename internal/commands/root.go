@@ -39,6 +39,7 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
+	"github.com/fidelity/kconnect/internal/helpers"
 	appver "github.com/fidelity/kconnect/internal/version"
 	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -130,6 +131,15 @@ func RootCmd() (*cobra.Command, error) {
 			}
 		},
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			configPath, err := cmd.Flags().GetString(app.ConfigPathConfigItem)
+			if err != nil {
+				return fmt.Errorf("getting '--%s' flag: %w", app.ConfigPathConfigItem, err)
+			}
+			if configPath == "" {
+				if err := cmd.Flags().Set(app.ConfigPathConfigItem, defaults.ConfigPath()); err != nil {
+					return fmt.Errorf("setting '--%s' value: %w", app.ConfigPathConfigItem, err)
+				}
+			}
 			if err := flags.CopyFlagValue(app.NonInteractiveConfigItem, app.NoInputConfigItem, cmd.Flags(), true); err != nil {
 				return fmt.Errorf("copying flag value from %s to %s: %w", app.NonInteractiveConfigItem, app.NoInputConfigItem, err)
 			}
@@ -144,11 +154,11 @@ func RootCmd() (*cobra.Command, error) {
 			return nil
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
-			params := &app.CommonConfig{}
-			if err := config.Unmarshall(cfg, params); err != nil {
-				return fmt.Errorf("unmarshalling config into to params: %w", err)
+			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
+			if err != nil {
+				return fmt.Errorf("gettng common config: %w", err)
 			}
-			if !params.DisableVersionCheck {
+			if !commonCfg.DisableVersionCheck {
 				if err := reportNewerVersion(); err != nil {
 					zap.S().Warnf("problem reporting newer version: %s", err.Error())
 				}

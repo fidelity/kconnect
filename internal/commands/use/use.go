@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/fidelity/kconnect/internal/helpers"
 	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/defaults"
@@ -153,7 +154,11 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.ConfigSet)
-			if err := config.ApplyToConfigSetWithProvider(params.ConfigSet, registration.Name); err != nil {
+			commonCfg, err := helpers.GetCommonConfig(cmd, params.ConfigSet)
+			if err != nil {
+				return fmt.Errorf("gettng common config: %w", err)
+			}
+			if err := config.ApplyToConfigSetWithProvider(commonCfg.ConfigFile, params.ConfigSet, registration.Name); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
 

@@ -27,6 +27,8 @@ import (
 const (
 	NoInputConfigItem        = "no-input"
 	NonInteractiveConfigItem = "non-interactive"
+	NoVersionCheckConfigItem = "no-version-check"
+	ConfigPathConfigItem     = "config"
 )
 
 type HistoryLocationConfig struct {
@@ -93,7 +95,7 @@ type CommonConfig struct {
 }
 
 func AddCommonConfigItems(cs config.ConfigurationSet) error {
-	if _, err := cs.String("config", "", "Configuration file for application wide defaults. (default \"$HOME/.kconnect/config.yaml\")"); err != nil {
+	if _, err := cs.String(ConfigPathConfigItem, "", "Configuration file for application wide defaults. (default \"$HOME/.kconnect/config.yaml\")"); err != nil {
 		return fmt.Errorf("adding config item: %w", err)
 	}
 	if _, err := cs.Int("verbosity", 0, "Sets the logging verbosity. Greater than 0 is debug and greater than 9 is trace."); err != nil {
@@ -105,15 +107,15 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.Bool(NoInputConfigItem, false, "Explicitly disable interactivity when running in a terminal"); err != nil {
 		return fmt.Errorf("adding no-input config: %w", err)
 	}
-	if _, err := cs.Bool("no-version-check", false, "If set to true kconnect will not check for a newer version"); err != nil {
+	if _, err := cs.Bool(NoVersionCheckConfigItem, false, "If set to true kconnect will not check for a newer version"); err != nil {
 		return fmt.Errorf("adding non-version-check config: %w", err)
 	}
 	cs.SetShort("verbosity", "v")                                       //nolint
-	cs.SetHistoryIgnore("config")                                       //nolint
+	cs.SetHistoryIgnore(ConfigPathConfigItem)                           //nolint
 	cs.SetHistoryIgnore("verbosity")                                    //nolint
 	cs.SetHistoryIgnore(NonInteractiveConfigItem)                       //nolint
 	cs.SetHistoryIgnore(NoInputConfigItem)                              //nolint
-	cs.SetHistoryIgnore("no-version-check")                             //nolint
+	cs.SetHistoryIgnore(NoVersionCheckConfigItem)                       //nolint
 	cs.SetDeprecated(NonInteractiveConfigItem, "please use --no-input") //nolint
 
 	return nil

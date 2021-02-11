@@ -19,6 +19,7 @@ package history
 import (
 	"fmt"
 
+	"github.com/fidelity/kconnect/internal/helpers"
 	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/flags"
@@ -64,8 +65,11 @@ func rmCommand() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
-
-			if err := config.ApplyToConfigSet(cfg); err != nil {
+			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
+			if err != nil {
+				return fmt.Errorf("gettng common config: %w", err)
+			}
+			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
 
