@@ -63,3 +63,13 @@ func CheckAWSIAMAuthPrereq() error {
 	}
 	return nil
 }
+
+func CheckKubeloginPrereq() error {
+
+	cmd := exec.Command("kubelogin")
+	_, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("error finding kubelogin: %w", err)
+	}
+	return nil
+}
