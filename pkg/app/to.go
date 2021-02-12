@@ -187,7 +187,7 @@ func (a *App) generateOptions(params *ConnectToInput, entries *historyv1alpha.Hi
 	return options, nil
 }
 
-func (a *App) buildConnectToConfig(configFile string, idProvider string, discoveryProvider string, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
+func (a *App) buildConnectToConfig(configFile string, discoveryProvider string, idProvider string, historyEntry *historyv1alpha.HistoryEntry) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 
 	idProviderReg, err := registry.GetIdentityProviderRegistration(idProvider)
