@@ -68,6 +68,7 @@ func New(input *provider.PluginCreationInput) (identity.Provider, error) {
 	return &radIdentityProvider{
 		logger:      input.Logger,
 		interactive: input.IsInteractice,
+		httpClient:  input.HTTPClient,
 	}, nil
 }
 
