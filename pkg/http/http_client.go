@@ -17,6 +17,7 @@ limitations under the License.
 package http
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -87,6 +88,12 @@ func (n *netHTTPClient) Post(url string, body string, headers map[string]string)
 	}
 
 	return n.Do(req)
+}
+
+func SetBasicAuthHeaders(headers map[string]string, username, password string) {
+	authStr := fmt.Sprintf("%s:%s", username, password)
+	encodedAuth := base64.StdEncoding.EncodeToString([]byte(authStr))
+	headers["Authorization"] = "Basic " + encodedAuth
 }
 
 func createResponse(resp *http.Response) (ClientResponse, error) {

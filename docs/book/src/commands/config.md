@@ -46,9 +46,11 @@ kconnect config [flags]
 ### Options
 
 ```bash
-  -f, --file string     File or remote location to use to set the default configuration
-  -h, --help            help for config
-      --output string   Controls the output format for the result. (default "yaml")
+  -f, --file string       File or remote location to use to set the default configuration
+  -h, --help              help for config
+      --output string     Controls the output format for the result. (default "yaml")
+      --password string   The password used for authentication
+      --username string   The username used for authentication
 ```
 
 ### Options inherited from parent commands

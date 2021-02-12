@@ -9,6 +9,8 @@
 
 <em>NOTE:</em> `kconnect` requires [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) to authenticate to the AWS EKS cluster provider.
 
+<em>NOTE:</em> `kconnect` requires [kubelogin](https://github.com/Azure/kubelogin) to authenticate to Azure AKS clusters.
+
 
 ## kubectl plugin
 

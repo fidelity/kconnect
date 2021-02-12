@@ -18,9 +18,9 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -28,6 +28,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/http"
 	"github.com/fidelity/kconnect/pkg/printer"
 )
 
@@ -35,14 +36,18 @@ import (
 type ConfigureInput struct {
 	SourceLocation *string                `json:"file,omitempty"`
 	Output         *printer.OutputPrinter `json:"output,omitempty"`
+	Username       string                 `json:"username,omitempty"`
+	Password       string                 `json:"password,omitempty"`
 }
+
+var ErrNotOKHTTPStatusCode = errors.New("non 200 status code")
 
 // Configuration implements the configure command
 func (a *App) Configuration(ctx context.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
 		return a.printConfiguration(input.Output)
 	}
-	return a.importConfiguration(*input.SourceLocation)
+	return a.importConfiguration(input)
 }
 
 func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
@@ -70,7 +75,9 @@ func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 	return objPrinter.Print(cfg, os.Stdout)
 }
 
-func (a *App) importConfiguration(sourceLocation string) error {
+func (a *App) importConfiguration(input *ConfigureInput) error {
+
+	sourceLocation := *input.SourceLocation
 	zap.S().Infow("importing configuration", "file", sourceLocation)
 
 	if sourceLocation == "" {
@@ -82,7 +89,7 @@ func (a *App) importConfiguration(sourceLocation string) error {
 		return fmt.Errorf("creating app config: %w", err)
 	}
 
-	reader, err := getReader(sourceLocation)
+	reader, err := a.getReader(sourceLocation, input.Username, input.Password)
 	if err != nil {
 		return fmt.Errorf("getting reader from location: %w", err)
 	}
@@ -101,7 +108,7 @@ func (a *App) importConfiguration(sourceLocation string) error {
 	return nil
 }
 
-func getReader(location string) (io.Reader, error) {
+func (a *App) getReader(location, username, password string) (io.Reader, error) {
 	switch {
 	case location == "-":
 		return os.Stdin, nil
@@ -110,11 +117,20 @@ func getReader(location string) (io.Reader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
-		resp, err := http.Get(url.String()) //nolint
-		if err != nil {
-			return nil, fmt.Errorf("getting configuration from %s: %w", location, err)
+		headers := make(map[string]string)
+		if username != "" && password != "" {
+			http.SetBasicAuthHeaders(headers, username, password)
 		}
-		return resp.Body, nil
+		resp, err := a.httpClient.Get(url.String(), headers)
+		if err != nil {
+			return nil, fmt.Errorf("error executing request: %w", err)
+		}
+		if resp.ResponseCode() != http.StatusCodeOK {
+
+			return nil, fmt.Errorf("received status code %d, %s: %w", resp.ResponseCode(), resp.Body(), ErrNotOKHTTPStatusCode)
+		}
+		reader := strings.NewReader(resp.Body())
+		return reader, nil
 	default:
 		return os.Open(location)
 	}
