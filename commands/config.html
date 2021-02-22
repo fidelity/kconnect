@@ -166,13 +166,13 @@
                         <h2><a class="header" href="#kconnect-config" id="kconnect-config">kconnect config</a></h2>
 <p>Set and view your kconnect configuration.</p>
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
-<p>The configure command creates kconnect configuration files and displays 
+<p>The configure command creates kconnect configuration files and displays
 previously-defined configurations in a user-friendly display format.</p>
-<p>If run with no flags, the command displays the configurations stored in the 
+<p>If run with no flags, the command displays the configurations stored in the
 current user’s $HOME/.kconnect/config.yaml file.</p>
-<p>The configure command can create a set of default configurations for a new 
+<p>The configure command can create a set of default configurations for a new
 system or a new user via the -f flag and a local filename or remote URL.</p>
-<p>The user typically only needs to use this command the first time they use 
+<p>The user typically only needs to use this command the first time they use
 kconnect.</p>
 <pre><code class="language-bash">kconnect config [flags]
 </code></pre>
@@ -195,9 +195,11 @@ kconnect.</p>
 
 </code></pre>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
-<pre><code class="language-bash">  -f, --file string     File or remote location to use to set the default configuration
-  -h, --help            help for config
-      --output string   Controls the output format for the result. (default &quot;yaml&quot;)
+<pre><code class="language-bash">  -f, --file string       File or remote location to use to set the default configuration
+  -h, --help              help for config
+      --output string     Controls the output format for the result. (default &quot;yaml&quot;)
+      --password string   The password used for authentication
+      --username string   The username used for authentication
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)

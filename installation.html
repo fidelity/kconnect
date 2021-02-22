@@ -172,6 +172,7 @@
 </ul>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl &gt;= 1.17.0</a></p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> to authenticate to Azure AKS clusters.</p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
 <pre><code class="language-bash">kubectl krew index add fidelity https://github.com/fidelity/krew-index.git
@@ -186,7 +187,10 @@ kubectl krew install fidelity/connect
 </code></pre>
 <p>Alternatively you can download a binary from the latest <a href="https://github.com/fidelity/kconnect/releases">release</a>.</p>
 <h2><a class="header" href="#linux" id="linux">Linux</a></h2>
-<p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains <strong>.deb</strong>, <strong>.rpm</strong> and binaries for Linux.</p>
+<p>To install on Linux you can use homebrew:</p>
+<pre><code class="language-bash">brew install fidelity/tap/kconnect
+</code></pre>
+<p>Alternatively, the latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains <strong>.deb</strong>, <strong>.rpm</strong> and binaries for Linux.</p>
 <p>We are working on publishing as a snap.</p>
 <h2><a class="header" href="#windows" id="windows">Windows</a></h2>
 <p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains a binary for Windows.</p>
@@ -196,6 +200,13 @@ kubectl krew install fidelity/connect
 <pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
 docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml
 </code></pre>
+<h2><a class="header" href="#install-script" id="install-script">Install script</a></h2>
+<p>You can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:</p>
+<pre><code class="language-bash">curl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh
+chmod 700 install-kconnect.sh
+./install-kconnect.sh
+</code></pre>
+<p>This works on Linux, Macos and Windows (using GitBash terminal)</p>
 
                     </main>
 

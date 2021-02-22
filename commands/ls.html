@@ -183,30 +183,32 @@ via the connection history entry’s ID or alias.</p>
   kconnect ls --output yaml
 
   # Display a specific connection history entry by entry id
-  kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
+  kconnect ls --filter id=01EM615GB2YX3C6WZ9MCWBDWBF
 
   # Display a specific connection history entry by its alias
-  kconnect ls --alias mydev
+  kconnect ls --filter alias=mydev
+
+  # Display all connection history entries that have &quot;dev&quot; in its alias
+  kconnect ls --filter alias=*dev*
 
   # Display all connection history entries for the EKS managed cluster provider
-  kconnect ls --cluster-provider eks
+  kconnect ls --filter cluster-provider=eks
+
+  # Display all connection history entries for entries with namespace kube-system
+  kconnect ls --filter namespace=kube-system
 
   # Reconnect using the connection history entry alias
   kconnect to mydev
 
 </code></pre>
 <h3><a class="header" href="#options" id="options">Options</a></h3>
-<pre><code class="language-bash">      --alias string               Alias name for a history entry
-      --cluster-provider string    Name of a cluster provider (i.e. eks)
-  -h, --help                       help for ls
-      --history-location string    Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
-      --id string                  Id for a history entry
-      --identity-provider string   Name of a identity provider (i.e. saml)
-  -k, --kubeconfig string          Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
-      --max-history int            Sets the maximum number of history items to keep (default 100)
-      --no-history                 If set to true then no history entry will be written
-  -o, --output string              Output format for the results (default &quot;table&quot;)
-      --provider-id string         Provider specific for a cluster
+<pre><code class="language-bash">      --filter string             filter to apply to import. Can specify multiple filters by using commas, and supports wilcards (*)
+  -h, --help                      help for ls
+      --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+  -k, --kubeconfig string         Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
+      --max-history int           Sets the maximum number of history items to keep (default 100)
+      --no-history                If set to true then no history entry will be written
+  -o, --output string             Output format for the results (default &quot;table&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands" id="options-inherited-from-parent-commands">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)

@@ -167,7 +167,11 @@
 <p>Once you have <a href="installation.html">installed</a> kconnect you can see a list of the commands available by running:</p>
 <pre><code class="language-bash">kconnect help
 </code></pre>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires:</p>
+<ul>
+<li><a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to AWS EKS clusters.</li>
+<li><a href="https://github.com/Azure/kubelogin">kubelogin</a> to authenticate to Azure AKS clusters.</li>
+</ul>
 <p>The general workflow for using kconnect is the following:</p>
 <ul>
 <li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>

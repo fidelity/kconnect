@@ -198,6 +198,7 @@
 </ul>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl &gt;= 1.17.0</a></p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> to authenticate to Azure AKS clusters.</p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
 <pre><code class="language-bash">kubectl krew index add fidelity https://github.com/fidelity/krew-index.git
@@ -212,7 +213,10 @@ kubectl krew install fidelity/connect
 </code></pre>
 <p>Alternatively you can download a binary from the latest <a href="https://github.com/fidelity/kconnect/releases">release</a>.</p>
 <h2><a class="header" href="#linux" id="linux">Linux</a></h2>
-<p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains <strong>.deb</strong>, <strong>.rpm</strong> and binaries for Linux.</p>
+<p>To install on Linux you can use homebrew:</p>
+<pre><code class="language-bash">brew install fidelity/tap/kconnect
+</code></pre>
+<p>Alternatively, the latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains <strong>.deb</strong>, <strong>.rpm</strong> and binaries for Linux.</p>
 <p>We are working on publishing as a snap.</p>
 <h2><a class="header" href="#windows" id="windows">Windows</a></h2>
 <p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains a binary for Windows.</p>
@@ -222,11 +226,22 @@ kubectl krew install fidelity/connect
 <pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
 docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml
 </code></pre>
+<h2><a class="header" href="#install-script" id="install-script">Install script</a></h2>
+<p>You can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:</p>
+<pre><code class="language-bash">curl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh
+chmod 700 install-kconnect.sh
+./install-kconnect.sh
+</code></pre>
+<p>This works on Linux, Macos and Windows (using GitBash terminal)</p>
 <h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
 <p>Once you have <a href="installation.html">installed</a> kconnect you can see a list of the commands available by running:</p>
 <pre><code class="language-bash">kconnect help
 </code></pre>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to the AWS EKS cluster provider.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires:</p>
+<ul>
+<li><a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> to authenticate to AWS EKS clusters.</li>
+<li><a href="https://github.com/Azure/kubelogin">kubelogin</a> to authenticate to Azure AKS clusters.</li>
+</ul>
 <p>The general workflow for using kconnect is the following:</p>
 <ul>
 <li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>
@@ -328,6 +343,7 @@ for that cluster.</p>
 <ul>
 <li><a href="commands/alias.html">kconnect alias</a>	 - Query and manipulate connection history entry aliases.</li>
 <li><a href="commands/config.html">kconnect config</a>	 - Set and view your kconnect configuration.</li>
+<li><a href="commands/history.html">kconnect history</a>	 - Import and export history</li>
 <li><a href="commands/logout.html">kconnect logout</a>	 - Logs out of a cluster</li>
 <li><a href="commands/ls.html">kconnect ls</a>	 - Query the user’s connection history</li>
 <li><a href="commands/to.html">kconnect to</a>	 - Reconnect to a connection history entry.</li>
@@ -340,8 +356,8 @@ for that cluster.</p>
 <h2><a class="header" href="#kconnect-alias" id="kconnect-alias">kconnect alias</a></h2>
 <p>Query and manipulate connection history entry aliases.</p>
 <h3><a class="header" href="#synopsis-1" id="synopsis-1">Synopsis</a></h3>
-<p>An alias is a user-friendly name for a connection history entry, otherwise 
-referred to by its entry ID. </p>
+<p>An alias is a user-friendly name for a connection history entry, otherwise
+referred to by its entry ID.</p>
 <p>The alias command and sub-commands allow you to query and manipulate aliases for
 connection history entries.</p>
 <pre><code class="language-bash">kconnect alias [flags]
@@ -382,7 +398,7 @@ connection history entries.</p>
 <p>Add an alias to a connection history entry</p>
 <h3><a class="header" href="#synopsis-2" id="synopsis-2">Synopsis</a></h3>
 <p>Adds a user-friendly alias to a connection history entry.</p>
-<p>The user can then reconnect and refresh the access token for that cluster using 
+<p>The user can then reconnect and refresh the access token for that cluster using
 the alias instead of the connection history entry’s unique ID.</p>
 <pre><code class="language-bash">kconnect alias add [flags]
 </code></pre>
@@ -467,7 +483,7 @@ user’s connection history.</p>
 <h2><a class="header" href="#kconnect-alias-remove" id="kconnect-alias-remove">kconnect alias remove</a></h2>
 <p>Remove connection history entry aliases.</p>
 <h3><a class="header" href="#synopsis-4" id="synopsis-4">Synopsis</a></h3>
-<p>Remove an alias from a single connection history entry by the entry ID or the 
+<p>Remove an alias from a single connection history entry by the entry ID or the
 alias.</p>
 <p>Set the --all flag on this command to remove all connection history aliases from
 the user’s connection history.</p>
@@ -514,13 +530,13 @@ the user’s connection history.</p>
 <h2><a class="header" href="#kconnect-config" id="kconnect-config">kconnect config</a></h2>
 <p>Set and view your kconnect configuration.</p>
 <h3><a class="header" href="#synopsis-5" id="synopsis-5">Synopsis</a></h3>
-<p>The configure command creates kconnect configuration files and displays 
+<p>The configure command creates kconnect configuration files and displays
 previously-defined configurations in a user-friendly display format.</p>
-<p>If run with no flags, the command displays the configurations stored in the 
+<p>If run with no flags, the command displays the configurations stored in the
 current user’s $HOME/.kconnect/config.yaml file.</p>
-<p>The configure command can create a set of default configurations for a new 
+<p>The configure command can create a set of default configurations for a new
 system or a new user via the -f flag and a local filename or remote URL.</p>
-<p>The user typically only needs to use this command the first time they use 
+<p>The user typically only needs to use this command the first time they use
 kconnect.</p>
 <pre><code class="language-bash">kconnect config [flags]
 </code></pre>
@@ -543,9 +559,11 @@ kconnect.</p>
 
 </code></pre>
 <h3><a class="header" href="#options-5" id="options-5">Options</a></h3>
-<pre><code class="language-bash">  -f, --file string     File or remote location to use to set the default configuration
-  -h, --help            help for config
-      --output string   Controls the output format for the result. (default &quot;yaml&quot;)
+<pre><code class="language-bash">  -f, --file string       File or remote location to use to set the default configuration
+  -h, --help              help for config
+      --output string     Controls the output format for the result. (default &quot;yaml&quot;)
+      --password string   The password used for authentication
+      --username string   The username used for authentication
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-4" id="options-inherited-from-parent-commands-4">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
@@ -580,30 +598,32 @@ via the connection history entry’s ID or alias.</p>
   kconnect ls --output yaml
 
   # Display a specific connection history entry by entry id
-  kconnect ls --id 01EM615GB2YX3C6WZ9MCWBDWBF
+  kconnect ls --filter id=01EM615GB2YX3C6WZ9MCWBDWBF
 
   # Display a specific connection history entry by its alias
-  kconnect ls --alias mydev
+  kconnect ls --filter alias=mydev
+
+  # Display all connection history entries that have &quot;dev&quot; in its alias
+  kconnect ls --filter alias=*dev*
 
   # Display all connection history entries for the EKS managed cluster provider
-  kconnect ls --cluster-provider eks
+  kconnect ls --filter cluster-provider=eks
+
+  # Display all connection history entries for entries with namespace kube-system
+  kconnect ls --filter namespace=kube-system
 
   # Reconnect using the connection history entry alias
   kconnect to mydev
 
 </code></pre>
 <h3><a class="header" href="#options-6" id="options-6">Options</a></h3>
-<pre><code class="language-bash">      --alias string               Alias name for a history entry
-      --cluster-provider string    Name of a cluster provider (i.e. eks)
-  -h, --help                       help for ls
-      --history-location string    Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
-      --id string                  Id for a history entry
-      --identity-provider string   Name of a identity provider (i.e. saml)
-  -k, --kubeconfig string          Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
-      --max-history int            Sets the maximum number of history items to keep (default 100)
-      --no-history                 If set to true then no history entry will be written
-  -o, --output string              Output format for the results (default &quot;table&quot;)
-      --provider-id string         Provider specific for a cluster
+<pre><code class="language-bash">      --filter string             filter to apply to import. Can specify multiple filters by using commas, and supports wilcards (*)
+  -h, --help                      help for ls
+      --history-location string   Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
+  -k, --kubeconfig string         Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
+      --max-history int           Sets the maximum number of history items to keep (default 100)
+      --no-history                If set to true then no history entry will be written
+  -o, --output string             Output format for the results (default &quot;table&quot;)
 </code></pre>
 <h3><a class="header" href="#options-inherited-from-parent-commands-5" id="options-inherited-from-parent-commands-5">Options inherited from parent commands</a></h3>
 <pre><code class="language-bash">      --config string      Configuration file for application wide defaults. (default &quot;$HOME/.kconnect/config.yaml&quot;)
@@ -775,12 +795,14 @@ token.</p>
 <h3><a class="header" href="#options-9" id="options-9">Options</a></h3>
 <pre><code class="language-bash">      --admin                      Generate admin user kubeconfig
   -a, --alias string               Friendly name to give to give the connection
+      --azure-env string           The Azure environment the clusters are in. Possible values: public,china,usgov,stack (default &quot;public&quot;)
   -c, --cluster-id string          Id of the cluster to use.
       --cluster-name string        The name of the AKS cluster
   -h, --help                       help for aks
       --history-location string    Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
   -k, --kubeconfig string          Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
+      --login-type string          The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi (default &quot;devicecode&quot;)
       --max-history int            Sets the maximum number of history items to keep (default 100)
   -n, --namespace string           Sets namespace for context in kubeconfig
       --no-history                 If set to true then no history entry will be written
@@ -848,7 +870,7 @@ token.</p>
 
   # Discover an EKS cluster and add an alias to its connection history entry
   kconnect use eks --alias mycluster
-
+  
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
@@ -923,11 +945,11 @@ token.</p>
 </code></pre>
 <h3><a class="header" href="#examples-11" id="examples-11">Examples</a></h3>
 <pre><code class="language-bash">  # Discover Rancher clusters using Active Directory
-  kconnect use rancher --idp-protocol rancher-ad
+	kconnect use rancher --idp-protocol rancher-ad
 
-  # Discover clusters via Rancher using a API key
-  kconnect use rancher --idp-protocol static-token --token ABCDEF
-
+	# Discover clusters via Rancher using a API key
+	kconnect use rancher --idp-protocol static-token --token ABCDEF
+  
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
