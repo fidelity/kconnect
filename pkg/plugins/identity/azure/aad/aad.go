@@ -20,8 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -29,7 +27,6 @@ import (
 	"github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
 	khttp "github.com/fidelity/kconnect/pkg/http"
-	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/common"
@@ -131,81 +128,11 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 		return nil, fmt.Errorf("getting user realm: %w", err)
 	}
 
-	var token *identity.OauthToken
-	switch userRealm.AccountType {
-	case identity.AccountTypeFederated:
-		doc, err := identityClient.GetMex(userRealm.FederationMetadataURL)
-		if err != nil {
-			return nil, err //TODO: specific error
-		}
-		endpoint := doc.UsernamePasswordEndpoint
-		wsTrustResponse, err := identityClient.GetWsTrustResponse(authCfg, userRealm.CloudAudienceURN, &endpoint)
-		if err != nil {
-			return nil, err //TODO: specific error
-		}
-		token, err = identityClient.GetOauth2TokenFromSamlAssertion(authCfg, wsTrustResponse.Body.RequestSecurityTokenResponseCollection.RequestSecurityTokenResponse.RequestedSecurityToken.Assertion, "https://management.azure.com/")
-		if err != nil {
-			return nil, err //TODO: specific error
-		}
-
-	case identity.AccountTypeManaged:
-		token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg, "https://management.azure.com/")
-		if err != nil {
-			return nil, err //TODO: specific error
-		}
-	case identity.AccountTypeUnknown: //TODO: need to check other parts
-		if userRealm.CloudInstanceName == "microsoftonline.com" && userRealm.CloudAudienceURN == "urn:federation:MicrosoftOnline" {
-			token, err = identityClient.GetOauth2TokenFromUsernamePassword(authCfg, "https://management.azure.com/")
-			if err != nil {
-				return nil, err //TODO: specific error
-			}
-		} else {
-			return nil, identity.ErrUnknownAccountType
-		}
-	default:
-		return nil, identity.ErrUnknownAccountType
-	}
-
-	id, err := p.createIdentityFromToken(token)
-	if err != nil {
-		return nil, fmt.Errorf("creating identity from oauth token: %w", err)
-	}
+	id := identity.NewActiveDirectoryIdentity(authCfg, userRealm, ProviderName, p.httpClient)
 
 	return &provid.AuthenticateOutput{
 		Identity: id,
 	}, nil
-}
-
-func (p *aadIdentityProvider) createIdentityFromToken(token *identity.OauthToken) (*oidc.Identity, error) {
-	id := &oidc.Identity{
-		AccessToken:    token.AccessToken,
-		IDToken:        token.IDToken,
-		RefreshToken:   token.RefreshToken,
-		Resource:       token.Resource,
-		Scope:          token.Scope,
-		IDProviderName: ProviderName,
-	}
-
-	switch {
-	case token.ExpiresOn != "":
-		expiresSeconds, err := token.ExpiresOn.Int64()
-		if err != nil {
-			return nil, fmt.Errorf("getting ExpiresOn: %w", err)
-		}
-		id.Expires = time.Unix(expiresSeconds, 0)
-	case token.ExpiresIn != "":
-		expiresInSeconds := token.ExpiresIn.String()
-
-		numSeconds, err := strconv.Atoi(expiresInSeconds)
-		if err != nil {
-			return nil, fmt.Errorf("converting ExpiresIn: %w", err)
-		}
-		id.Expires = time.Now().Add(time.Second * time.Duration(numSeconds)).UTC()
-	default:
-		return nil, ErrNoExpiryTime
-	}
-
-	return id, nil
 }
 
 func (p *aadIdentityProvider) validateConfig(cfg *aadConfig) error {

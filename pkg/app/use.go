@@ -109,6 +109,7 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 	output, err := clusterProvider.GetConfig(ctx, &discovery.GetConfigInput{
 		Cluster:   cluster,
 		Namespace: &input.Namespace,
+		Identity:  authOutput.Identity,
 	})
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
