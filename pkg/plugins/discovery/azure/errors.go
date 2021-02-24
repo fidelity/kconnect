@@ -24,4 +24,5 @@ var (
 	ErrNoSubscriptions      = errors.New("no subscriptions found")
 	ErrSubscriptionNameOrID = errors.New("subscription name and id cannot be both supplied")
 	ErrSubscriptionNotFound = errors.New("subscription not found")
+	ErrTokenNeedsAD         = errors.New("the 'token' login type requires using aad idp-protocol")
 )

@@ -42,4 +42,6 @@ var (
 	LoginTypeResourceOwnerPassword = LoginType("ropc")
 	// LoginTypeManagedServiceIdentity is for using the managed service identity to login
 	LoginTypeManagedServiceIdentity = LoginType("msi")
+	// LoginTypeToken is for an embedded token login type
+	LoginTypeToken = LoginType("token")
 )

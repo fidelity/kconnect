@@ -25,4 +25,5 @@ var (
 	ErrIssuerNotFound                = errors.New("issues not found")
 	ErrUnknownAccountType            = errors.New("unknown account type")
 	ErrOIDCResponse                  = errors.New("oidc error")
+	ErrResourceRequired              = errors.New("you must supply a resource")
 )

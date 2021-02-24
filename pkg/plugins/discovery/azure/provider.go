@@ -27,7 +27,6 @@ import (
 	azid "github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
 	khttp "github.com/fidelity/kconnect/pkg/http"
-	"github.com/fidelity/kconnect/pkg/oidc"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/common"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
@@ -116,10 +115,13 @@ func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.I
 
 	// TODO: should we just return a AuthorizerIdentity from the aad provider?
 	switch userID.(type) { //nolint:gocritic,gosimple
-	case *oidc.Identity:
-		id := userID.(*oidc.Identity)
+	case *azid.ActiveDirectoryIdentity:
+		id := userID.(*azid.ActiveDirectoryIdentity)
 		p.logger.Debugw("creating bearer authorizer")
-		bearerAuth := autorest.NewBearerAuthorizer(id)
+		bearerAuth, err := getBearerAuthFromIdentity(id, "https://management.azure.com/")
+		if err != nil {
+			return fmt.Errorf("getting bearer authorizer: %w", err)
+		}
 		p.authorizer = bearerAuth
 	case *azid.AuthorizerIdentity:
 		id := userID.(*azid.AuthorizerIdentity)
@@ -143,15 +145,25 @@ func (p *aksClusterProvider) CheckPreReqs() error {
 func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 
-	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use (specified by ID)")                                                                                         //nolint: errcheck
-	cs.String(SubscriptionNameConfigItem, "", "The Azure subscription to use (specified by name)")                                                                                     //nolint: errcheck
-	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use")                                                                                                          //nolint: errcheck
-	cs.Bool(AdminConfigItem, false, "Generate admin user kubeconfig")                                                                                                                  //nolint: errcheck
-	cs.String(ClusterNameConfigItem, "", "The name of the AKS cluster")                                                                                                                //nolint: errcheck
-	cs.String(LoginTypeConfigItem, string(LoginTypeDeviceCode), "The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi") //nolint: errcheck
-	cs.String(AzureEnvironmentConfigItem, string(EnvironmentPublicCloud), "The Azure environment the clusters are in. Possible values: public,china,usgov,stack")                      //nolint: errcheck
+	cs.String(SubscriptionIDConfigItem, "", "The Azure subscription to use (specified by ID)")                                                                                               //nolint: errcheck
+	cs.String(SubscriptionNameConfigItem, "", "The Azure subscription to use (specified by name)")                                                                                           //nolint: errcheck
+	cs.String(ResourceGroupConfigItem, "", "The Azure resource group to use")                                                                                                                //nolint: errcheck
+	cs.Bool(AdminConfigItem, false, "Generate admin user kubeconfig")                                                                                                                        //nolint: errcheck
+	cs.String(ClusterNameConfigItem, "", "The name of the AKS cluster")                                                                                                                      //nolint: errcheck
+	cs.String(LoginTypeConfigItem, string(LoginTypeDeviceCode), "The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi,token") //nolint: errcheck
+	cs.String(AzureEnvironmentConfigItem, string(EnvironmentPublicCloud), "The Azure environment the clusters are in. Possible values: public,china,usgov,stack")                            //nolint: errcheck
 
 	cs.SetShort(ResourceGroupConfigItem, "r") //nolint: errcheck
 
 	return cs, nil
+}
+
+func getBearerAuthFromIdentity(id *azid.ActiveDirectoryIdentity, resource string) (autorest.Authorizer, error) {
+	token, err := id.GetOAuthToken(resource)
+	if err != nil {
+		return nil, fmt.Errorf("getting oauth token from identity: %w", err)
+	}
+
+	bearerAuth := azid.NewExplicitBearerAuthorizer(token.AccessToken)
+	return bearerAuth, nil
 }

@@ -63,6 +63,7 @@ type GetClusterOutput struct {
 type GetConfigInput struct {
 	Cluster   *Cluster
 	Namespace *string
+	Identity  identity.Identity
 }
 
 type GetConfigOutput struct {

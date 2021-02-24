@@ -28,7 +28,9 @@ import (
 
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
+	azid "github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
+	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 const (
@@ -43,7 +45,13 @@ func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 		return nil, fmt.Errorf("getting kubeconfig: %w", err)
 	}
 	if !p.config.Admin {
-		p.addKubelogin(cfg)
+		if p.config.LoginType == LoginTypeToken {
+			if err := p.addTokenToAuthProvider(cfg, input.Identity); err != nil {
+				return nil, fmt.Errorf("adding oauth token to kubeconfig: %w", err)
+			}
+		} else {
+			p.addKubelogin(cfg)
+		}
 		p.printLoginDetails()
 	}
 
@@ -100,6 +108,36 @@ func (p *aksClusterProvider) addKubelogin(cfg *api.Config) {
 			Exec: execConfig,
 		},
 	}
+}
+
+func (p *aksClusterProvider) addTokenToAuthProvider(cfg *api.Config, userID identity.Identity) error {
+	id, ok := userID.(*azid.ActiveDirectoryIdentity)
+	if !ok {
+		return ErrTokenNeedsAD
+	}
+
+	contextName := cfg.CurrentContext
+	context := cfg.Contexts[contextName]
+	userName := context.AuthInfo
+	authInfo := cfg.AuthInfos[userName]
+
+	providerConfig := authInfo.AuthProvider.Config
+	apiServerID := providerConfig["apiserver-id"]
+	clientID := providerConfig["client-id"]
+
+	updatedID := id.Clone(azid.WithClientID(clientID))
+
+	token, err := updatedID.GetOAuthToken(apiServerID)
+	if err != nil {
+		return fmt.Errorf("getting oauth token for %s: %w", apiServerID, err)
+	}
+
+	providerConfig["access-token"] = token.AccessToken
+	providerConfig["expires-in"] = token.ExpiresIn.String()
+	providerConfig["expires-on"] = token.ExpiresOn.String()
+	providerConfig["refresh-token"] = token.RefreshToken
+
+	return nil
 }
 
 func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discovery.Cluster) (*api.Config, error) {
