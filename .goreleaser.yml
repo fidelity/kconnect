@@ -87,6 +87,17 @@ dockers:
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    dockerfile: Dockerfile.deps
+    image_templates:
+    - "docker.io/kconnectcli/kconnect:latest-alpine-with-deps"
+    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-alpine-with-deps"
+    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}-alpine-with-deps"
+    build_flag_templates:
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
 
 nfpms:
   -
