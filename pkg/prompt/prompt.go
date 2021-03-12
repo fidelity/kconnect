@@ -108,7 +108,7 @@ func InputSensitiveAndSet(cfg config.ConfigurationSet, name, message string, req
 	if err := cfg.SetValue(name, enteredValue); err != nil {
 		return fmt.Errorf("setting %s config: %w", name, err)
 	}
-	zap.S().Debugw("resolved config item", "name", name, "value", enteredValue)
+	zap.S().Debugw("resolved sensitive config item", "name", name)
 
 	return nil
 }
