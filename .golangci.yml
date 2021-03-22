@@ -39,3 +39,6 @@ linters:
     - ifshort
     - wrapcheck # enable in the future
     - ifshort
+    - forcetypeassert # enable in the future
+    - cyclop # enable in the future
+    - revive # enable in the future
