@@ -86,7 +86,7 @@ func (p *rancherClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, userID provider.Identity) error {
 	cfg := &rancherClusterProviderConfig{}
 	if err := config.Unmarshall(cs, cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into rancherClusterProviderConfig: %w", err)

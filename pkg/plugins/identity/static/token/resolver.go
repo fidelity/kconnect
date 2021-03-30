@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The kconnect Authors.
+Copyright 2021 The kconnect Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,37 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package activedirectory
+package token
 
 import (
 	"fmt"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
-	rshared "github.com/fidelity/kconnect/pkg/rancher"
 )
 
-func (p *radIdentityProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
+func (p *staticTokenIdentityProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
 	if !p.interactive {
 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-		return nil
 	}
 
-	if err := prompt.InputAndSet(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
-		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
-	}
-	if err := prompt.InputSensitiveAndSet(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
-		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
-	}
-	if err := rshared.ResolveCommon(cfg); err != nil {
-		return fmt.Errorf("resolving common Rancher config: %w", err)
+	if err := prompt.InputAndSet(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
+		return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
 	}
 
 	return nil
 }
 
-func (p *radIdentityProvider) Validate(cfg config.ConfigurationSet) error {
+func (p *staticTokenIdentityProvider) Validate(cfg config.ConfigurationSet) error {
 	return config.ValidateRequired(cfg)
 }

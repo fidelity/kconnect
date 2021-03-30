@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/beevik/etree"
-	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -38,7 +37,6 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 const (
@@ -51,13 +49,6 @@ var (
 	ErrNotAccounts            = errors.New("no accounts available")
 	ErrMissingResponseElement = errors.New("missing response element")
 )
-
-type awsProviderConfig struct {
-	sp.ProviderConfig
-
-	Partition string `json:"partition" validate:"required"`
-	Region    string `json:"region" validate:"required"`
-}
 
 func NewServiceProvider(itemSelector provider.SelectItemFunc) sp.ServiceProvider {
 	return &ServiceProvider{
@@ -89,7 +80,7 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 	return nil
 }
 
-func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (identity.Identity, error) {
+func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (provider.Identity, error) {
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -324,18 +315,7 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 }
 
 func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
-	cfg := &awsProviderConfig{}
-
-	if err := config.Unmarshall(configItems, cfg); err != nil {
-		return fmt.Errorf("unmarshlling config set: %w", err)
-	}
-
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating config struct: %w", err)
-	}
-
-	return nil
+	return config.ValidateRequired(configItems)
 }
 
 func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {

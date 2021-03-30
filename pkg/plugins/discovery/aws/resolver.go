@@ -19,9 +19,10 @@ package aws
 import (
 	"fmt"
 
+	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 func (p *eksClusterProvider) Validate(cfg config.ConfigurationSet) error {
@@ -42,6 +43,12 @@ func (p *eksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *eksClusterProvider) Resolve(config config.ConfigurationSet, userID identity.Identity) error {
+func (p *eksClusterProvider) Resolve(cfg config.ConfigurationSet, userID provider.Identity) error {
+	if err := kaws.ResolvePartition(cfg); err != nil {
+		return fmt.Errorf("resolving partition: %w", err)
+	}
+	if err := kaws.ResolveRegion(cfg); err != nil {
+		return fmt.Errorf("resolving region: %w", err)
+	}
 	return nil
 }

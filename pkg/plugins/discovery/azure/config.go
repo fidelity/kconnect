@@ -29,8 +29,8 @@ import (
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
 	azid "github.com/fidelity/kconnect/pkg/azure/identity"
+	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 const (
@@ -110,7 +110,7 @@ func (p *aksClusterProvider) addKubelogin(cfg *api.Config) {
 	}
 }
 
-func (p *aksClusterProvider) addTokenToAuthProvider(cfg *api.Config, userID identity.Identity) error {
+func (p *aksClusterProvider) addTokenToAuthProvider(cfg *api.Config, userID provider.Identity) error {
 	id, ok := userID.(*azid.ActiveDirectoryIdentity)
 	if !ok {
 		return ErrTokenNeedsAD

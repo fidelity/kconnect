@@ -213,9 +213,6 @@ func (a *App) buildConnectToConfig(configFile string, discoveryProvider string, 
 	if err := cs.AddSet(discoCfg); err != nil {
 		return nil, fmt.Errorf("adding cluster provider config items: %w", err)
 	}
-	if err := common.AddCommonIdentityConfig(cs); err != nil {
-		return nil, fmt.Errorf("adding common identity config items: %w", err)
-	}
 	if err := common.AddCommonClusterConfig(cs); err != nil {
 		return nil, fmt.Errorf("adding common cluster config items: %w", err)
 	}

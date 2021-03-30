@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/versent/saml2aws"
 	"github.com/versent/saml2aws/pkg/cfg"
 	"github.com/versent/saml2aws/pkg/creds"
@@ -32,6 +31,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp/aws"
 	"github.com/fidelity/kconnect/pkg/provider"
+	"github.com/fidelity/kconnect/pkg/provider/common"
 	"github.com/fidelity/kconnect/pkg/provider/identity"
 	"github.com/fidelity/kconnect/pkg/provider/registry"
 )
@@ -98,19 +98,18 @@ func (p *samlIdentityProvider) Name() string {
 func (p *samlIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("authenticating user")
 
-	sp, err := createServiceProvider(p.scopedToDiscovery, p.itemSelector)
+	serviceProvider, err := createServiceProvider(p.scopedToDiscovery, p.itemSelector)
 	if err != nil {
 		return nil, fmt.Errorf("creating saml service provider: %w", err)
 	}
-	p.serviceProvider = sp
+	p.serviceProvider = serviceProvider
 
-	if err := p.resolveConfig(input.ConfigSet); err != nil {
-		return nil, err
+	spConfig := &sp.ProviderConfig{}
+	if err := config.Unmarshall(input.ConfigSet, spConfig); err != nil {
+		return nil, fmt.Errorf("unmarshalling configuration: %w", err)
 	}
+	p.config = spConfig
 
-	if err := p.bindAndValidateConfig(input.ConfigSet); err != nil {
-		return nil, fmt.Errorf("binding and validation config: %w", err)
-	}
 	if err := p.serviceProvider.Validate(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("validating service provider: %w", err)
 	}
@@ -165,23 +164,6 @@ func (p *samlIdentityProvider) Authenticate(ctx context.Context, input *identity
 	}, nil
 }
 
-func (p *samlIdentityProvider) bindAndValidateConfig(cs config.ConfigurationSet) error {
-	spConfig := &sp.ProviderConfig{}
-
-	if err := config.Unmarshall(cs, spConfig); err != nil {
-		return fmt.Errorf("unmarshalling configuration: %w", err)
-	}
-
-	validate := validator.New()
-	if err := validate.Struct(spConfig); err != nil {
-		return fmt.Errorf("validating config struct: %w", err)
-	}
-
-	p.config = spConfig
-
-	return nil
-}
-
 func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.IDPAccount, error) {
 	account := &cfg.IDPAccount{
 		URL:             p.config.IdpEndpoint,
@@ -196,23 +178,8 @@ func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.I
 	return account, nil
 }
 
-func (p *samlIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
-	sp := p.serviceProvider
-
-	if p.interactive {
-		p.logger.Debug("resolving SAML provider flags")
-		if err := sp.ResolveConfiguration(cfg); err != nil {
-			return fmt.Errorf("resolving flags: %w", err)
-		}
-	} else {
-		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-	}
-
-	return nil
-}
-
-func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) (identity.Store, error) {
-	var store identity.Store
+func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) (provider.Store, error) {
+	var store provider.Store
 	var err error
 
 	switch p.scopedToDiscovery {
@@ -233,6 +200,14 @@ func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) 
 	return store, nil
 }
 
+func (p *samlIdentityProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
+}
+
+func (p *samlIdentityProvider) CheckPreReqs() error {
+	return nil
+}
+
 func createServiceProvider(clusterProviderName string, itemSelector provider.SelectItemFunc) (sp.ServiceProvider, error) {
 	switch clusterProviderName {
 	case "eks":
@@ -244,6 +219,10 @@ func createServiceProvider(clusterProviderName string, itemSelector provider.Sel
 
 func ConfigurationItems(scopedToDiscovery string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
+
+	if err := common.AddCommonIdentityConfig(cs); err != nil {
+		return nil, fmt.Errorf("adding common identity config items: %w", err)
+	}
 
 	cs.String("idp-endpoint", "", "identity provider endpoint provided by your IT team") //nolint: errcheck
 	cs.String("idp-provider", "", "the name of the idp provider")                        //nolint: errcheck

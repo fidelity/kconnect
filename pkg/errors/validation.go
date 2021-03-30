@@ -21,6 +21,12 @@ import (
 	"strings"
 )
 
+func New(errors []string) *ValidationFailed {
+	return &ValidationFailed{
+		validationErrors: errors,
+	}
+}
+
 type ValidationFailed struct {
 	validationErrors []string
 }

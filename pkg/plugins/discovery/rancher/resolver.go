@@ -21,7 +21,7 @@ import (
 
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider"
 	rshared "github.com/fidelity/kconnect/pkg/rancher"
 )
 
@@ -43,7 +43,7 @@ func (p *rancherClusterProvider) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *rancherClusterProvider) Resolve(cfg config.ConfigurationSet, identity identity.Identity) error {
+func (p *rancherClusterProvider) Resolve(cfg config.ConfigurationSet, identity provider.Identity) error {
 	if err := p.setup(cfg, identity); err != nil {
 		return fmt.Errorf("setting up rancher provider: %w", err)
 	}

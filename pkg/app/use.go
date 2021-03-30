@@ -70,10 +70,23 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 		return fmt.Errorf("using identity provider %s: %w", input.IdentityProvider, ErrUnsuportedIdpProtocol)
 	}
 
+	err = identityProvider.CheckPreReqs()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "\033[33m%s\033[0m\n", err.Error())
+		return fmt.Errorf("checking identity provider pre-reqs: %w", err)
+	}
+
 	err = clusterProvider.CheckPreReqs()
 	if err != nil {
-		//TODO: how to report this???
 		fmt.Fprintf(os.Stderr, "\033[33m%s\033[0m\n", err.Error())
+		return fmt.Errorf("checking discovery provider pre-reqs: %w", err)
+	}
+
+	if err := identityProvider.Resolve(input.ConfigSet, nil); err != nil {
+		return fmt.Errorf("resolving identity config items: %w", err)
+	}
+	if err := identityProvider.Validate(input.ConfigSet); err != nil {
+		return fmt.Errorf("validating identity config items: %w", err)
 	}
 
 	authOutput, err := identityProvider.Authenticate(ctx, &identity.AuthenticateInput{
@@ -84,7 +97,10 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 	}
 
 	if err := clusterProvider.Resolve(input.ConfigSet, authOutput.Identity); err != nil {
-		return fmt.Errorf("resolving config items: %w", err)
+		return fmt.Errorf("resolving discovery config items: %w", err)
+	}
+	if err := clusterProvider.Validate(input.ConfigSet); err != nil {
+		return fmt.Errorf("validating discovery config items: %w", err)
 	}
 
 	if !input.IgnoreAlias {
@@ -153,7 +169,7 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 	return nil
 }
 
-func (a *App) discoverCluster(ctx context.Context, clusterProvider discovery.Provider, identity identity.Identity, params *UseInput) (*discovery.Cluster, error) {
+func (a *App) discoverCluster(ctx context.Context, clusterProvider discovery.Provider, identity provider.Identity, params *UseInput) (*discovery.Cluster, error) {
 	a.logger.Infow("discovering clusters", "provider", params.DiscoveryProvider)
 
 	discoverOutput, err := clusterProvider.Discover(ctx, &discovery.DiscoverInput{
@@ -177,7 +193,7 @@ func (a *App) discoverCluster(ctx context.Context, clusterProvider discovery.Pro
 	return cluster, nil
 }
 
-func (a *App) getCluster(ctx context.Context, clusterProvider discovery.Provider, identity identity.Identity, params *UseInput) (*discovery.Cluster, error) {
+func (a *App) getCluster(ctx context.Context, clusterProvider discovery.Provider, identity provider.Identity, params *UseInput) (*discovery.Cluster, error) {
 	a.logger.Infow("getting cluster details", "id", *params.ClusterID, "provider", params.DiscoveryProvider)
 
 	output, err := clusterProvider.GetCluster(ctx, &discovery.GetClusterInput{
