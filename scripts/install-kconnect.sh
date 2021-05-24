@@ -91,6 +91,11 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
     echo "kubelogin url: $kubelogin_url"
 
+    echo "kconnect url: $kconnect_url" 
+    echo "kubectl url: $kubectl_url"
+    echo "helm url: $helm_url"
+    echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
+
     # download 
     curl -s -L $kconnect_url -o kconnect.tar.gz
     curl -s -LO $kubectl_url
@@ -131,6 +136,11 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     echo "helm url: $helm_url"
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
     echo "kubelogin url: $kubelogin_url"
+
+    echo "kconnect url: $kconnect_url" 
+    echo "kubectl url: $kubectl_url"
+    echo "helm url: $helm_url"
+    echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
 
     # download 
     curl -k -s -L $kconnect_url -o kconnect.zip
