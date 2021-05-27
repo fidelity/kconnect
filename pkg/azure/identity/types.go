@@ -132,3 +132,18 @@ type OIDCErrorResponse struct {
 func (r *OIDCErrorResponse) Error() string {
 	return r.ErrorDescription
 }
+
+type EnvelopeParams struct {
+	SchemaLocation        string
+	SoapAction            string
+	MessageID             string
+	EndpointURL           string
+	Created               string
+	Expires               string
+	Username              string
+	Password              string
+	RequestTrustNamespace string
+	KeyType               string
+	RequestType           string
+
+}
