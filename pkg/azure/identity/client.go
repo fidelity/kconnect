@@ -25,6 +25,8 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strings"
+	"text/template"
 	"time"
 
 	"github.com/google/uuid"
@@ -88,7 +90,10 @@ func (c *AzureADClient) GetMex(federationMetadataURL string) (*wstrust.MexDocume
 }
 
 func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error) {
-	envelopeBody := c.createEnvelope(cfg, endpoint)
+	envelopeBody, err := c.createEnvelope(cfg, endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("error creating envelope: %w", err)
+	}
 
 	headers := defaults.Headers(defaults.WithNoCache(), defaults.WithAcceptJSON())
 	headers["Content-Type"] = "application/soap+xml"
@@ -107,11 +112,14 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 	if err != nil {
 		return nil, fmt.Errorf("posting envelope: %w", err)
 	}
+	if resp.ResponseCode() !=  http.StatusOK {
+		return nil, ErrInvalidResponseCode
+	}
 	zap.S().Debug(resp.Body())
 
 	wsTrustResp := &WSTrustResponse{}
 	if err := xml.Unmarshal([]byte(resp.Body()), wsTrustResp); err != nil {
-		return nil, err //TODO: specific error
+		return nil,  fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
 	return wsTrustResp, nil
@@ -182,7 +190,7 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 	return token, nil
 }
 
-func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstrust.Endpoint) string {
+func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstrust.Endpoint) (string, error) {
 
 	messageID := uuid.New()
 
@@ -222,46 +230,69 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstr
 		end.Year(), end.Month(), end.Day(),
 		end.Hour(), end.Minute(), end.Second(), end.Nanosecond())
 
-	requestTemplate := "<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope' xmlns:wsa='http://www.w3.org/2005/08/addressing' xmlns:wsu='" +
-		schemaLocation + "'>" +
+	envelopeParams := EnvelopeParams {
+		SchemaLocation: schemaLocation,
+		SoapAction: soapAction,
+		MessageID: messageID.URN(),
+		EndpointURL: formatXMLText(endpoint.URL),
+		Created: startFormatted,
+		Expires: endFormatted,
+		Username: formatXMLText(cfg.Username),
+		Password: formatXMLText(cfg.Password),
+		RequestTrustNamespace: requestTrustNamespace,
+		KeyType: keyType,
+		RequestType: requestType,
+	}
+
+	requestTemplate, err := template.New("envelope").Parse(
+	"<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope' xmlns:wsa='http://www.w3.org/2005/08/addressing' xmlns:wsu='{{.SchemaLocation}}'>" +
 		"<s:Header>" +
-		"<wsa:Action s:mustUnderstand='1'>" +
-		soapAction +
-		"</wsa:Action>" +
-		"<wsa:messageID>" +
-		messageID.URN() +
-		"</wsa:messageID><wsa:ReplyTo><wsa:Address>http://www.w3.org/2005/08/addressing/anonymous</wsa:Address>" +
-		"</wsa:ReplyTo><wsa:To s:mustUnderstand='1'>" +
-		endpoint.URL +
-		"</wsa:To>" +
-		"<wsse:Security s:mustUnderstand='1' xmlns:wsse='http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd'>" +
-		"<wsu:Timestamp wsu:Id='_0'>" +
-		"<wsu:Created>" + startFormatted + "</wsu:Created>" +
-		"<wsu:Expires>" + endFormatted + "</wsu:Expires>" +
-		"</wsu:Timestamp>" +
-		"<wsse:UsernameToken wsu:Id='ADALUsernameToken'>" +
-		"<wsse:Username>" + cfg.Username + "</wsse:Username>" +
-		"<wsse:Password>" + cfg.Password + "</wsse:Password>" +
-		"</wsse:UsernameToken>" +
-		"</wsse:Security>" +
+			"<wsa:Action s:mustUnderstand='1'>{{.SoapAction}}</wsa:Action>" +
+			"<wsa:messageID>{{.MessageID}}</wsa:messageID>" + 
+			"<wsa:ReplyTo>" + 
+				"<wsa:Address>http://www.w3.org/2005/08/addressing/anonymous</wsa:Address>" +
+			"</wsa:ReplyTo>" + 
+			"<wsa:To s:mustUnderstand='1'>{{.EndpointURL}}</wsa:To>" +
+			"<wsse:Security s:mustUnderstand='1' xmlns:wsse='http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd'>" +
+				"<wsu:Timestamp wsu:Id='_0'>" +
+					"<wsu:Created>{{.Created}}</wsu:Created>" +
+					"<wsu:Expires>{{.Expires}}</wsu:Expires>" +
+				"</wsu:Timestamp>" +
+				"<wsse:UsernameToken wsu:Id='ADALUsernameToken'>" +
+					"<wsse:Username>{{.Username}}</wsse:Username>" +
+					"<wsse:Password>{{.Password}}</wsse:Password>" +
+				"</wsse:UsernameToken>" +
+			"</wsse:Security>" +
 		"</s:Header>" +
 		"<s:Body>" +
-		"<wst:RequestSecurityToken xmlns:wst='" +
-		requestTrustNamespace +
-		"'>" +
-		"<wsp:AppliesTo xmlns:wsp='http://schemas.xmlsoap.org/ws/2004/09/policy'><wsa:EndpointReference>" +
-		"<wsa:Address>urn:federation:MicrosoftOnline</wsa:Address>" +
-		"</wsa:EndpointReference>" +
-		"</wsp:AppliesTo>" +
-		"<wst:KeyType>" +
-		keyType + "</wst:KeyType>" +
-		"<wst:RequestType>" +
-		requestType + "</wst:RequestType>" +
-		"</wst:RequestSecurityToken>" +
+			"<wst:RequestSecurityToken xmlns:wst='{{.RequestTrustNamespace}}'>" +
+				"<wsp:AppliesTo xmlns:wsp='http://schemas.xmlsoap.org/ws/2004/09/policy'>" + 
+					"<wsa:EndpointReference>" +
+						"<wsa:Address>urn:federation:MicrosoftOnline</wsa:Address>" +
+					"</wsa:EndpointReference>" +
+				"</wsp:AppliesTo>" +
+				"<wst:KeyType>{{.KeyType}}</wst:KeyType>" +
+				"<wst:RequestType>{{.RequestType}}</wst:RequestType>" +
+			"</wst:RequestSecurityToken>" +
 		"</s:Body>" +
-		"</s:Envelope>"
+	"</s:Envelope>")
 
-	return requestTemplate
+	if err != nil {
+		return "", fmt.Errorf("error creating envelope template: %w", err)
+	}
+
+	var buf bytes.Buffer
+	err = requestTemplate.Execute(&buf, envelopeParams)
+	if err != nil {
+		return "", fmt.Errorf("error executing envelope template: %w", err)
+	}
+	return buf.String(), nil
+}
+
+func formatXMLText(s string) string {
+	buf := new(strings.Builder)
+	xml.EscapeText(buf, []byte(s))
+	return buf.String()
 }
 
 func (c *AzureADClient) endcodeQueryParams(params map[string]string) string {
