@@ -112,14 +112,14 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 	if err != nil {
 		return nil, fmt.Errorf("posting envelope: %w", err)
 	}
-	if resp.ResponseCode() !=  http.StatusOK {
+	if resp.ResponseCode() != http.StatusOK {
 		return nil, ErrInvalidResponseCode
 	}
 	zap.S().Debug(resp.Body())
 
 	wsTrustResp := &WSTrustResponse{}
 	if err := xml.Unmarshal([]byte(resp.Body()), wsTrustResp); err != nil {
-		return nil,  fmt.Errorf("error unmarshaling response: %w", err)
+		return nil, fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
 	return wsTrustResp, nil
@@ -193,7 +193,6 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstrust.Endpoint) (string, error) {
 
 	messageID := uuid.New()
-
 	schemaLocation := "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
 
 	var soapAction string
@@ -222,6 +221,19 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstr
 	start := time.Now().UTC()
 	end := start.Add(time.Minute * time.Duration(DefaultTokenDurationMins))
 
+	endpointURL, err := formatXMLText(endpoint.URL)
+	if err != nil {
+		return "", fmt.Errorf("error formatting url to xml: %w", err)
+	}
+	username, err := formatXMLText(cfg.Username)
+	if err != nil {
+		return "", fmt.Errorf("error formatting username to xml: %w", err)
+	}
+	password, err := formatXMLText(cfg.Password)
+	if err != nil {
+		return "", fmt.Errorf("error formatting password to xml: %w", err)
+	}
+
 	startFormatted := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d.%02dZ",
 		start.Year(), start.Month(), start.Day(),
 		start.Hour(), start.Minute(), start.Second(), start.Nanosecond())
@@ -230,52 +242,52 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstr
 		end.Year(), end.Month(), end.Day(),
 		end.Hour(), end.Minute(), end.Second(), end.Nanosecond())
 
-	envelopeParams := EnvelopeParams {
-		SchemaLocation: schemaLocation,
-		SoapAction: soapAction,
-		MessageID: messageID.URN(),
-		EndpointURL: formatXMLText(endpoint.URL),
-		Created: startFormatted,
-		Expires: endFormatted,
-		Username: formatXMLText(cfg.Username),
-		Password: formatXMLText(cfg.Password),
+	envelopeParams := EnvelopeParams{
+		SchemaLocation:        schemaLocation,
+		SoapAction:            soapAction,
+		MessageID:             messageID.URN(),
+		EndpointURL:           endpointURL,
+		Created:               startFormatted,
+		Expires:               endFormatted,
+		Username:              username,
+		Password:              password,
 		RequestTrustNamespace: requestTrustNamespace,
-		KeyType: keyType,
-		RequestType: requestType,
+		KeyType:               keyType,
+		RequestType:           requestType,
 	}
 
 	requestTemplate, err := template.New("envelope").Parse(
-	"<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope' xmlns:wsa='http://www.w3.org/2005/08/addressing' xmlns:wsu='{{.SchemaLocation}}'>" +
-		"<s:Header>" +
+		"<s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope' xmlns:wsa='http://www.w3.org/2005/08/addressing' xmlns:wsu='{{.SchemaLocation}}'>" +
+			"<s:Header>" +
 			"<wsa:Action s:mustUnderstand='1'>{{.SoapAction}}</wsa:Action>" +
-			"<wsa:messageID>{{.MessageID}}</wsa:messageID>" + 
-			"<wsa:ReplyTo>" + 
-				"<wsa:Address>http://www.w3.org/2005/08/addressing/anonymous</wsa:Address>" +
-			"</wsa:ReplyTo>" + 
+			"<wsa:messageID>{{.MessageID}}</wsa:messageID>" +
+			"<wsa:ReplyTo>" +
+			"<wsa:Address>http://www.w3.org/2005/08/addressing/anonymous</wsa:Address>" +
+			"</wsa:ReplyTo>" +
 			"<wsa:To s:mustUnderstand='1'>{{.EndpointURL}}</wsa:To>" +
 			"<wsse:Security s:mustUnderstand='1' xmlns:wsse='http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd'>" +
-				"<wsu:Timestamp wsu:Id='_0'>" +
-					"<wsu:Created>{{.Created}}</wsu:Created>" +
-					"<wsu:Expires>{{.Expires}}</wsu:Expires>" +
-				"</wsu:Timestamp>" +
-				"<wsse:UsernameToken wsu:Id='ADALUsernameToken'>" +
-					"<wsse:Username>{{.Username}}</wsse:Username>" +
-					"<wsse:Password>{{.Password}}</wsse:Password>" +
-				"</wsse:UsernameToken>" +
+			"<wsu:Timestamp wsu:Id='_0'>" +
+			"<wsu:Created>{{.Created}}</wsu:Created>" +
+			"<wsu:Expires>{{.Expires}}</wsu:Expires>" +
+			"</wsu:Timestamp>" +
+			"<wsse:UsernameToken wsu:Id='ADALUsernameToken'>" +
+			"<wsse:Username>{{.Username}}</wsse:Username>" +
+			"<wsse:Password>{{.Password}}</wsse:Password>" +
+			"</wsse:UsernameToken>" +
 			"</wsse:Security>" +
-		"</s:Header>" +
-		"<s:Body>" +
+			"</s:Header>" +
+			"<s:Body>" +
 			"<wst:RequestSecurityToken xmlns:wst='{{.RequestTrustNamespace}}'>" +
-				"<wsp:AppliesTo xmlns:wsp='http://schemas.xmlsoap.org/ws/2004/09/policy'>" + 
-					"<wsa:EndpointReference>" +
-						"<wsa:Address>urn:federation:MicrosoftOnline</wsa:Address>" +
-					"</wsa:EndpointReference>" +
-				"</wsp:AppliesTo>" +
-				"<wst:KeyType>{{.KeyType}}</wst:KeyType>" +
-				"<wst:RequestType>{{.RequestType}}</wst:RequestType>" +
+			"<wsp:AppliesTo xmlns:wsp='http://schemas.xmlsoap.org/ws/2004/09/policy'>" +
+			"<wsa:EndpointReference>" +
+			"<wsa:Address>urn:federation:MicrosoftOnline</wsa:Address>" +
+			"</wsa:EndpointReference>" +
+			"</wsp:AppliesTo>" +
+			"<wst:KeyType>{{.KeyType}}</wst:KeyType>" +
+			"<wst:RequestType>{{.RequestType}}</wst:RequestType>" +
 			"</wst:RequestSecurityToken>" +
-		"</s:Body>" +
-	"</s:Envelope>")
+			"</s:Body>" +
+			"</s:Envelope>")
 
 	if err != nil {
 		return "", fmt.Errorf("error creating envelope template: %w", err)
@@ -289,10 +301,13 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstr
 	return buf.String(), nil
 }
 
-func formatXMLText(s string) string {
+func formatXMLText(s string) (string, error) {
 	buf := new(strings.Builder)
-	xml.EscapeText(buf, []byte(s))
-	return buf.String()
+	err := xml.EscapeText(buf, []byte(s))
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (c *AzureADClient) endcodeQueryParams(params map[string]string) string {

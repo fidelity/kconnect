@@ -17,7 +17,7 @@ issues:
 
 linters-settings:
   funlen:
-    lines: 95
+    lines: 110
     statements: 60
 
 linters:

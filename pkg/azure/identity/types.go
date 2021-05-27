@@ -145,5 +145,4 @@ type EnvelopeParams struct {
 	RequestTrustNamespace string
 	KeyType               string
 	RequestType           string
-
 }
