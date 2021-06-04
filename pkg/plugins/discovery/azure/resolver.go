@@ -24,7 +24,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	kerrors "github.com/fidelity/kconnect/pkg/errors"
 	"github.com/fidelity/kconnect/pkg/prompt"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
@@ -45,7 +45,7 @@ func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 
 // Resolve will resolve the values for the AWS specific flags that have no value. It will
 // query AWS and interactively ask the user for selections.
-func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, userID identity.Identity) error {
+func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, userID provider.Identity) error {
 	if err := p.setup(cfg, userID); err != nil {
 		return fmt.Errorf("setting up aks provider: %w", err)
 	}

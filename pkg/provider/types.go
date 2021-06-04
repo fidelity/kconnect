@@ -55,3 +55,20 @@ type PluginCreationInput struct {
 // ConfigurationItemsFunc is a function type that gets configuration items.
 // The scopeTo will indicate if there is additional scope that is needed
 type ConfigurationItemsFunc func(scopeTo string) (config.ConfigurationSet, error)
+
+// Identity represents a users identity for use with discovery.
+// NOTE: details of this need finalising
+type Identity interface {
+	Type() string
+	Name() string
+	IsExpired() bool
+	IdentityProviderName() string
+}
+
+// Store represents an way to store and retrieve credentials
+type Store interface {
+	CredsExists() (bool, error)
+	Save(identity Identity) error
+	Load() (Identity, error)
+	Expired() bool
+}

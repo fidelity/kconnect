@@ -24,9 +24,10 @@ import (
 	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
 	"github.com/fidelity/kconnect/pkg/prompt"
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
-func (p *aadIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
+func (p *aadIdentityProvider) Resolve(cfg config.ConfigurationSet, _ provider.Identity) error {
 	if !p.interactive {
 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
 		return nil
@@ -49,6 +50,10 @@ func (p *aadIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
 	}
 
 	return nil
+}
+
+func (p *aadIdentityProvider) Validate(cfg config.ConfigurationSet) error {
+	return config.ValidateRequired(cfg)
 }
 
 func aadHostOptions() (map[string]string, error) {

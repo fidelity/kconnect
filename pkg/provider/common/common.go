@@ -22,6 +22,14 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
+const (
+	ClusterIDConfigItem   = "cluster-id"
+	AliasConfigItem       = "alias"
+	UsernameConfigItem    = "username"
+	PasswordConfigItem    = "password"
+	IdpProtocolConfigItem = "idp-protocol"
+)
+
 // ClusterProviderConfig represents the base configuration for
 // a cluster provider
 type ClusterProviderConfig struct {
@@ -36,30 +44,30 @@ type ClusterProviderConfig struct {
 // IdentityProviderConfig represents the base configuration for an
 // identity provider.
 type IdentityProviderConfig struct {
-	Username    string `json:"username" validate:"required"`
-	Password    string `json:"password" validate:"required"`
-	IdpProtocol string `json:"idp-protocol" validate:"required"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	IdpProtocol string `json:"idp-protocol"`
 }
 
 func AddCommonClusterConfig(cs config.ConfigurationSet) error {
-	if _, err := cs.String("cluster-id", "", "Id of the cluster to use."); err != nil {
+	if _, err := cs.String(ClusterIDConfigItem, "", "Id of the cluster to use."); err != nil {
 		return fmt.Errorf("adding cluster-id setting: %w", err)
 	}
-	if _, err := cs.String("alias", "", "Friendly name to give to give the connection"); err != nil {
+	if _, err := cs.String(AliasConfigItem, "", "Friendly name to give to give the connection"); err != nil {
 		return fmt.Errorf("adding alias setting: %w", err)
 	}
 
-	if err := cs.SetShort("cluster-id", "c"); err != nil {
+	if err := cs.SetShort(ClusterIDConfigItem, "c"); err != nil {
 		return fmt.Errorf("setting shorthand for cluster-id setting: %w", err)
 	}
-	if err := cs.SetShort("alias", "a"); err != nil {
+	if err := cs.SetShort(AliasConfigItem, "a"); err != nil {
 		return fmt.Errorf("setting shorthand for alias setting: %w", err)
 	}
-	if err := cs.SetSensitive("alias"); err != nil {
+	if err := cs.SetSensitive(AliasConfigItem); err != nil {
 		return fmt.Errorf("setting alias as sensitive: %w", err)
 	}
 
-	cs.SetHistoryIgnore("alias") //nolint
+	cs.SetHistoryIgnore(AliasConfigItem) //nolint
 
 	return nil
 }
@@ -78,10 +86,15 @@ func AddCommonIdentityConfig(cs config.ConfigurationSet) error {
 // IdentityConfig creates a configset with the common identity config items
 func IdentityConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String("username", "", "The username used for authentication")                                      //nolint: errcheck
-	cs.String("password", "", "The password to use for authentication")                                    //nolint: errcheck
-	cs.String("idp-protocol", "", "The idp protocol to use (e.g. saml). Each protocol has its own flags.") //nolint: errcheck
-	cs.SetSensitive("password")                                                                            //nolint: errcheck
+	cs.String(UsernameConfigItem, "", "The username used for authentication")                                     //nolint: errcheck
+	cs.String(PasswordConfigItem, "", "The password to use for authentication")                                   //nolint: errcheck
+	cs.String(IdpProtocolConfigItem, "", "The idp protocol to use (e.g. saml). Each protocol has its own flags.") //nolint: errcheck
+
+	cs.SetSensitive(PasswordConfigItem) //nolint: errcheck
+
+	cs.SetRequired(UsernameConfigItem)    //nolint: errcheck
+	cs.SetRequired(PasswordConfigItem)    //nolint: errcheck
+	cs.SetRequired(IdpProtocolConfigItem) //nolint: errcheck
 
 	return cs
 }

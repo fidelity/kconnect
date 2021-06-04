@@ -27,7 +27,6 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/common"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
 	"github.com/fidelity/kconnect/pkg/provider/registry"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
@@ -91,7 +90,7 @@ func (p *eksClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID provider.Identity) error {
 	cfg := &eksClusteProviderConfig{}
 	if err := config.Unmarshall(cs, cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)

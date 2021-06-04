@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
+	"github.com/fidelity/kconnect/pkg/provider"
 )
 
 // Resolver is an interface that indicates that the plugin can resolve and validate configuration
@@ -13,5 +13,5 @@ type Resolver interface {
 
 	// Resolve will resolve the values for the supplied config items. It will interactively
 	// resolve the values by asking the user for selections.
-	Resolve(config config.ConfigurationSet, identity identity.Identity) error
+	Resolve(config config.ConfigurationSet, identity provider.Identity) error
 }

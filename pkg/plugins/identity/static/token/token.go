@@ -20,11 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
-	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/identity"
 	"github.com/fidelity/kconnect/pkg/provider/registry"
@@ -62,7 +60,7 @@ type staticTokenIdentityProvider struct {
 }
 
 type providerConfig struct {
-	Token string `json:"token" validate:"required"`
+	Token string `json:"token"`
 }
 
 func (p *staticTokenIdentityProvider) Name() string {
@@ -73,17 +71,9 @@ func (p *staticTokenIdentityProvider) Name() string {
 func (p *staticTokenIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("using static token for authentication")
 
-	if err := p.resolveConfig(input.ConfigSet); err != nil {
-		return nil, fmt.Errorf("resolving config: %w", err)
-	}
-
 	cfg := &providerConfig{}
 	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into providerConfig: %w", err)
-	}
-
-	if err := p.validateConfig(cfg); err != nil {
-		return nil, err
 	}
 
 	return &identity.AuthenticateOutput{
@@ -92,23 +82,11 @@ func (p *staticTokenIdentityProvider) Authenticate(ctx context.Context, input *i
 
 }
 
-func (p *staticTokenIdentityProvider) validateConfig(cfg *providerConfig) error {
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating aad config: %w", err)
-	}
-	return nil
+func (p *staticTokenIdentityProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
 }
 
-func (p *staticTokenIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
-	if !p.interactive {
-		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
-	}
-
-	if err := prompt.InputAndSet(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
-		return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
-	}
-
+func (p *staticTokenIdentityProvider) CheckPreReqs() error {
 	return nil
 }
 

@@ -98,6 +98,22 @@ func (p *envIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	}, nil
 }
 
+func (p *envIdentityProvider) Validate(cfg config.ConfigurationSet) error {
+	return nil
+}
+
+func (p *envIdentityProvider) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
+	return nil
+}
+
+func (p *envIdentityProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
+}
+
+func (p *envIdentityProvider) CheckPreReqs() error {
+	return nil
+}
+
 // ConfigurationItems will return the configuration items for the intentity plugin based
 // of the cluster provider that its being used in conjunction with
 func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {

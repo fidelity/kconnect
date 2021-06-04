@@ -8,7 +8,6 @@ import (
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider"
 	provcfg "github.com/fidelity/kconnect/pkg/provider/config"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 // Provider is the interface that is used to implement providers
@@ -37,7 +36,7 @@ type ProviderCreatorFun func(input *provider.PluginCreationInput) (Provider, err
 // DiscoverInput is the input to Discover
 type DiscoverInput struct {
 	ConfigSet config.ConfigurationSet
-	Identity  identity.Identity
+	Identity  provider.Identity
 }
 
 // DiscoverOutput holds details of the output of the Discover
@@ -52,7 +51,7 @@ type DiscoverOutput struct {
 type GetClusterInput struct {
 	ClusterID string
 	ConfigSet config.ConfigurationSet
-	Identity  identity.Identity
+	Identity  provider.Identity
 }
 
 // GetClusterOutput is the output to GetCluster
@@ -63,7 +62,7 @@ type GetClusterOutput struct {
 type GetConfigInput struct {
 	Cluster   *Cluster
 	Namespace *string
-	Identity  identity.Identity
+	Identity  provider.Identity
 }
 
 type GetConfigOutput struct {

@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/azure/identity"
@@ -78,9 +77,9 @@ type aadIdentityProvider struct {
 type aadConfig struct {
 	common.IdentityProviderConfig
 
-	TenantID string           `json:"tenant-id" validate:"required"`
-	ClientID string           `json:"client-id" validate:"required"`
-	AADHost  identity.AADHost `json:"aad-host" validate:"required"`
+	TenantID string           `json:"tenant-id"`
+	ClientID string           `json:"client-id"`
+	AADHost  identity.AADHost `json:"aad-host"`
 }
 
 func (p *aadIdentityProvider) Name() string {
@@ -91,17 +90,9 @@ func (p *aadIdentityProvider) Name() string {
 func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.AuthenticateInput) (*provid.AuthenticateOutput, error) {
 	p.logger.Info("authenticating user")
 
-	if err := p.resolveConfig(input.ConfigSet); err != nil {
-		return nil, fmt.Errorf("resolving config: %w", err)
-	}
-
 	cfg := &aadConfig{}
 	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use aadconfig: %w", err)
-	}
-
-	if err := p.validateConfig(cfg); err != nil {
-		return nil, err
 	}
 
 	authCfg := &identity.AuthenticationConfig{
@@ -135,11 +126,11 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	}, nil
 }
 
-func (p *aadIdentityProvider) validateConfig(cfg *aadConfig) error {
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating aad config: %w", err)
-	}
+func (p *aadIdentityProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
+}
+
+func (p *aadIdentityProvider) CheckPreReqs() error {
 	return nil
 }
 
@@ -158,6 +149,8 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 
 	cs.SetShort(azure.TenantIDConfigItem, "t") //nolint: errcheck
 	cs.SetRequired(azure.TenantIDConfigItem)   //nolint: errcheck
+	cs.SetRequired(azure.ClientIDConfigItem)   //nolint: errcheck
+	cs.SetRequired(azure.AADHostConfigItem)    //nolint: errcheck
 
 	return cs, nil
 }
