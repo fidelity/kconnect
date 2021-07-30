@@ -28,7 +28,7 @@ import (
 
 const (
 	OAuth2Template     = "oauth2/%s%s"
-	VersionQueryString = "?api-version=1.0"
+	VersionQueryString = ""
 )
 
 type EndpointsResolver interface {
