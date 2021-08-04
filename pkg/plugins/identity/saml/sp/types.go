@@ -17,7 +17,7 @@ limitations under the License.
 package sp
 
 import (
-	"github.com/versent/saml2aws/pkg/cfg"
+	"github.com/versent/saml2aws/v2/pkg/cfg"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/provider/common"
