@@ -16,7 +16,7 @@ limitations under the License.
 
 package aws
 
-import "github.com/versent/saml2aws/pkg/awsconfig"
+import "github.com/versent/saml2aws/v2/pkg/awsconfig"
 
 func MapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {
 	return &Identity{

@@ -60,7 +60,7 @@ func (p *ServiceProvider) resolveIdpEndpoint(name string, cfg config.Configurati
 
 func (p *ServiceProvider) resolveIdpProvider(name string, cfg config.ConfigurationSet) error {
 	//TODO: get this from saml2aws????
-	options := []string{"Akamai", "AzureAD", "ADFS", "ADFS2", "GoogleApps", "Ping", "PingNTLM", "JumpCloud", "Okta", "OneLogin", "PSU", "KeyCloak", "F5APM", "Shibboleth", "ShibbolethECP", "NetIQ"}
+	options := []string{"Akamai", "AzureAD", "ADFS", "ADFS2", "Browser", "GoogleApps", "Ping", "PingNTLM", "JumpCloud", "Okta", "OneLogin", "PSU", "KeyCloak", "F5APM", "Shibboleth", "ShibbolethECP", "NetIQ"}
 
 	return prompt.ChooseAndSet(cfg, name, "Select your identity provider", true, prompt.OptionsFromStringSlice(options))
 }

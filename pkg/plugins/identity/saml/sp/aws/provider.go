@@ -30,9 +30,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 
-	"github.com/versent/saml2aws"
-	"github.com/versent/saml2aws/pkg/awsconfig"
-	"github.com/versent/saml2aws/pkg/cfg"
+	"github.com/versent/saml2aws/v2"
+	"github.com/versent/saml2aws/v2/pkg/awsconfig"
+	"github.com/versent/saml2aws/v2/pkg/cfg"
 
 	kaws "github.com/fidelity/kconnect/pkg/aws"
 	"github.com/fidelity/kconnect/pkg/config"

@@ -1,4 +1,4 @@
 [submodule "third_party/saml2aws"]
 	path = third_party/saml2aws
-	url = https://github.com/richardcase/saml2aws.git
-	branch = ntlmchanges
+	url = https://github.com/Versent/saml2aws.git
+	branch = tags/v2.32.0
