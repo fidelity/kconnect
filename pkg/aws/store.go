@@ -28,7 +28,7 @@ import (
 
 // NewIdentityStore will create a new AWS identity store
 func NewIdentityStore(profile, idProviderName string) (identity.Store, error) {
-	path, nil := kawsconfig.LocateConfigFile()
+	path, _ := kawsconfig.LocateConfigFile()
 	return &awsIdentityStore{
 		configProvider: awsconfig.NewSharedCredentials(profile, path),
 		idProviderName: idProviderName,
