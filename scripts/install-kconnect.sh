@@ -6,10 +6,10 @@ echo "creating directory kconnect"
 mkdir -p kconnect
 cd kconnect
 
-latest_kconnect_release_tag=$(curl -k --silent "https://api.github.com/repos/fidelity/kconnect/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-latest_helm_release_tag=$(curl -k --silent "https://api.github.com/repos/helm/helm/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+latest_kconnect_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/fidelity/kconnect/releases/latest | rev | cut -d '/' -f 1 | rev)
+latest_helm_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/helm/helm/releases/latest | rev | cut -d '/' -f 1 | rev)
 latest_kubectl_release_tag=$(curl -k -L --silent https://dl.k8s.io/release/stable.txt)
-latest_kubelogin_release_tag=$(curl -k --silent "https://api.github.com/repos/Azure/kubelogin/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+latest_kubelogin_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/kubelogin/releases/latest | rev | cut -d '/' -f 1 | rev)
 
 echo "kconnect version: $latest_kconnect_release_tag"
 echo "kubectl version: $latest_kubectl_release_tag"
