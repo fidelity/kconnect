@@ -6,10 +6,10 @@ echo "creating directory kconnect"
 mkdir -p kconnect
 cd kconnect
 
-latest_kconnect_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/fidelity/kconnect/releases/latest | rev | cut -d '/' -f 1 | rev)
-latest_helm_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/helm/helm/releases/latest | rev | cut -d '/' -f 1 | rev)
+latest_kconnect_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/fidelity/kconnect/releases/latest | sed 's#.*/##')
+latest_helm_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/helm/helm/releases/latest | sed 's#.*/##')
 latest_kubectl_release_tag=$(curl -k -L --silent https://dl.k8s.io/release/stable.txt)
-latest_kubelogin_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/kubelogin/releases/latest | rev | cut -d '/' -f 1 | rev)
+latest_kubelogin_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/kubelogin/releases/latest | sed 's#.*/##')
 
 echo "kconnect version: $latest_kconnect_release_tag"
 echo "kubectl version: $latest_kubectl_release_tag"
