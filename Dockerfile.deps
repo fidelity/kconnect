@@ -1,4 +1,4 @@
-FROM alpine:3.12 AS builder
+FROM alpine:3.14 AS builder
 
 ARG AWS_IAM_AUTH_VERSION=0.5.2
 ARG KUBELOGIN_VERSION=0.0.8
@@ -25,7 +25,7 @@ RUN curl -L \
 RUN curl -L https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz -o helm.tar.gz && \
     tar xvfz helm.tar.gz
 
-FROM alpine:3.12
+FROM alpine:3.14
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /app/
