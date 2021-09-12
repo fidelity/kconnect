@@ -106,6 +106,7 @@ nfpms:
       darwin: macos
     file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     vendor: kconnect authors
+    maintainer: Kelly, Sean <a567910@fmr.com>
     homepage: https://github.com/fidelity/kconnect
     description: "The Kubernetes Connection Manager CLI"
     license: Apache 2.0
