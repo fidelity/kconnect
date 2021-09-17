@@ -39,7 +39,7 @@ When choosing an issue to work on its preferable that you choose a issue that is
 
 ### Getting started
 
-1. Install Go >= 1.13
+1. Install Go >= 1.17
 2. Fork the kconnect repo
 3. Create a branch for your change:
 
