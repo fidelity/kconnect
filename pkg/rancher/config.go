@@ -25,12 +25,20 @@ import (
 const (
 	// APIEndpointConfigName is the name of the config item for the Rancher API endpoint
 	APIEndpointConfigName = "api-endpoint"
+	// ClusterName is the user friendly name of the Rancher cluster to connect to
+	ClusterName = "cluster-name"
 )
 
 // CommonConfig represents the common configuration for Rancher
 type CommonConfig struct {
 	// APIEndpoint is the URL for the rancher API endpoint
 	APIEndpoint string `json:"api-endpoint" validate:"required"`
+}
+
+// UseConfig represents the use configuration for Rancher
+type UseConfig struct {
+	// ClusterName is the user friendly name of the Rancher cluster to connect to
+	ClusterName string `json:"cluster-name"`
 }
 
 // AddCommonConfig adds the Rancher common configuration to a configuration set
@@ -41,6 +49,13 @@ func AddCommonConfig(cs config.ConfigurationSet) error {
 	if err := cs.SetRequired(APIEndpointConfigName); err != nil {
 		return fmt.Errorf("setting %s required: %w", APIEndpointConfigName, err)
 	}
+	return nil
+}
 
+// AddUseConfig adds the Rancher use configuration to a configuration set
+func AddUseConfig(cs config.ConfigurationSet) error {
+	if _, err := cs.String(ClusterName, "", "The Rancher user friendly cluster name"); err != nil {
+		return fmt.Errorf("setting config item %s: %w", ClusterName, err)
+	}
 	return nil
 }

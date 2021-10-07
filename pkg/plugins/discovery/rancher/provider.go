@@ -71,6 +71,7 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 type rancherClusterProviderConfig struct {
 	common.ClusterProviderConfig
 	rshared.CommonConfig
+	rshared.UseConfig
 }
 
 type rancherClusterProvider struct {
@@ -113,6 +114,6 @@ func (p *rancherClusterProvider) CheckPreReqs() error {
 func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 	rshared.AddCommonConfig(cs) //nolint: errcheck
-
+	rshared.AddUseConfig(cs)    //nolint: errcheck
 	return cs, nil
 }
