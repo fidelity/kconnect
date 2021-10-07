@@ -19,8 +19,10 @@ package rancher
 import "errors"
 
 var (
-	ErrGetClusterDetail   = errors.New("error querying cluster cluster detail")
-	ErrGettingClusters    = errors.New("error querying clusters")
-	ErrNoKubeconfigAction = errors.New("no generate kubeconfig action found")
-	ErrGettingKubeconfig  = errors.New("error getting kubeconfig from api")
+	ErrGetClusterDetail        = errors.New("error querying cluster cluster detail")
+	ErrGettingClusters         = errors.New("error querying clusters")
+	ErrNoKubeconfigAction      = errors.New("no generate kubeconfig action found")
+	ErrGettingKubeconfig       = errors.New("error getting kubeconfig from api")
+	ErrNoMatchingCluster       = errors.New("no clusters found that match name")
+	ErrMulitpleMatchingCluster = errors.New("multiple clusters found that match name")
 )

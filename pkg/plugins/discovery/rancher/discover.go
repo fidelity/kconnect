@@ -51,8 +51,23 @@ func (p *rancherClusterProvider) Discover(ctx context.Context, input *discovery.
 		IdentityProvider:  id.IdentityProviderName(),
 		Clusters:          make(map[string]*discovery.Cluster),
 	}
-	for _, v := range clusters {
-		discoverOutput.Clusters[v.ID] = v
+
+	if p.config.ClusterName != "" {
+		for _, v := range clusters {
+			if p.config.ClusterName == v.Name {
+				discoverOutput.Clusters[v.ID] = v
+				break
+			}
+		}
+		if len(discoverOutput.Clusters) == 0 {
+			return nil, ErrNoMatchingCluster
+		} else if len(discoverOutput.Clusters) > 1 {
+			return nil, ErrMulitpleMatchingCluster
+		}
+	} else {
+		for _, v := range clusters {
+			discoverOutput.Clusters[v.ID] = v
+		}
 	}
 
 	return discoverOutput, nil
