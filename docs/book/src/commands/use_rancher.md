@@ -47,6 +47,7 @@ kconnect use rancher [flags]
   -a, --alias string              Friendly name to give to give the connection
       --api-endpoint string       The Rancher API endpoint
   -c, --cluster-id string         Id of the cluster to use.
+      --cluster-name string       The Rancher user friendly cluster name
   -h, --help                      help for rancher
       --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --idp-protocol string       The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
