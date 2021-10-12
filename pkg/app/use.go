@@ -87,12 +87,6 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 		return fmt.Errorf("resolving config items: %w", err)
 	}
 
-	if !input.IgnoreAlias {
-		if err := a.resolveAndCheckAlias(input); err != nil {
-			return fmt.Errorf("resolving and checking alias: %w", err)
-		}
-	}
-
 	var cluster *discovery.Cluster
 	if input.ClusterID == nil || *input.ClusterID == "" {
 		cluster, err = a.discoverCluster(ctx, clusterProvider, authOutput.Identity, input)
@@ -113,6 +107,12 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 	})
 	if err != nil {
 		return fmt.Errorf("creating kubeconfig for %s: %w", cluster.Name, err)
+	}
+
+	if !input.IgnoreAlias {
+		if err := a.resolveAndCheckAlias(input); err != nil {
+			return fmt.Errorf("resolving and checking alias: %w", err)
+		}
 	}
 
 	historyID := input.EntryID
