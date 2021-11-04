@@ -29,3 +29,19 @@ func SurveyFilter(filter string, value string, index int) bool {
 	}
 	return true
 }
+
+// RegexFilter to filter a slice or strings based on a regex filter passed to it. Returns an error if regex is invalid
+func RegexFilter(options []string, regexString string) ([]string, error) {
+
+	var filteredOptions []string
+	reg, err := regexp.Compile(regexString)
+	if err != nil {
+		return filteredOptions, err
+	}
+	for _, opt := range options {
+		if reg.MatchString(opt) {
+			filteredOptions = append(filteredOptions, opt)
+		}
+	}
+	return filteredOptions, nil
+}

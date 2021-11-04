@@ -127,9 +127,9 @@ func (p *eksClusterProvider) CheckPreReqs() error {
 func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := aws.SharedConfig()
 
-	cs.String("region-filter", "", "A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions")                 //nolint: errcheck
-	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                    //nolint: errcheck
-	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name") //nolint: errcheck
+	cs.String("region-filter", "", "A regex filter to apply to the AWS regions list, e.g. '^us-|^eu-' will only show US and eu regions") //nolint: errcheck
+	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                       //nolint: errcheck
+	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name")    //nolint: errcheck
 
 	return cs, nil
 }

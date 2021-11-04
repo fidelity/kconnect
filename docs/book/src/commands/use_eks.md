@@ -64,7 +64,7 @@ kconnect use eks [flags]
       --partition string          AWS partition to use (default "aws")
       --password string           The password to use for authentication
       --region string             AWS region to connect to
-      --region-filter string      A filter to apply to the AWS regions list, e.g. 'us-' will only show US regions
+      --region-filter string      A regex filter to apply to the AWS regions list, e.g. '^us-|^eu-' will only show US and eu regions
       --role-arn string           ARN of the AWS role to be assumed
       --role-filter string        A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name
       --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
