@@ -19,12 +19,12 @@ package aws
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/prompt"
+	"github.com/fidelity/kconnect/pkg/utils"
 )
 
 func ResolvePartition(cfg config.ConfigurationSet) error {
@@ -63,14 +63,22 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 	}
 
 	options := []string{}
+	// for _, region := range partition.Regions() {
+	// 	if regionFilter == "" || strings.Contains(region.ID(), regionFilter) {
+	// 		options = append(options, region.ID())
+	// 	}
+	// }
 	for _, region := range partition.Regions() {
-		if regionFilter == "" || strings.Contains(region.ID(), regionFilter) {
-			options = append(options, region.ID())
-		}
+		options = append(options, region.ID())
 	}
+	options, err := utils.RegexFilter(options, regionFilter)
+	if err != nil {
+		return fmt.Errorf("applying region regex %s : %w", regionFilter, err)
+	}
+
 	sort.Slice(options, func(i, j int) bool { return options[i] < options[j] })
 
-	err := prompt.ChooseAndSet(cfg, RegionConfigItem, "Select an AWS region", true, prompt.OptionsFromStringSlice(options))
+	err = prompt.ChooseAndSet(cfg, RegionConfigItem, "Select an AWS region", true, prompt.OptionsFromStringSlice(options))
 	if err != nil {
 		return fmt.Errorf("choosing and setting %s: %w", RegionConfigItem, err)
 	}
