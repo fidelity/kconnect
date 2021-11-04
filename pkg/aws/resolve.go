@@ -63,11 +63,6 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 	}
 
 	options := []string{}
-	// for _, region := range partition.Regions() {
-	// 	if regionFilter == "" || strings.Contains(region.ID(), regionFilter) {
-	// 		options = append(options, region.ID())
-	// 	}
-	// }
 	for _, region := range partition.Regions() {
 		options = append(options, region.ID())
 	}
