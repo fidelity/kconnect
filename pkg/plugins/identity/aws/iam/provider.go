@@ -85,10 +85,6 @@ func (p *iamIdentityProvider) Authenticate(ctx context.Context, input *identity.
 		return nil, fmt.Errorf("unmarshalling config into providerConfig: %w", err)
 	}
 
-	if err := p.validateConfig(cfg); err != nil {
-		return nil, err
-	}
-
 	sess, err := kaws.NewSession(cfg.Region, cfg.Profile, cfg.AccessKey, cfg.SecretKey, cfg.SessionToken)
 	if err != nil {
 		return nil, fmt.Errorf("creating aws session: %w", err)
@@ -113,20 +109,39 @@ func (p *iamIdentityProvider) Authenticate(ctx context.Context, input *identity.
 	}, nil
 }
 
-func (p *iamIdentityProvider) validateConfig(cfg *providerConfig) error {
-	if cfg.Profile != "" && cfg.AccessKey != "" {
+// Validate is used to validate the config items and return any errors
+func (p *iamIdentityProvider) Validate(cfg config.ConfigurationSet) error {
+	hasProfile := cfg.ExistsWithValue(kaws.ProfileConfigItem)
+	hasAccessKey := cfg.ExistsWithValue(kaws.AccessKeyConfigItem)
+	hasSecretKey := cfg.ExistsWithValue(kaws.SecretKeyConfigItem)
+
+	if hasProfile && hasAccessKey {
 		return ErrProfileWithAccessKey
 	}
-	if cfg.Profile != "" && cfg.SecretKey != "" {
+	if hasProfile && hasSecretKey {
 		return ErrProfileWithSecretKey
 	}
-	if cfg.AccessKey != "" && cfg.SecretKey == "" {
+	if hasAccessKey && !hasSecretKey {
 		return ErrAccessAndSecretRequired
 	}
-	if cfg.AccessKey == "" && cfg.SecretKey != "" {
+	if !hasAccessKey && hasSecretKey {
 		return ErrAccessAndSecretRequired
 	}
 
+	return nil
+}
+
+// Resolve will resolve the values for the supplied config items. It will interactively
+// resolve the values by asking the user for selections.
+func (p *iamIdentityProvider) Resolve(config config.ConfigurationSet, identity provider.Identity) error {
+	return nil
+}
+
+func (p *iamIdentityProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
+}
+
+func (p *iamIdentityProvider) CheckPreReqs() error {
 	return nil
 }
 

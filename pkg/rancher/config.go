@@ -32,7 +32,7 @@ const (
 // CommonConfig represents the common configuration for Rancher
 type CommonConfig struct {
 	// APIEndpoint is the URL for the rancher API endpoint
-	APIEndpoint string `json:"api-endpoint" validate:"required"`
+	APIEndpoint string `json:"api-endpoint"`
 }
 
 // UseConfig represents the use configuration for Rancher

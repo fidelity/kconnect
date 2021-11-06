@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/config"
@@ -92,17 +91,9 @@ func (p *radIdentityProvider) Name() string {
 func (p *radIdentityProvider) Authenticate(ctx context.Context, input *identity.AuthenticateInput) (*identity.AuthenticateOutput, error) {
 	p.logger.Info("authenticating user")
 
-	if err := p.resolveConfig(input.ConfigSet); err != nil {
-		return nil, fmt.Errorf("resolving config: %w", err)
-	}
-
 	cfg := &radConfig{}
 	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into use radConfig: %w", err)
-	}
-
-	if err := p.validateConfig(cfg); err != nil {
-		return nil, err
 	}
 
 	resolver, err := rancher.NewStaticEndpointsResolver(cfg.APIEndpoint)
@@ -145,11 +136,11 @@ func (p *radIdentityProvider) Authenticate(ctx context.Context, input *identity.
 	}, nil
 }
 
-func (p *radIdentityProvider) validateConfig(cfg *radConfig) error {
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating aad config: %w", err)
-	}
+func (p *radIdentityProvider) ListPreReqs() []*provider.PreReq {
+	return []*provider.PreReq{}
+}
+
+func (p *radIdentityProvider) CheckPreReqs() error {
 	return nil
 }
 

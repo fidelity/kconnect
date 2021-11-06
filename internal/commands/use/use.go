@@ -220,9 +220,6 @@ func addConfig(cs config.ConfigurationSet, registration *registry.DiscoveryPlugi
 	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
 		return fmt.Errorf("adding set-current config: %w", err)
 	}
-	if err := common.AddCommonIdentityConfig(cs); err != nil {
-		return fmt.Errorf("adding common identity config items: %w", err)
-	}
 	if err := common.AddCommonClusterConfig(cs); err != nil {
 		return fmt.Errorf("adding common cluster config items: %w", err)
 	}

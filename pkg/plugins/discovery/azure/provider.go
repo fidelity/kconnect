@@ -22,7 +22,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/go-playground/validator/v10"
 
 	azid "github.com/fidelity/kconnect/pkg/azure/identity"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -30,7 +29,6 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/common"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
-	"github.com/fidelity/kconnect/pkg/provider/identity"
 	"github.com/fidelity/kconnect/pkg/provider/registry"
 	"github.com/fidelity/kconnect/pkg/utils"
 )
@@ -101,16 +99,11 @@ func (p *aksClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID provider.Identity) error {
 	cfg := &aksClusterProviderConfig{}
 	if err := config.Unmarshall(cs, cfg); err != nil {
 		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
 	}
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating config struct: %w", err)
-	}
-
 	p.config = cfg
 
 	// TODO: should we just return a AuthorizerIdentity from the aad provider?
