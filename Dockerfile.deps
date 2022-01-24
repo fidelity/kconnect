@@ -37,4 +37,6 @@ COPY --from=builder bin/linux_amd64/kubelogin .
 COPY --from=builder linux-amd64/helm .
 COPY kconnect .
 
+RUN adduser -D kconnect
+USER kconnect
 ENTRYPOINT ["/app/kconnect"]
