@@ -21,7 +21,7 @@ builds:
         - arm64
       ignore:
         - goos: windows
-          goarch: arm64      
+          goarch: arm64
 
 release:
     prerelease: auto
@@ -69,38 +69,157 @@ brews:
 
 dockers:
   -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"]
     dockerfile: Dockerfile
-    image_templates:
-    - "docker.io/kconnectcli/kconnect:latest"
-    - "docker.io/kconnectcli/kconnect:{{ .Tag }}"
-    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}"
+    use: buildx
     build_flag_templates:
+    - "--platform=linux/amd64"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"]
+    dockerfile: Dockerfile
+    goarch: arm64
+    use: buildx
+    build_flag_templates:
+    - "--platform=linux/arm64"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm32v7"]
+    dockerfile: Dockerfile
+    goarch: arm
+    use: buildx
+    build_flag_templates:
+    - "--platform=linux/arm/v7"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"]
     dockerfile: Dockerfile.alpine
-    image_templates:
-    - "docker.io/kconnectcli/kconnect:latest-alpine"
-    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-alpine"
-    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}-alpine"
+    use: buildx
     build_flag_templates:
+    - "--platform=linux/amd64"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
-    dockerfile: Dockerfile.deps
-    image_templates:
-    - "docker.io/kconnectcli/kconnect:latest-alpine-with-deps"
-    - "docker.io/kconnectcli/kconnect:{{ .Tag }}-alpine-with-deps"
-    - "docker.io/kconnectcli/kconnect:v{{ .Major }}.{{ .Minor }}-alpine-with-deps"
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"]
+    dockerfile: Dockerfile.alpine
+    goarch: arm64
+    use: buildx
     build_flag_templates:
+    - "--platform=linux/arm64"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm32v7"]
+    dockerfile: Dockerfile.alpine
+    goarch: arm
+    use: buildx
+    build_flag_templates:
+    - "--platform=linux/arm/v7"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"]
+    dockerfile: Dockerfile.deps
+    use: buildx
+    build_flag_templates:
+    - "--platform=linux/amd64"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"]
+    dockerfile: Dockerfile.deps
+    goarch: arm64
+    use: buildx
+    build_flag_templates:
+    - "--platform=linux/arm64"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+  -
+    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"]
+    dockerfile: Dockerfile.deps
+    goarch: arm
+    use: buildx
+    build_flag_templates:
+    - "--platform=linux/arm/v7"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+
+docker_manifests:
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:latest"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:latest-alpine"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:latest-alpine-with-deps"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"
+  -
+    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine-with-deps"
+    image_templates:
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
+    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"
 
 nfpms:
   -
