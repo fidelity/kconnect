@@ -4,25 +4,28 @@ ARG AWS_IAM_AUTH_VERSION=0.5.2
 ARG KUBELOGIN_VERSION=0.0.8
 ARG KUBECTL_VERSION=1.20.0
 ARG HELM_VERSION=3.5.2
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 RUN apk --no-cache add ca-certificates curl
 
 # kubectl
-RUN curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+RUN curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/${TARGETOS}/${TARGETARCH}/kubectl" && \
     chmod +x ./kubectl
 
 # aws-iam-authenticator
 RUN curl -L \
-    https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTH_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTH_VERSION}_linux_amd64 -o aws-iam-authenticator && \
+    https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTH_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTH_VERSION}_${TARGETOS}_${TARGETARCH}} -o aws-iam-authenticator && \
     chmod +x ./aws-iam-authenticator
 
 # kubelogin
 RUN curl -L \
-    https://github.com/Azure/kubelogin/releases/download/v${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip -o kubelogin.zip && \
+    https://github.com/Azure/kubelogin/releases/download/v${KUBELOGIN_VERSION}/kubelogin-${TARGETOS}-${TARGETARCH}}.zip -o kubelogin.zip && \
     unzip kubelogin.zip
 
 # Helm
-RUN curl -L https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz -o helm.tar.gz && \
+RUN curl -L https://get.helm.sh/helm-v${HELM_VERSION}-${TARGETOS}-${TARGETARCH}}.tar.gz -o helm.tar.gz && \
     tar xvfz helm.tar.gz
 
 FROM alpine:3.14

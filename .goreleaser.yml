@@ -19,6 +19,9 @@ builds:
         - amd64
         - arm
         - arm64
+      goarm:
+        - "6"
+        - "7"
       ignore:
         - goos: windows
           goarch: arm64
@@ -31,7 +34,7 @@ archives:
       id: default
       builds:
         - default
-      name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+      name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
       replacements:
         darwin: macos
       format: tar.gz
@@ -93,6 +96,7 @@ dockers:
     image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm32v7"]
     dockerfile: Dockerfile
     goarch: arm
+    goarm: "7"
     use: buildx
     build_flag_templates:
     - "--platform=linux/arm/v7"
@@ -125,6 +129,7 @@ dockers:
     image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm32v7"]
     dockerfile: Dockerfile.alpine
     goarch: arm
+    goarm: "7"
     use: buildx
     build_flag_templates:
     - "--platform=linux/arm/v7"
@@ -149,17 +154,6 @@ dockers:
     use: buildx
     build_flag_templates:
     - "--platform=linux/arm64"
-    - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.title={{.ProjectName}}"
-    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-    - "--label=org.opencontainers.image.version={{.Version}}"
-  -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"]
-    dockerfile: Dockerfile.deps
-    goarch: arm
-    use: buildx
-    build_flag_templates:
-    - "--platform=linux/arm/v7"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -207,26 +201,23 @@ docker_manifests:
     image_templates:
     - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
     - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"
   -
     name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps"
     image_templates:
     - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
     - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"
   -
     name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine-with-deps"
     image_templates:
     - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
     - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm32v7"
 
 nfpms:
   -
     package_name: kconnect
     replacements:
       darwin: macos
-    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     vendor: kconnect authors
     maintainer: Kelly, Sean <a567910@fmr.com>
     homepage: https://github.com/fidelity/kconnect
