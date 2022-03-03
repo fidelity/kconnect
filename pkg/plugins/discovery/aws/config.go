@@ -52,7 +52,7 @@ func (p *eksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 	}
 
 	execConfig := &api.ExecConfig{
-		APIVersion: "client.authentication.k8s.io/v1alpha1",
+		APIVersion: "client.authentication.k8s.io/v1beta1",
 		Command:    "aws-iam-authenticator",
 		Args: []string{
 			"token",
