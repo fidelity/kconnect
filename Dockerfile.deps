@@ -33,11 +33,14 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /app/
 ENV PATH="/app:${PATH}"
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
 
 COPY --from=builder kubectl .
 COPY --from=builder aws-iam-authenticator .
-COPY --from=builder bin/linux_amd64/kubelogin .
-COPY --from=builder linux-amd64/helm .
+COPY --from=builder bin/${TARGETOS}_${TARGETARCH}/kubelogin .
+COPY --from=builder ${TARGETOS}-${TARGETARCH}/helm .
 COPY kconnect .
 
 RUN adduser -D kconnect
