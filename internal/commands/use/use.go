@@ -236,7 +236,7 @@ func addConfig(cs config.ConfigurationSet, registration *registry.DiscoveryPlugi
 		return fmt.Errorf("adding common use config items: %w", err)
 	}
 
-	cs.SetHistoryIgnore("set-current") //nolint
+	cs.SetHistoryIgnore("set-current") //nolint: errcheck
 
 	return nil
 }
