@@ -129,10 +129,10 @@ func addConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("adding password config item: %w", err)
 	}
 
-	cs.SetHistoryIgnore("file")   //nolint
-	cs.SetHistoryIgnore("output") //nolint
-	cs.SetHistoryIgnore("password") //nolint
-	cs.SetSensitive("password") //nolint
+	cs.SetHistoryIgnore("file")     //nolint: errcheck
+	cs.SetHistoryIgnore("output")   //nolint: errcheck
+	cs.SetHistoryIgnore("password") //nolint: errcheck
+	cs.SetSensitive("password")     //nolint: errcheck
 
 	return nil
 }

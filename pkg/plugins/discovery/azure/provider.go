@@ -116,7 +116,7 @@ func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.I
 	// TODO: should we just return a AuthorizerIdentity from the aad provider?
 	switch userID.(type) { //nolint:gocritic,gosimple
 	case *azid.ActiveDirectoryIdentity:
-		id := userID.(*azid.ActiveDirectoryIdentity)
+		id := userID.(*azid.ActiveDirectoryIdentity) //nolint: gosimple
 		p.logger.Debugw("creating bearer authorizer")
 		bearerAuth, err := getBearerAuthFromIdentity(id, "https://management.azure.com/")
 		if err != nil {
@@ -124,7 +124,7 @@ func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.I
 		}
 		p.authorizer = bearerAuth
 	case *azid.AuthorizerIdentity:
-		id := userID.(*azid.AuthorizerIdentity)
+		id := userID.(*azid.AuthorizerIdentity) //nolint: gosimple
 		p.authorizer = id.Authorizer()
 	default:
 		return ErrUnsupportedIdentity

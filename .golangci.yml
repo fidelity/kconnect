@@ -16,6 +16,13 @@ issues:
       text: "should not use dot imports|don't use an underscore in package name"
 
 linters-settings:
+  gomoddirectives:
+    # Allow local `replace` directives.
+    replace-local: true
+    # List of allowed `replace` directives.
+    # Default: []
+    replace-allow-list:
+    - github.com/spf13/cobra
   funlen:
     lines: 110
     statements: 60
@@ -39,3 +46,8 @@ linters:
     - ifshort
     - wrapcheck # enable in the future
     - ifshort
+    - forcetypeassert # enable in the future
+    - cyclop # enable in the future
+    - revive # enable in the future
+    - tagliatelle
+    - gomnd

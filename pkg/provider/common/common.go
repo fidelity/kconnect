@@ -59,7 +59,7 @@ func AddCommonClusterConfig(cs config.ConfigurationSet) error {
 		return fmt.Errorf("setting alias as sensitive: %w", err)
 	}
 
-	cs.SetHistoryIgnore("alias") //nolint
+	cs.SetHistoryIgnore("alias") //nolint: errcheck
 
 	return nil
 }

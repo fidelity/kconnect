@@ -39,7 +39,7 @@ func AddHistoryLocationItems(cs config.ConfigurationSet) error {
 	if _, err := cs.String("history-location", "", "Location of where the history is stored. (default \"$HOME/.kconnect/history.yaml\")"); err != nil {
 		return fmt.Errorf("adding history-location config: %w", err)
 	}
-	cs.SetHistoryIgnore("history-location") //nolint
+	cs.SetHistoryIgnore("history-location") //nolint: errcheck
 	return nil
 }
 
@@ -66,9 +66,9 @@ func AddHistoryConfigItems(cs config.ConfigurationSet) error {
 	if err := cs.SetHidden("entry-id"); err != nil {
 		return fmt.Errorf("setting entry-id hidden: %w", err)
 	}
-	cs.SetHistoryIgnore("max-history") //nolint
-	cs.SetHistoryIgnore("no-history")  //nolint
-	cs.SetHistoryIgnore("entry-id")    //nolint
+	cs.SetHistoryIgnore("max-history") //nolint: errcheck
+	cs.SetHistoryIgnore("no-history")  //nolint: errcheck
+	cs.SetHistoryIgnore("entry-id")    //nolint: errcheck
 	return nil
 }
 
@@ -110,13 +110,13 @@ func AddCommonConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.Bool(NoVersionCheckConfigItem, false, "If set to true kconnect will not check for a newer version"); err != nil {
 		return fmt.Errorf("adding non-version-check config: %w", err)
 	}
-	cs.SetShort("verbosity", "v")                                       //nolint
-	cs.SetHistoryIgnore(ConfigPathConfigItem)                           //nolint
-	cs.SetHistoryIgnore("verbosity")                                    //nolint
-	cs.SetHistoryIgnore(NonInteractiveConfigItem)                       //nolint
-	cs.SetHistoryIgnore(NoInputConfigItem)                              //nolint
-	cs.SetHistoryIgnore(NoVersionCheckConfigItem)                       //nolint
-	cs.SetDeprecated(NonInteractiveConfigItem, "please use --no-input") //nolint
+	cs.SetShort("verbosity", "v")                                       //nolint: errcheck
+	cs.SetHistoryIgnore(ConfigPathConfigItem)                           //nolint: errcheck
+	cs.SetHistoryIgnore("verbosity")                                    //nolint: errcheck
+	cs.SetHistoryIgnore(NonInteractiveConfigItem)                       //nolint: errcheck
+	cs.SetHistoryIgnore(NoInputConfigItem)                              //nolint: errcheck
+	cs.SetHistoryIgnore(NoVersionCheckConfigItem)                       //nolint: errcheck
+	cs.SetDeprecated(NonInteractiveConfigItem, "please use --no-input") //nolint: errcheck
 
 	return nil
 }
@@ -129,7 +129,7 @@ func AddCommonUseConfigItems(cs config.ConfigurationSet) error {
 	if _, err := cs.String("namespace", "", "Sets namespace for context in kubeconfig"); err != nil {
 		return fmt.Errorf("adding config item: %w", err)
 	}
-	cs.SetShort("namespace", "n") //nolint
+	cs.SetShort("namespace", "n") //nolint: errcheck
 	return nil
 }
 
@@ -145,8 +145,8 @@ func AddHistoryIdentifierConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("id", "", "Id for a history entry"); err != nil {
 		return fmt.Errorf("adding id config: %w", err)
 	}
-	cs.SetHistoryIgnore("alias") //nolint
-	cs.SetHistoryIgnore("id")    //nolint
+	cs.SetHistoryIgnore("alias") //nolint: errcheck
+	cs.SetHistoryIgnore("id")    //nolint: errcheck
 	return nil
 }
 
@@ -166,7 +166,7 @@ func AddHistoryQueryConfig(cs config.ConfigurationSet) error {
 	if err := cs.SetShort("output", "o"); err != nil {
 		return fmt.Errorf("adding output short flag: %w", err)
 	}
-	cs.SetHistoryIgnore("output") //nolint
+	cs.SetHistoryIgnore("output") //nolint: errcheck
 	return nil
 }
 

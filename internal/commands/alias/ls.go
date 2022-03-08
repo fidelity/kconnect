@@ -122,7 +122,7 @@ func addConfigLs(cs config.ConfigurationSet) error {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
 
-	cs.SetHistoryIgnore("output") //nolint
+	cs.SetHistoryIgnore("output") //nolint: errcheck
 
 	return nil
 }
