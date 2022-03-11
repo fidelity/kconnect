@@ -36,17 +36,6 @@ spec:
   - selector:
       matchLabels:
         os: linux
-        arch: arm
-    {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_linux_arm.tar.gz" .TagName }}
-    files:
-    - from: "kconnect"
-      to: "kubectl-connect"
-    - from: "LICENSE"
-      to: "."
-    bin: kubectl-connect
-  - selector:
-      matchLabels:
-        os: linux
         arch: arm64
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_linux_arm64.tar.gz" .TagName }}
     files:
@@ -59,6 +48,17 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
+    {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_macos_amd64.tar.gz" .TagName }}
+    files:
+    - from: "kconnect"
+      to: "kubectl-connect"
+    - from: "LICENSE"
+      to: "."
+    bin: kubectl-connect
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: arm64
     {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_macos_amd64.tar.gz" .TagName }}
     files:
     - from: "kconnect"
