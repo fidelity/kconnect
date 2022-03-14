@@ -1,7 +1,7 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: kconnect 
+  name: connect
 spec:
   version: v{{ .TagName }}
   homepage: https://github.com/fidelity/kconnect

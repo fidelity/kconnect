@@ -1,5 +1,6 @@
 # locally built binaries
 kconnect
+out/
 
 # Test binary
 *.test
