@@ -2,7 +2,7 @@ name: titlecheck
 
 # Run on PR
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - edited
@@ -13,9 +13,6 @@ jobs:
   titlecheck:
     name: PR title follows coventional commit
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
     - name: Check conventinal title
       uses: aslafy-z/conventional-pr-title-action@v2.2.5
