@@ -13,9 +13,12 @@ jobs:
   titlecheck:
     name: PR title follows coventional commit
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
     - name: Check conventinal title
-      uses: aslafy-z/conventional-pr-title-action@master
+      uses: aslafy-z/conventional-pr-title-action@v2.2.5
       with:
         success-state: Title follows the specification.
         failure-state: Title does not follow the specification.
