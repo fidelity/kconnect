@@ -41,7 +41,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     kconnect_url=$(echo "https://github.com/fidelity/kconnect/releases/download/TAG/kconnect_linux_ARCH.tar.gz" | sed "s/TAG/$latest_kconnect_release_tag/" | sed "s/ARCH/$arch/" )
     kubectl_url=$(echo "https://dl.k8s.io/release/TAG/bin/linux/ARCH/kubectl" | sed "s/TAG/$latest_kubectl_release_tag/" | sed "s/ARCH/$arch/" )
     helm_url=$(echo "https://get.helm.sh/helm-TAG-linux-ARCH.tar.gz" | sed "s/TAG/$latest_helm_release_tag/" | sed "s/ARCH/$arch/" )
-    aws_iam_authenticator_url=$(echo "https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/ARCH/aws-iam-authenticator" | sed "s/ARCH/$arch/" )
+    aws_iam_authenticator_url=$(echo "https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/ARCH/aws-iam-authenticator" | sed "s/ARCH/$arch/" )
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-linux-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
 
     echo "kconnect url: $kconnect_url" 
@@ -82,7 +82,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     kconnect_url=$(echo "https://github.com/fidelity/kconnect/releases/download/TAG/kconnect_macos_amd64.tar.gz" | sed "s/TAG/$latest_kconnect_release_tag/" )
     kubectl_url=$(echo "https://dl.k8s.io/release/TAG/bin/darwin/amd64/kubectl" | sed "s/TAG/$latest_kubectl_release_tag/" )
     helm_url=$(echo "https://get.helm.sh/helm-TAG-darwin-amd64.tar.gz" | sed "s/TAG/$latest_helm_release_tag/" )
-    aws_iam_authenticator_url="https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/darwin/amd64/aws-iam-authenticator"
+    aws_iam_authenticator_url="https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/darwin/amd64/aws-iam-authenticator"
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-darwin-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     
     echo "kconnect url: $kconnect_url" 
@@ -128,7 +128,7 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     kconnect_url=$(echo "https://github.com/fidelity/kconnect/releases/download/TAG/kconnect_windows_amd64.zip" | sed "s/TAG/$latest_kconnect_release_tag/" )
     kubectl_url=$(echo "https://dl.k8s.io/release/TAG/bin/windows/amd64/kubectl.exe" | sed "s/TAG/$latest_kubectl_release_tag/" )
     helm_url=$(echo "https://get.helm.sh/helm-TAG-windows-amd64.zip" | sed "s/TAG/$latest_helm_release_tag/" )
-    aws_iam_authenticator_url="https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/windows/amd64/aws-iam-authenticator.exe"
+    aws_iam_authenticator_url="https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/windows/amd64/aws-iam-authenticator.exe"
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-win-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     
     echo "kconnect url: $kconnect_url" 
