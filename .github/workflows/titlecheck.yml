@@ -11,7 +11,7 @@ on:
 
 jobs:
   titlecheck:
-    name: Validate PR title
+    name: PR title follows coventional commit
     runs-on: ubuntu-latest
     steps:
     - name: Check conventinal title
