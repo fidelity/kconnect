@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check conventinal title
-      uses: amannn/action-semantic-pull-request@v4.2.0
+      uses: aslafy-z/conventional-pr-title-action@master
+      with:
+        success-state: Title follows the specification.
+        failure-state: Title does not follow the specification.
+        context-name: conventional-pr-title
+        preset: conventional-changelog-angular@latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
