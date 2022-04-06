@@ -67,6 +67,13 @@ func (p *eksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 		},
 	}
 
+	if p.identity.AWSSharedCredentialsFile != "" {
+		execConfig.Env = append(execConfig.Env, api.ExecEnvVar{
+			Name:  "AWS_SHARED_CREDENTIALS_FILE",
+			Value: p.identity.AWSSharedCredentialsFile,
+		})
+	}
+
 	cfg.AuthInfos = map[string]*api.AuthInfo{
 		userName: {
 			Exec: execConfig,

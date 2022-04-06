@@ -25,9 +25,14 @@ import (
 )
 
 // NewIdentityStore will create a new AWS identity store
-func NewIdentityStore(profile, idProviderName string) (identity.Store, error) {
+func NewIdentityStore(profile, idProviderName, awsCredsFile string) (identity.Store, error) {
+
+	configProvider := awsconfig.NewSharedCredentials(profile)
+	if awsCredsFile != "" {
+		configProvider.Filename = awsCredsFile
+	}
 	return &awsIdentityStore{
-		configProvider: awsconfig.NewSharedCredentials(profile),
+		configProvider: configProvider,
 		idProviderName: idProviderName,
 	}, nil
 }
@@ -56,7 +61,7 @@ func (s *awsIdentityStore) Load() (identity.Identity, error) {
 	if err != nil {
 		return nil, fmt.Errorf("loading credentials: %w", err)
 	}
-	awsID := MapCredsToIdentity(creds, s.configProvider.Profile)
+	awsID := MapCredsToIdentity(creds, s.configProvider.Profile, s.configProvider.Filename)
 
 	return awsID, nil
 }

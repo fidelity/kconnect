@@ -32,13 +32,13 @@ import (
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-func NewSession(region, profile, accessKey, secretKey, sessionToken string) (*session.Session, error) {
+func NewSession(region, profile, accessKey, secretKey, sessionToken, awsSharedCredentialsFile string) (*session.Session, error) {
 	cfg := aws.Config{
 		Region: aws.String(region),
 	}
 
 	if profile != "" {
-		cfg.Credentials = credentials.NewSharedCredentials("", profile)
+		cfg.Credentials = credentials.NewSharedCredentials(awsSharedCredentialsFile, profile)
 	} else if accessKey != "" && secretKey != "" {
 		cfg.Credentials = credentials.NewStaticCredentials(accessKey, secretKey, sessionToken)
 	}

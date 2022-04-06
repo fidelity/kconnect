@@ -18,16 +18,17 @@ package aws
 
 import "github.com/versent/saml2aws/pkg/awsconfig"
 
-func MapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName string) *Identity {
+func MapCredsToIdentity(creds *awsconfig.AWSCredentials, profileName, awsSharedCredentialsFile string) *Identity {
 	return &Identity{
-		AWSAccessKey:     creds.AWSAccessKey,
-		AWSSecretKey:     creds.AWSSecretKey,
-		AWSSecurityToken: creds.AWSSecurityToken,
-		AWSSessionToken:  creds.AWSSessionToken,
-		Expires:          creds.Expires,
-		PrincipalARN:     creds.PrincipalARN,
-		ProfileName:      profileName,
-		Region:           creds.Region,
+		AWSAccessKey:             creds.AWSAccessKey,
+		AWSSecretKey:             creds.AWSSecretKey,
+		AWSSecurityToken:         creds.AWSSecurityToken,
+		AWSSessionToken:          creds.AWSSessionToken,
+		AWSSharedCredentialsFile: awsSharedCredentialsFile,
+		Expires:                  creds.Expires,
+		PrincipalARN:             creds.PrincipalARN,
+		ProfileName:              profileName,
+		Region:                   creds.Region,
 	}
 }
 

@@ -222,7 +222,9 @@ func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) 
 		}
 		profileCfg := cfg.Get("aws-profile")
 		profile := profileCfg.Value.(string)
-		store, err = kaws.NewIdentityStore(profile, ProviderName)
+		awsCredsFileCfg := cfg.Get("aws-shared-credentials-file")
+		awsCredsFile := awsCredsFileCfg.Value.(string)
+		store, err = kaws.NewIdentityStore(profile, ProviderName, awsCredsFile)
 	default:
 		return nil, ErrUnsuportedProvider
 	}

@@ -64,12 +64,13 @@ type iamIdentityProvider struct {
 }
 
 type providerConfig struct {
-	Profile      string `json:"profile"`
-	AccessKey    string `json:"access-key"`
-	SecretKey    string `json:"secret-key"`
-	SessionToken string `json:"session-token"`
-	Region       string `json:"region"`
-	Partition    string `json:"partition"`
+	Profile                  string `json:"profile"`
+	AccessKey                string `json:"access-key"`
+	SecretKey                string `json:"secret-key"`
+	SessionToken             string `json:"session-token"`
+	Region                   string `json:"region"`
+	Partition                string `json:"partition"`
+	AWSSharedCredentialsFile string `json:"aws-shared-credentials-file"`
 }
 
 func (p *iamIdentityProvider) Name() string {
@@ -89,7 +90,7 @@ func (p *iamIdentityProvider) Authenticate(ctx context.Context, input *identity.
 		return nil, err
 	}
 
-	sess, err := kaws.NewSession(cfg.Region, cfg.Profile, cfg.AccessKey, cfg.SecretKey, cfg.SessionToken)
+	sess, err := kaws.NewSession(cfg.Region, cfg.Profile, cfg.AccessKey, cfg.SecretKey, cfg.SessionToken, cfg.AWSSharedCredentialsFile)
 	if err != nil {
 		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
