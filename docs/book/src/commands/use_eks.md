@@ -52,23 +52,24 @@ kconnect use eks [flags]
 ### Options
 
 ```bash
-  -a, --alias string              Friendly name to give to give the connection
-  -c, --cluster-id string         Id of the cluster to use.
-  -h, --help                      help for eks
-      --history-location string   Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
-      --idp-protocol string       The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
-  -k, --kubeconfig string         Location of the kubeconfig to use. (default "$HOME/.kube/config")
-      --max-history int           Sets the maximum number of history items to keep (default 100)
-  -n, --namespace string          Sets namespace for context in kubeconfig
-      --no-history                If set to true then no history entry will be written
-      --partition string          AWS partition to use (default "aws")
-      --password string           The password to use for authentication
-      --region string             AWS region to connect to
-      --region-filter string      A regex filter to apply to the AWS regions list, e.g. '^us-|^eu-' will only show US and eu regions
-      --role-arn string           ARN of the AWS role to be assumed
-      --role-filter string        A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name
-      --set-current               Sets the current context in the kubeconfig to the selected cluster (default true)
-      --username string           The username used for authentication
+  -a, --alias string                         Friendly name to give to give the connection
+      --aws-shared-credentials-file string   Location to store AWS credentials file
+  -c, --cluster-id string                    Id of the cluster to use.
+  -h, --help                                 help for eks
+      --history-location string              Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
+      --idp-protocol string                  The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
+  -k, --kubeconfig string                    Location of the kubeconfig to use. (default "$HOME/.kube/config")
+      --max-history int                      Sets the maximum number of history items to keep (default 100)
+  -n, --namespace string                     Sets namespace for context in kubeconfig
+      --no-history                           If set to true then no history entry will be written
+      --partition string                     AWS partition to use (default "aws")
+      --password string                      The password to use for authentication
+      --region string                        AWS region to connect to
+      --region-filter string                 A regex filter to apply to the AWS regions list, e.g. '^us-|^eu-' will only show US and eu regions
+      --role-arn string                      ARN of the AWS role to be assumed
+      --role-filter string                   A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name
+      --set-current                          Sets the current context in the kubeconfig to the selected cluster (default true)
+      --username string                      The username used for authentication
 ```
 
 ### Options inherited from parent commands

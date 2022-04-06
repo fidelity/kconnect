@@ -140,7 +140,13 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		return nil, fmt.Errorf("setting profile name: %w", err)
 	}
 
-	awsIdentity := kaws.MapCredsToIdentity(awsCreds, profileName)
+	awsSharedCredentialsFile := ""
+	if cfg.ExistsWithValue("aws-shared-credentials-file") {
+		item := cfg.Get("aws-shared-credentials-file")
+		awsSharedCredentialsFile = item.Value.(string)
+	}
+
+	awsIdentity := kaws.MapCredsToIdentity(awsCreds, profileName, awsSharedCredentialsFile)
 	return awsIdentity, nil
 }
 

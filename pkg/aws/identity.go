@@ -22,16 +22,16 @@ import (
 
 // Identity represents an AWS identity
 type Identity struct {
-	ProfileName      string
-	AWSAccessKey     string
-	AWSSecretKey     string
-	AWSSessionToken  string
-	AWSSecurityToken string
-	PrincipalARN     string
-	Expires          time.Time
-	Region           string
-
-	IDProviderName string
+	ProfileName              string
+	AWSAccessKey             string
+	AWSSecretKey             string
+	AWSSessionToken          string
+	AWSSecurityToken         string
+	PrincipalARN             string
+	Expires                  time.Time
+	Region                   string
+	AWSSharedCredentialsFile string
+	IDProviderName           string
 }
 
 func (i *Identity) Type() string {
