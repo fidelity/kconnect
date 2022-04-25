@@ -83,6 +83,7 @@ func (a *App) ConnectTo(ctx context.Context, params *ConnectToInput) error {
 	useParams.SetCurrent = params.SetCurrent
 	useParams.IgnoreAlias = true
 	useParams.Alias = entry.Spec.Alias
+	useParams.KubernetesConfig = params.KubernetesConfig
 
 	return a.Use(ctx, useParams)
 }
