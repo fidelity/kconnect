@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/blang/semver"
@@ -326,7 +327,27 @@ func reportNewerVersion() error {
 	if latestSemver.GT(currentSemver) {
 		fmt.Fprintln(os.Stderr, "")
 		fmt.Fprintf(os.Stderr, "\033[33mNew kconnect version available: v%s -> v%s\033[0m\n", currentSemver.String(), latestSemver.String())
+		if checkOS() == "mac"{			
+			fmt.Fprintf(os.Stderr,"\033[33mThe latest release https://github.com/fidelity/kconnect/releases contains a binary for Windows.\033[0m\n")
+			fmt.Fprintf(os.Stderr,"\033[33mWe have an open issue to support chocolatey in the future.\033[0m\n")
+		}else{
+			fmt.Fprintf(os.Stderr, "\033[33mTo install as a kubectl plugin:\033[0m\n")
+			fmt.Fprintf(os.Stderr, "\033[1;32m\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git\033[0m\n")
+			fmt.Fprintf(os.Stderr, "\033[1;32m\tkubectl krew install fidelity/connect\033[0m\n")			
+			fmt.Fprintf(os.Stderr, "\033[33mTo install on OSX and Linux you can use homebrew:\033[0m\n")
+			fmt.Fprintf(os.Stderr, "\033[1;32m\tbrew install fidelity/tap/kconnect\033[0m\n")
+			fmt.Fprintf(os.Stderr, "\033[33mAlternatively, the latest release (https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.\033[0m\n")
+			fmt.Fprintf(os.Stderr, "\033[33mWe are working on publishing as a snap.\033[0m\n")
+		}
+		fmt.Fprintf(os.Stderr, "\033[33mYou can also use kconnect via Docker by using the images we publish to Docker Hub:\033[0m\n")
+		fmt.Fprintf(os.Stderr, "\033[1;32m\tdocker pull docker.io/kconnectcli/kconnect:latest\033[0m\n")
+		fmt.Fprintf(os.Stderr, "\033[1;32m\tdocker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml\033[0m\n")
+		fmt.Fprintf(os.Stderr, "\033[33mYou can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:\033[0m\n")
+		fmt.Fprintf(os.Stderr, "\033[1;32m\tcurl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh\033[0m\n")
+		fmt.Fprintf(os.Stderr, "\033[1;32m\tchmod 700 install-kconnect.sh\033[0m\n")
+		fmt.Fprintf(os.Stderr, "\033[33mThis works on Linux, Macos and Windows (using GitBash terminal)\033[0m\n")
 		fmt.Fprintf(os.Stderr, "\033[33mVisit %s for more details\033[0m\n", *cfg.Spec.VersionCheck.LatestReleaseURL)
+		
 	}
 
 	return nil
@@ -336,4 +357,18 @@ func checkPrereqs() {
 	if err := utils.CheckKubectlPrereq(); err != nil {
 		fmt.Fprintf(os.Stderr, "\033[33m%s\033[0m\n", err.Error())
 	}
+}
+
+func checkOS() string {
+	os := runtime.GOOS
+    switch os {
+    case "windows":
+        return "windows"
+    case "darwin":
+        return "mac"
+    case "linux":
+        return "linux"
+    default:
+        return "unknown"
+    }
 }
