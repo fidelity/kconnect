@@ -325,29 +325,33 @@ func reportNewerVersion() error {
 	}
 
 	if latestSemver.GT(currentSemver) {
+		yellowColor := "\033[33m"
+		boldGreenColor := "\033[1;32m"
+		endString := "\033[0m\n"
+
 		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintf(os.Stderr, "\033[33mNew kconnect version available: v%s -> v%s\033[0m\n", currentSemver.String(), latestSemver.String())
-		if checkOS() == "mac"{			
-			fmt.Fprintf(os.Stderr,"\033[33mThe latest release https://github.com/fidelity/kconnect/releases contains a binary for Windows.\033[0m\n")
-			fmt.Fprintf(os.Stderr,"\033[33mWe have an open issue to support chocolatey in the future.\033[0m\n")
-		}else{
-			fmt.Fprintf(os.Stderr, "\033[33mTo install as a kubectl plugin:\033[0m\n")
-			fmt.Fprintf(os.Stderr, "\033[1;32m\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git\033[0m\n")
-			fmt.Fprintf(os.Stderr, "\033[1;32m\tkubectl krew install fidelity/connect\033[0m\n")			
-			fmt.Fprintf(os.Stderr, "\033[33mTo install on OSX and Linux you can use homebrew:\033[0m\n")
-			fmt.Fprintf(os.Stderr, "\033[1;32m\tbrew install fidelity/tap/kconnect\033[0m\n")
-			fmt.Fprintf(os.Stderr, "\033[33mAlternatively, the latest release (https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.\033[0m\n")
-			fmt.Fprintf(os.Stderr, "\033[33mWe are working on publishing as a snap.\033[0m\n")
+		fmt.Fprintf(os.Stderr, "%sNew kconnect version available: v%s -> v%s%s", yellowColor, currentSemver.String(), latestSemver.String(), endString)
+		if checkOS() == "windows" {
+			fmt.Fprintf(os.Stderr, "%sThe latest release https://github.com/fidelity/kconnect/releases contains a binary for Windows.%s", yellowColor, endString)
+			fmt.Fprintf(os.Stderr, "%sWe have an open issue to support chocolatey in the future.%s", yellowColor, endString)
+		} else {
+			fmt.Fprintf(os.Stderr, "%sTo install as a kubectl plugin:%s", yellowColor, endString)
+			fmt.Fprintf(os.Stderr, "%s\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git%s", boldGreenColor, endString)
+			fmt.Fprintf(os.Stderr, "%s\tkubectl krew install fidelity/connect%s", boldGreenColor, endString)
+			fmt.Fprintf(os.Stderr, "%sTo install on OSX and Linux you can use homebrew:%s", yellowColor, endString)
+			fmt.Fprintf(os.Stderr, "%s\tbrew install fidelity/tap/kconnect%s", boldGreenColor, endString)
+			fmt.Fprintf(os.Stderr, "%sAlternatively, the latest release (https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.%s", yellowColor, endString)
+			fmt.Fprintf(os.Stderr, "%sWe are working on publishing as a snap.%s", yellowColor, endString)
 		}
-		fmt.Fprintf(os.Stderr, "\033[33mYou can also use kconnect via Docker by using the images we publish to Docker Hub:\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[1;32m\tdocker pull docker.io/kconnectcli/kconnect:latest\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[1;32m\tdocker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[33mYou can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[1;32m\tcurl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[1;32m\tchmod 700 install-kconnect.sh\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[33mThis works on Linux, Macos and Windows (using GitBash terminal)\033[0m\n")
-		fmt.Fprintf(os.Stderr, "\033[33mVisit %s for more details\033[0m\n", *cfg.Spec.VersionCheck.LatestReleaseURL)
-		
+		fmt.Fprintf(os.Stderr, "%sYou can also use kconnect via Docker by using the images we publish to Docker Hub:%s", yellowColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tdocker pull docker.io/kconnectcli/kconnect:latest%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tdocker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%sYou can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:%s", yellowColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tcurl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tchmod 700 install-kconnect.sh%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%sThis works on Linux, Macos and Windows (using GitBash terminal)%s", yellowColor, endString)
+		fmt.Fprintf(os.Stderr, "%sVisit %s for more details%s", yellowColor, *cfg.Spec.VersionCheck.LatestReleaseURL, endString)
+
 	}
 
 	return nil
@@ -361,14 +365,14 @@ func checkPrereqs() {
 
 func checkOS() string {
 	os := runtime.GOOS
-    switch os {
-    case "windows":
-        return "windows"
-    case "darwin":
-        return "mac"
-    case "linux":
-        return "linux"
-    default:
-        return "unknown"
-    }
+	switch os {
+	case "windows":
+		return "windows"
+	case "darwin":
+		return "mac"
+	case "linux":
+		return "linux"
+	default:
+		return "unknown"
+	}
 }
