@@ -335,14 +335,14 @@ func reportNewerVersion() error {
 			fmt.Fprintf(os.Stderr, "%sThe latest release https://github.com/fidelity/kconnect/releases contains a binary for Windows.%s", yellowColor, endString)
 			fmt.Fprintf(os.Stderr, "%sWe have an open issue to support chocolatey in the future.%s", yellowColor, endString)
 		} else {
-			fmt.Fprintf(os.Stderr, "%sTo install as a kubectl plugin:%s", yellowColor, endString)
-			fmt.Fprintf(os.Stderr, "%s\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git%s", boldGreenColor, endString)
-			fmt.Fprintf(os.Stderr, "%s\tkubectl krew install fidelity/connect%s", boldGreenColor, endString)
 			fmt.Fprintf(os.Stderr, "%sTo install on OSX and Linux you can use homebrew:%s", yellowColor, endString)
 			fmt.Fprintf(os.Stderr, "%s\tbrew install fidelity/tap/kconnect%s", boldGreenColor, endString)
 			fmt.Fprintf(os.Stderr, "%sAlternatively, the latest release (https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.%s", yellowColor, endString)
 			fmt.Fprintf(os.Stderr, "%sWe are working on publishing as a snap.%s", yellowColor, endString)
 		}
+		fmt.Fprintf(os.Stderr, "%sTo install as a kubectl plugin:%s", yellowColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tkubectl krew install fidelity/connect%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%sYou can also use kconnect via Docker by using the images we publish to Docker Hub:%s", yellowColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tdocker pull docker.io/kconnectcli/kconnect:latest%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tdocker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml%s", boldGreenColor, endString)
