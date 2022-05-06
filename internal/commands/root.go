@@ -113,6 +113,10 @@ for that cluster.
   #
   {{.CommandPath}} alias ls
 `
+	windows        = "windows"
+	yellowColor    = "\033[33m"
+	boldGreenColor = "\033[1;32m"
+	endString      = "\033[0m\n"
 )
 
 // RootCmd creates the root kconnect command
@@ -325,9 +329,6 @@ func reportNewerVersion() error {
 	}
 
 	if latestSemver.GT(currentSemver) {
-		yellowColor := "\033[33m"
-		boldGreenColor := "\033[1;32m"
-		endString := "\033[0m\n"
 
 		fmt.Fprintln(os.Stderr, "")
 		fmt.Fprintf(os.Stderr, "%sNew kconnect version available: v%s -> v%s%s", yellowColor, currentSemver.String(), latestSemver.String(), endString)
@@ -366,8 +367,8 @@ func checkPrereqs() {
 func checkOS() string {
 	os := runtime.GOOS
 	switch os {
-	case "windows":
-		return "windows"
+	case windows:
+		return windows
 	case "darwin":
 		return "mac"
 	case "linux":
