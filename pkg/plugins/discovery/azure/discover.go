@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"net"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
 
@@ -80,10 +81,12 @@ func (p *aksClusterProvider) listClusters(ctx context.Context) ([]*discovery.Clu
 
 			controlPlaneEndpoint := ""
 			if val.Fqdn != nil {
-				controlPlaneEndpoint = fmt.Sprintf("https://%s:443", *val.Fqdn)
+				url := net.JoinHostPort(*val.Fqdn, "443")
+				controlPlaneEndpoint = fmt.Sprintf("https://%s", url)
 			}
 			if val.PrivateFQDN != nil {
-				controlPlaneEndpoint = fmt.Sprintf("https://%s:443", *val.PrivateFQDN)
+				url := net.JoinHostPort(*val.PrivateFQDN, "443")
+				controlPlaneEndpoint = fmt.Sprintf("https://%s", url)
 			}
 			if controlPlaneEndpoint != "" {
 				cluster.ControlPlaneEndpoint = &controlPlaneEndpoint

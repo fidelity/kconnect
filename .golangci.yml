@@ -51,3 +51,4 @@ linters:
     - revive # enable in the future
     - tagliatelle
     - gomnd
+    - execinquery
