@@ -5,8 +5,8 @@ go 1.17
 require (
 	github.com/golang/mock v1.6.0
 	github.com/golangci/golangci-lint v1.46.2
-	k8s.io/code-generator v0.24.1
-	sigs.k8s.io/controller-tools v0.9.0
+	k8s.io/code-generator v0.24.2
+	sigs.k8s.io/controller-tools v0.9.2
 )
 
 require (
