@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-09-01/containerservice"
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2022-03-01/containerservice"
 
 	azclient "github.com/fidelity/kconnect/pkg/azure/client"
 	"github.com/fidelity/kconnect/pkg/azure/id"
@@ -100,6 +100,8 @@ func (p *aksClusterProvider) addKubelogin(cfg *api.Config) {
 			p.config.TenantID,
 			"--login",
 			string(p.config.LoginType),
+			"--server-fqdn-type",
+			"public",
 		},
 	}
 
@@ -150,9 +152,9 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discove
 
 	var credentialList containerservice.CredentialResults
 	if p.config.Admin {
-		credentialList, err = client.ListClusterAdminCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
+		credentialList, err = client.ListClusterAdminCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName, p.config.ServerFqdnType)
 	} else {
-		credentialList, err = client.ListClusterUserCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
+		credentialList, err = client.ListClusterUserCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName, p.config.ServerFqdnType, "azure")
 	}
 	if err != nil {
 		return nil, fmt.Errorf("getting user credentials: %w", err)
