@@ -27,4 +27,5 @@ const (
 	ClusterNameConfigItem      = "cluster-name"
 	LoginTypeConfigItem        = "login-type"
 	AzureEnvironmentConfigItem = "azure-env"
+	ServerFqdnTypeConfigItem   = "server-fqdn-type"
 )
