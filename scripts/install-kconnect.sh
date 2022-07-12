@@ -10,7 +10,7 @@ latest_kconnect_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https
 latest_helm_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/helm/helm/releases/latest | sed 's#.*/##')
 latest_kubectl_release_tag=$(curl -k -L --silent https://dl.k8s.io/release/stable.txt)
 latest_kubelogin_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/kubelogin/releases/latest | sed 's#.*/##')
-aws_iam_authenticator_release_tag="0.5.5"
+aws_iam_authenticator_release_tag="0.5.9"
 
 echo "kconnect version: $latest_kconnect_release_tag"
 echo "kubectl version: $latest_kubectl_release_tag"
