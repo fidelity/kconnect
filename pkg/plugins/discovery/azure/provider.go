@@ -86,7 +86,7 @@ type aksClusterProviderConfig struct {
 	ClientID         string      `json:"client-id"`
 	LoginType        LoginType   `json:"login-type"`
 	AzureEnvironment Environment `json:"azure-env"`
-	ServerFqdnType   string   	 `json:"server-fqdn-type"`
+	ServerFqdnType   string      `json:"server-fqdn-type"`
 }
 
 type aksClusterProvider struct {
@@ -154,7 +154,7 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs.String(LoginTypeConfigItem, string(LoginTypeDeviceCode), "The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi,token") //nolint: errcheck
 	cs.String(AzureEnvironmentConfigItem, string(EnvironmentPublicCloud), "The Azure environment the clusters are in. Possible values: public,china,usgov,stack")                            //nolint: errcheck
 	cs.String(ServerFqdnTypeConfigItem, "public", "Connect to AKS cluster via Public/Private FQDN")
-	
+
 	cs.SetShort(ResourceGroupConfigItem, "r") //nolint: errcheck
 
 	return cs, nil
