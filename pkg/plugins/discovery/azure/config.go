@@ -101,7 +101,7 @@ func (p *aksClusterProvider) addKubelogin(cfg *api.Config) {
 			"--login",
 			string(p.config.LoginType),
 			"--server-fqdn-type",
-			"public",
+			p.config.ServerFqdnType,
 		},
 	}
 
