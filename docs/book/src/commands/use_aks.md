@@ -62,6 +62,7 @@ kconnect use aks [flags]
       --no-history                 If set to true then no history entry will be written
       --password string            The password to use for authentication
   -r, --resource-group string      The Azure resource group to use
+      --server-fqdn-type string    Connect to AKS cluster via Public/Private FQDN (default "public")
       --set-current                Sets the current context in the kubeconfig to the selected cluster (default true)
       --subscription-id string     The Azure subscription to use (specified by ID)
       --subscription-name string   The Azure subscription to use (specified by name)
