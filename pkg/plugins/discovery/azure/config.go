@@ -46,12 +46,9 @@ func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 	}
 	if !p.config.Admin {
 		if p.config.LoginType == LoginTypeToken {
-			if err := p.addTokenToAuthProvider(cfg, input.Identity); err != nil {
-				return nil, fmt.Errorf("adding oauth token to kubeconfig: %w", err)
-			}
-		} else {
-			p.addKubelogin(cfg)
+			p.config.LoginType = LoginTypeAzureCli
 		}
+		p.addKubelogin(cfg)
 		p.printLoginDetails()
 	}
 

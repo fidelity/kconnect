@@ -44,4 +44,6 @@ var (
 	LoginTypeManagedServiceIdentity = LoginType("msi")
 	// LoginTypeToken is for an embedded token login type
 	LoginTypeToken = LoginType("token")
+	// LoginTypeAzureCli is for an using the azurecli to login
+	LoginTypeAzureCli = LoginType("azurecli")
 )

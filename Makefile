@@ -100,7 +100,7 @@ lint: $(GOLANGCI_LINT) # Run the linter across the codebase
 	$(GOLANGCI_LINT) run -v
 
 .PHONY: ci
-ci: build test lint # Target for CI
+ci: lint test build # Target for CI
 
 
 ##@ Utility
