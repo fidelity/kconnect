@@ -95,8 +95,6 @@ func (p *aksClusterProvider) addKubelogin(cfg *api.Config) {
 			p.config.TenantID,
 			"--login",
 			string(p.config.LoginType),
-			"--server-fqdn-type",
-			p.config.ServerFqdnType,
 		},
 	}
 
