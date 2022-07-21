@@ -41,8 +41,8 @@ func (p *rancherClusterProvider) Validate(cfg config.ConfigurationSet) error {
 	return nil
 }
 
-// Resolve will resolve the values for the AWS specific flags that have no value. It will
-// query AWS and interactively ask the user for selections.
+// Resolve will resolve the values for the Rancher specific flags that have no value. It will
+// query Rancher and interactively ask the user for selections.
 func (p *rancherClusterProvider) Resolve(cfg config.ConfigurationSet, identity identity.Identity) error {
 	if err := p.setup(cfg, identity); err != nil {
 		return fmt.Errorf("setting up rancher provider: %w", err)

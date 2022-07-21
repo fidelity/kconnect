@@ -43,8 +43,8 @@ func (p *aksClusterProvider) Validate(cfg config.ConfigurationSet) error {
 	return nil
 }
 
-// Resolve will resolve the values for the AWS specific flags that have no value. It will
-// query AWS and interactively ask the user for selections.
+// Resolve will resolve the values for the Azure specific flags that have no value. It will
+// query Azure and interactively ask the user for selections.
 func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, userID identity.Identity) error {
 	if err := p.setup(cfg, userID); err != nil {
 		return fmt.Errorf("setting up aks provider: %w", err)
