@@ -75,7 +75,11 @@ specified cluster provider.
 	eksDescNote = `
 * Note: kconnect use eks requires aws-iam-authenticator.
   [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
-
+`
+	aksDescNote = `
+* Note: kconnect use aks requires kubelogin and azure cli.
+  [kubelogin](https://github.com/Azure/kubelogin)
+  [azure cli](https://docs.microsoft.com/en-us/cli/azure/)
 `
 	usageExample = `
   # Connect to EKS and choose an available EKS cluster.
@@ -95,7 +99,7 @@ specified cluster provider.
 
 // Command creates the use command
 func Command() (*cobra.Command, error) {
-	longDesc := longDescHead + longDescBody + longDescFoot + eksDescNote
+	longDesc := longDescHead + longDescBody + longDescFoot + eksDescNote + aksDescNote
 	useCmd := &cobra.Command{
 		Use:     "use",
 		Short:   shortDesc,
@@ -132,6 +136,8 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 	providerLongDesc := fmt.Sprintf(longDescProviderHead, registration.Name) + longDescBody
 	if registration.Name == "eks" {
 		providerLongDesc += eksDescNote
+	} else if registration.Name == "aks" {
+		providerLongDesc += aksDescNote
 	}
 	providerUsageExample := registration.UsageExample + usageExampleFoot
 
