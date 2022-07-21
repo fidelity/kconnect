@@ -79,7 +79,7 @@ specified cluster provider.
 	aksDescNote = `
 * Note: kconnect use aks requires kubelogin and azure cli.
   [kubelogin](https://github.com/Azure/kubelogin)
-  [azure cli](https://docs.microsoft.com/en-us/cli/azure/)
+  [azure-cli](https://github.com/Azure/azure-cli)
 `
 	usageExample = `
   # Connect to EKS and choose an available EKS cluster.
