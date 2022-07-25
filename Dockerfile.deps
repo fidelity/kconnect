@@ -28,7 +28,7 @@ RUN curl -L \
 RUN curl -L https://get.helm.sh/helm-v${HELM_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz -o helm.tar.gz && \
     tar xvfz helm.tar.gz
 
-FROM alpine:3.14
+FROM mcr.microsoft.com/azure-cli:2.38.0
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /app/
