@@ -27,6 +27,9 @@ specified cluster provider.
 * Note: kconnect use eks requires aws-iam-authenticator.
   [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 
+* Note: kconnect use aks requires kubelogin and azure cli.
+  [kubelogin](https://github.com/Azure/kubelogin)
+  [azure-cli](https://github.com/Azure/azure-cli)
 
 
 ```bash

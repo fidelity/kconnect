@@ -19,6 +19,10 @@ entry ID or alias.  When the user reconnects using a connection history entry,
 kconnect regenerates the kubectl configuration context and refreshes their access
 token.
 
+* Note: kconnect use aks requires kubelogin and azure cli.
+  [kubelogin](https://github.com/Azure/kubelogin)
+  [azure-cli](https://github.com/Azure/azure-cli)
+
 
 ```bash
 kconnect use aks [flags]
