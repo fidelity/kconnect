@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -129,6 +130,11 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	}
 
 	id := identity.NewActiveDirectoryIdentity(authCfg, userRealm, ProviderName, p.httpClient)
+
+	_, err = exec.Command("az", "login", "--username", cfg.Username, "--password", cfg.Password).Output()
+	if err != nil {
+		return nil, fmt.Errorf("azure cli: %w", err)
+	}
 
 	return &provid.AuthenticateOutput{
 		Identity: id,
