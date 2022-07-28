@@ -60,7 +60,7 @@ kconnect use aks [flags]
       --history-location string    Location of where the history is stored. (default "$HOME/.kconnect/history.yaml")
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
   -k, --kubeconfig string          Location of the kubeconfig to use. (default "$HOME/.kube/config")
-      --login-type string          The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi,token (default "devicecode")
+      --login-type string          The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi,azurecli (default "devicecode")
       --max-history int            Sets the maximum number of history items to keep (default 100)
   -n, --namespace string           Sets namespace for context in kubeconfig
       --no-history                 If set to true then no history entry will be written
