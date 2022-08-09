@@ -63,7 +63,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     curl -s -L $helm_url -o helm.tar.gz
     curl -s -L $aws_iam_authenticator_url -o aws-iam-authenticator
     curl -s -L $kubelogin_url -o kubelogin.zip
-    curl -s -L $azure_url | bash
+    curl -s -L $azure_url -o azure-cli-install.sh
 
     # unzip
     tar -xf kconnect.tar.gz
@@ -83,6 +83,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     chmod +x kubectl
     chmod +x aws-iam-authenticator
     chmod +x kubelogin
+    chmod +x azure-cli-install.sh
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     
