@@ -196,9 +196,11 @@
 <li><a href="installation.html#windows">Windows</a></li>
 <li><a href="installation.html#docker">Docker</a></li>
 </ul>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl &gt;= 1.17.0</a></p>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator &gt;= 0.5.5</a> to authenticate to the AWS EKS cluster provider.</p>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> to authenticate to Azure AKS clusters.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl</a> for k8s cluster cli interaction.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> for authentication to AWS EKS clusters.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> for non-interactive authentication to Azure AKS clusters.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/azure-cli">az cli</a> for interactive authentication to Azure AKS clusters.</p>
+<p><em>NOTE:&gt;</em> For specific tested and pinned versions, use the <code>install-kconnect.sh</code> script or the <code>with-deps</code> docker image </p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
 <pre><code class="language-bash">kubectl krew index add fidelity https://github.com/fidelity/krew-index.git
@@ -720,8 +722,15 @@ token.</p>
 value is supplied for --idp-protocol the first supported protocol for the
 specified cluster provider.</p>
 <ul>
-<li>Note: kconnect use eks requires aws-iam-authenticator.
-<a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></li>
+<li>
+<p>Note: kconnect use eks requires aws-iam-authenticator.
+<a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></p>
+</li>
+<li>
+<p>Note: kconnect use aks requires kubelogin and azure cli.
+<a href="https://github.com/Azure/kubelogin">kubelogin</a>
+<a href="https://github.com/Azure/azure-cli">azure-cli</a></p>
+</li>
 </ul>
 <pre><code class="language-bash">kconnect use [flags]
 </code></pre>
@@ -773,6 +782,11 @@ connection history entry using the kconnect to command and the connection histor
 entry ID or alias.  When the user reconnects using a connection history entry,
 kconnect regenerates the kubectl configuration context and refreshes their access
 token.</p>
+<ul>
+<li>Note: kconnect use aks requires kubelogin and azure cli.
+<a href="https://github.com/Azure/kubelogin">kubelogin</a>
+<a href="https://github.com/Azure/azure-cli">azure-cli</a></li>
+</ul>
 <pre><code class="language-bash">kconnect use aks [flags]
 </code></pre>
 <h3><a class="header" href="#examples-9" id="examples-9">Examples</a></h3>
@@ -802,12 +816,13 @@ token.</p>
       --history-location string    Location of where the history is stored. (default &quot;$HOME/.kconnect/history.yaml&quot;)
       --idp-protocol string        The idp protocol to use (e.g. saml, aad). See flags additional flags for the protocol.
   -k, --kubeconfig string          Location of the kubeconfig to use. (default &quot;$HOME/.kube/config&quot;)
-      --login-type string          The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi,token (default &quot;devicecode&quot;)
+      --login-type string          The login method to use when connecting to the AKS cluster as a non-admin. Possible values: devicecode,spn,ropc,msi,azurecli (default &quot;devicecode&quot;)
       --max-history int            Sets the maximum number of history items to keep (default 100)
   -n, --namespace string           Sets namespace for context in kubeconfig
       --no-history                 If set to true then no history entry will be written
       --password string            The password to use for authentication
   -r, --resource-group string      The Azure resource group to use
+      --server-fqdn-type string    Connect to AKS cluster via Public/Private FQDN (default &quot;public&quot;)
       --set-current                Sets the current context in the kubeconfig to the selected cluster (default true)
       --subscription-id string     The Azure subscription to use (specified by ID)
       --subscription-name string   The Azure subscription to use (specified by name)

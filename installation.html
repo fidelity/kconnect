@@ -170,9 +170,11 @@
 <li><a href="#windows">Windows</a></li>
 <li><a href="#docker">Docker</a></li>
 </ul>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl &gt;= 1.17.0</a></p>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator &gt;= 0.5.5</a> to authenticate to the AWS EKS cluster provider.</p>
-<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> to authenticate to Azure AKS clusters.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl">kubectl</a> for k8s cluster cli interaction.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> for authentication to AWS EKS clusters.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> for non-interactive authentication to Azure AKS clusters.</p>
+<p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/azure-cli">az cli</a> for interactive authentication to Azure AKS clusters.</p>
+<p><em>NOTE:&gt;</em> For specific tested and pinned versions, use the <code>install-kconnect.sh</code> script or the <code>with-deps</code> docker image </p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
 <pre><code class="language-bash">kubectl krew index add fidelity https://github.com/fidelity/krew-index.git

@@ -182,8 +182,15 @@ token.</p>
 value is supplied for --idp-protocol the first supported protocol for the
 specified cluster provider.</p>
 <ul>
-<li>Note: kconnect use eks requires aws-iam-authenticator.
-<a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></li>
+<li>
+<p>Note: kconnect use eks requires aws-iam-authenticator.
+<a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></p>
+</li>
+<li>
+<p>Note: kconnect use aks requires kubelogin and azure cli.
+<a href="https://github.com/Azure/kubelogin">kubelogin</a>
+<a href="https://github.com/Azure/azure-cli">azure-cli</a></p>
+</li>
 </ul>
 <pre><code class="language-bash">kconnect use [flags]
 </code></pre>
