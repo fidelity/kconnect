@@ -31,6 +31,7 @@ specified cluster provider.
   [kubelogin](https://github.com/Azure/kubelogin)
   [azure-cli](https://github.com/Azure/azure-cli)
 
+* Note: interactive mode is not supported in windows git-bash application currently.
 
 ```bash
 kconnect use [flags]
