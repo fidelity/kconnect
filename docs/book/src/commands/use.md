@@ -24,6 +24,8 @@ The use command requires a target provider name as its first parameter. If no
 value is supplied for --idp-protocol the first supported protocol for the
 specified cluster provider.
 
+* Note: interactive mode is not supported in windows git-bash application currently.
+
 * Note: kconnect use eks requires aws-iam-authenticator.
   [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator)
 
@@ -31,7 +33,6 @@ specified cluster provider.
   [kubelogin](https://github.com/Azure/kubelogin)
   [azure-cli](https://github.com/Azure/azure-cli)
 
-* Note: interactive mode is not supported in windows git-bash application currently.
 
 ```bash
 kconnect use [flags]
