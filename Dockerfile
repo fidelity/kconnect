@@ -1,4 +1,4 @@
-FROM alpine:3.14 AS certs
+FROM alpine:3.16 AS certs
 RUN apk --update add ca-certificates
 RUN adduser -D kconnect
 

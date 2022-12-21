@@ -136,7 +136,7 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     helm_url=$(echo "https://get.helm.sh/helm-TAG-windows-amd64.zip" | sed "s/TAG/$latest_helm_release_tag/" )
     aws_iam_authenticator_url=$(echo "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/vTAG/aws-iam-authenticator_TAG_windows_amd64.exe" | sed "s/TAG/$latest_aws_iam_authenticator_release_tag/g" )
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-win-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
-    azure_url=$(echo "https://github.com/Azure/azure-cli/releases/download/TAG/TAG.msi" | sed "s/TAG/$latest_azure_cli_release_tag/")
+    azure_url=$(echo "https://github.com/Azure/azure-cli/releases/download/TAG/TAG.msi" | sed "s/TAG/$latest_azure_cli_release_tag/g")
     
     echo "kconnect url: $kconnect_url" 
     echo "kubectl url: $kubectl_url"

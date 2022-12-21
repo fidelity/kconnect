@@ -14,14 +14,14 @@ require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.36.19
 	github.com/beevik/etree v1.1.0
-	github.com/blang/semver v3.5.0+incompatible
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.10.1
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/mock v1.3.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.3.0
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/marshallbrekka/go-u2fhost v0.0.0-20200114212649-cc764c209ee9 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
@@ -41,7 +41,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/versent/saml2aws v1.8.5-0.20200622110128-d94772688a70
 	go.uber.org/multierr v1.6.0 // indirect
-	go.uber.org/zap v1.16.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/mod v0.4.0
 	gopkg.in/ini.v1 v1.62.0
@@ -87,7 +87,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.13.0 // indirect
-	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/gjson v1.9.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
@@ -103,7 +103,6 @@ require (
 	google.golang.org/protobuf v1.24.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 	k8s.io/klog/v2 v2.2.0 // indirect
 	k8s.io/utils v0.0.0-20200729134348-d5654de09c73 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.0.1 // indirect
