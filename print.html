@@ -723,6 +723,9 @@ value is supplied for --idp-protocol the first supported protocol for the
 specified cluster provider.</p>
 <ul>
 <li>
+<p>Note: interactive mode is not supported in windows git-bash application currently.</p>
+</li>
+<li>
 <p>Note: kconnect use eks requires aws-iam-authenticator.
 <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a></p>
 </li>
@@ -1083,19 +1086,28 @@ git pull
 <p>This document will provide help on how to go about this. You can contribute in the following ways:</p>
 <ul>
 <li>Reporting bugs</li>
+<li>Disclosing security concerns responsibly</li>
 <li>Suggesting features</li>
 <li>Contributing code</li>
 </ul>
+<p>All contributions and project spaces are subject to our <a href="https://github.com/fidelity/.github/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.</p>
 <h2><a class="header" href="#reporting-bugs" id="reporting-bugs">Reporting Bugs</a></h2>
 <p>Reporting bugs is an essential part in making kconnect better for its end users.</p>
-<p>Bugs are reported using GitHub issues. A new <strong>Bug Report</strong> can be raised <a href="https://github.com/fidelity/kconnect/issues/new?assignees=&amp;labels=kind%2Fbug&amp;template=bug_report.md&amp;title=">here</a>.</p>
+<p>Please open an issue <strong>unless</strong> you are making a significant security disclosure. A new <strong>Bug Report</strong> can be raised <a href="https://github.com/fidelity/kconnect/issues/new?assignees=&amp;labels=kind%2Fbug&amp;template=bug_report.md&amp;title=">here</a>.</p>
 <p>When raising bugs please include as much information as possible including steps about how to reproduce the problem and what you expect the behavior to be.</p>
+<h2><a class="header" href="#how-to-disclose-security-concerns-responsibly" id="how-to-disclose-security-concerns-responsibly">How to disclose security concerns responsibly</a></h2>
+<p>Please follow the instructions in our <a href="https://github.com/fidelity/.github/blob/main/SECURITY.md">security policy</a> (also visible in the Security tab on the project’s repo).</p>
 <h2><a class="header" href="#suggesting-features" id="suggesting-features">Suggesting features</a></h2>
 <p>If there is a feature that you would like in kconnect then please let us know about it.</p>
 <p>Features are also suggested using GitHub Issues. A new <strong>Feature enhancement request</strong> can be raised <a href="https://github.com/fidelity/kconnect/issues/new?labels=kind%2Ffeature&amp;template=feature_request.md&amp;title=">here</a>.</p>
 <p>Include as much information as possible, understanding the problem that the feature is trying to solve will really help us in understanding the benefit.</p>
 <h2><a class="header" href="#contributing-code" id="contributing-code">Contributing Code</a></h2>
-<p>Code contributions to kconnect are very welcome.</p>
+<p>Code contributions to kconnect are very welcome as long as you follow a few rules:</p>
+<ul>
+<li>Your contribution must be received under the project’s open source license.</li>
+<li>You must have permission to make the contribution. We strongly recommend including a Signed-off-by line to indicate your adherence to the <a href="https://developercertificate.org/">Developer Certificate of Origin</a>.</li>
+<li>All code contributions must be made via PR, and all checks must pass before merging.</li>
+</ul>
 <p>If you need a pointer on where to start you can look at the <strong>good first issue</strong> and <strong>help wanted</strong> issues:</p>
 <ul>
 <li><a href="https://github.com/fidelity/kconnect/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22">good first issue</a> - small changes that are suitable for a beginner</li>
@@ -1138,6 +1150,8 @@ git pull
 <li>Check that the PR checks pass</li>
 </ol>
 <p>Once a PR has been created it will be reviewed by one of the maintainers of kconnect.</p>
+<h2><a class="header" href="#getting-help" id="getting-help">Getting help</a></h2>
+<p>If you have other questions about this project, please open an issue. To reach the Fidelity OSPO directly, please email <a href="mailto:opensource@fmr.com">opensource@fmr.com</a>.</p>
 
                     </main>
 
