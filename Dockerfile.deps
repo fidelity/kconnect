@@ -1,4 +1,4 @@
-FROM alpine:3.16 AS builder
+FROM alpine:3.17 AS builder
 
 ARG AWS_IAM_AUTH_VERSION=0.5.9
 ARG KUBELOGIN_VERSION=0.0.14
