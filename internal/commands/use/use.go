@@ -71,6 +71,8 @@ token.
 The use command requires a target provider name as its first parameter. If no
 value is supplied for --idp-protocol the first supported protocol for the
 specified cluster provider.
+
+* Note: interactive mode is not supported in windows git-bash application currently.
 `
 	eksDescNote = `
 * Note: kconnect use eks requires aws-iam-authenticator.
