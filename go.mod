@@ -45,11 +45,11 @@ require (
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/mod v0.4.0
 	gopkg.in/ini.v1 v1.62.0
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.19.1
 	k8s.io/cli-runtime v0.19.1
 	k8s.io/client-go v0.19.1
-	sigs.k8s.io/yaml v1.2.0
+	sigs.k8s.io/yaml v1.3.0
 
 )
 
