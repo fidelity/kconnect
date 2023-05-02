@@ -49,3 +49,5 @@ linters:
     - execinquery
     - scopelint # deprecated by the owner
     - nosnakecase # deprecated by the owner
+    - interfacebloat
+    - forcetypeassert # maybe enable in the future
