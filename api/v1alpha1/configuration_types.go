@@ -59,7 +59,7 @@ type VersionCheck struct {
 
 // ListItem represents an item in a list
 type ListItem struct {
-	// Name is the the name to display to the user for the list item
+	// Name is the name to display to the user for the list item
 	Name string `json:"name"`
 	// Value is the value to use if the list item is selected
 	Value string `json:"value"`

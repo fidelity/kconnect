@@ -19,7 +19,7 @@ package rancher
 import "errors"
 
 var (
-	ErrGetClusterDetail        = errors.New("error querying cluster cluster detail")
+	ErrGetClusterDetail        = errors.New("error querying cluster detail")
 	ErrGettingClusters         = errors.New("error querying clusters")
 	ErrNoKubeconfigAction      = errors.New("no generate kubeconfig action found")
 	ErrGettingKubeconfig       = errors.New("error getting kubeconfig from api")

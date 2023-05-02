@@ -20,7 +20,7 @@ import "errors"
 
 var (
 	ErrUnsupportedIdentity  = errors.New("unsupported identity, oidc.Identity orazure.AuthorizerIdentity required")
-	ErrNoKubeconfigs        = errors.New("no kubeconfigs available for the managed cluster cluster")
+	ErrNoKubeconfigs        = errors.New("no kubeconfigs available for the managed cluster")
 	ErrNoSubscriptions      = errors.New("no subscriptions found")
 	ErrSubscriptionNameOrID = errors.New("subscription name and id cannot be both supplied")
 	ErrSubscriptionNotFound = errors.New("subscription not found")
