@@ -243,7 +243,7 @@ func Test_FileStoreRemove(t *testing.T) {
 				expectedList.Items = append(expectedList.Items, *entry)
 				entry2 := createEntry("2")
 				expectedList.Items = append(expectedList.Items, *entry2)
-				
+
 				mockLoader.
 					EXPECT().
 					Load().

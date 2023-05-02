@@ -24,10 +24,10 @@ type Endpoint struct {
 	URL             string
 }
 
-//AuthorizationType represents the type of token flow
+// AuthorizationType represents the type of token flow
 type AuthorizationType int
 
-//These are all the types of token flows
+// These are all the types of token flows
 const (
 	AuthorizationTypeNone                  AuthorizationType = iota
 	AuthorizationTypeUsernamePassword                        = iota
