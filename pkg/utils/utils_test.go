@@ -73,8 +73,6 @@ func Test_SurveyFilter(t *testing.T) {
 
 }
 
-
-
 func Test_RegexFilter(t *testing.T) {
 	testCases := []struct {
 		name                    string
@@ -126,7 +124,7 @@ func Test_RegexFilter(t *testing.T) {
 			if actualErr != nil {
 				if !tc.expectErr {
 					t.Fatalf("expected %t but got %t", tc.expectErr, actualErr)
-				}	
+				}
 			} else {
 				if !reflect.DeepEqual(tc.expectedFilteredOptions, actualFilteredOptions) {
 					t.Fatalf("expected %v but got %v", tc.expectedFilteredOptions, actualFilteredOptions)
@@ -136,5 +134,3 @@ func Test_RegexFilter(t *testing.T) {
 	}
 
 }
-
-

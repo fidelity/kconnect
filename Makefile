@@ -43,7 +43,6 @@ ifeq ($(OS), darwin)
 endif
 
 # Binaries
-GOLANGCI_LINT := $(TOOLS_BIN_DIR)/golangci-lint
 CONTROLLER_GEN := $(TOOLS_BIN_DIR)/controller-gen
 DEFAULTER_GEN := $(TOOLS_BIN_DIR)/defaulter-gen
 CONVERSION_GEN := $(TOOLS_BIN_DIR)/conversion-gen
@@ -91,22 +90,23 @@ release-local: # Builds a relase locally
 
 ##@ Test & CI
 
+.PHONY: fmt
+fmt:
+	go fmt ./...
+
 .PHONY: test
 test:
 	go test ./...
 
-.PHONY: lint
-lint: $(GOLANGCI_LINT) # Run the linter across the codebase
-	$(GOLANGCI_LINT) run -v
+.PHONY: vet
+vet:
+	go vet ./...
 
 .PHONY: ci
-ci: lint test build # Target for CI
+ci: fmt vet test build # Target for CI
 
 
 ##@ Utility
-
-$(GOLANGCI_LINT): $(TOOLS_DIR)/go.mod # Get and build golangci-lint
-	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) github.com/golangci/golangci-lint/cmd/golangci-lint
 
 $(CONTROLLER_GEN): $(TOOLS_DIR)/go.mod # Get and build controller-gen
 	cd $(TOOLS_DIR); go build -tags=tools -o $(subst hack/tools/,,$@) sigs.k8s.io/controller-tools/cmd/controller-gen
