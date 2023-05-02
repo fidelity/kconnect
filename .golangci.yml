@@ -44,11 +44,8 @@ linters:
     - gofumpt
     - gci
     - ifshort
-    - wrapcheck # enable in the future
-    - ifshort
-    - forcetypeassert # enable in the future
-    - cyclop # enable in the future
-    - revive # enable in the future
     - tagliatelle
     - gomnd
     - execinquery
+    - scopelint # deprecated by the owner
+    - nosnakecase # deprecated by the owner
