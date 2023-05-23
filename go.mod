@@ -3,7 +3,7 @@ module github.com/fidelity/kconnect
 go 1.17
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.1.1
+	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.29
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.5
