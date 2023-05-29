@@ -30,7 +30,7 @@ require (
 	github.com/oklog/ulid v1.3.1
 	github.com/onsi/gomega v1.27.6
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/cobra v1.6.0
