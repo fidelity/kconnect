@@ -37,6 +37,7 @@ import (
 	"github.com/fidelity/kconnect/internal/commands/history"
 	"github.com/fidelity/kconnect/internal/commands/logout"
 	"github.com/fidelity/kconnect/internal/commands/ls"
+	"github.com/fidelity/kconnect/internal/commands/suse"
 	"github.com/fidelity/kconnect/internal/commands/to"
 	"github.com/fidelity/kconnect/internal/commands/use"
 	"github.com/fidelity/kconnect/internal/commands/version"
@@ -243,6 +244,11 @@ func addRootCommands(rootCmd *cobra.Command) error {
 		return fmt.Errorf("creating history command: %w", err)
 	}
 	rootCmd.AddCommand(historyCmd)
+	sUseCmd, err := suse.Command()
+	if err != nil {
+		return fmt.Errorf("creating history command: %w", err)
+	}
+	rootCmd.AddCommand(sUseCmd)
 	return nil
 }
 

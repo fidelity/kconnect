@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package use
+package suse
 
 import (
 	"errors"
@@ -102,8 +102,8 @@ specified cluster provider.
 // Command creates the use command
 func Command() (*cobra.Command, error) {
 	longDesc := longDescHead + longDescBody + longDescFoot + eksDescNote + aksDescNote
-	useCmd := &cobra.Command{
-		Use:     "suse",
+	sUseCmd := &cobra.Command{
+		Use:     "use",
 		Short:   shortDesc,
 		Long:    longDesc,
 		Example: usageExample + usageExampleFoot,
@@ -114,7 +114,7 @@ func Command() (*cobra.Command, error) {
 		},
 	}
 
-	utils.FormatCommand(useCmd)
+	utils.FormatCommand(sUseCmd)
 
 	// Add the provider subcommands
 	for _, registration := range registry.ListDiscoveryPluginRegistrations() {
@@ -122,10 +122,10 @@ func Command() (*cobra.Command, error) {
 		if err != nil {
 			return nil, fmt.Errorf("creating provider command for %s: %w", registration.Name, err)
 		}
-		useCmd.AddCommand(providerCmd)
+		sUseCmd.AddCommand(providerCmd)
 	}
 
-	return useCmd, nil
+	return sUseCmd, nil
 }
 
 func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cobra.Command, error) {
@@ -193,7 +193,7 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 
 			a := app.New(app.WithHistoryStore(store), app.WithInteractive(!params.NoInput))
 
-			return a.Use(cmd.Context(), params)
+			return a.Suse(cmd.Context(), params)
 		},
 	}
 
@@ -250,37 +250,10 @@ func addConfig(cs config.ConfigurationSet, registration *registry.DiscoveryPlugi
 }
 
 func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) error {
-	idpProtocol, hasFlagValue, err := getIdpProtocol(args, params)
-	if err != nil {
-		return fmt.Errorf("getting idp-protocol: %w", err)
-	}
+	idpProtocol, _, _ := getIdpProtocol(args, params)
 
-	if idpProtocol == "" {
-		return ErrMissingIdpProtocol
-	}
-
-	params.IdpProtocol = idpProtocol
-	if !hasFlagValue {
-		// If the flag wasn't supplied and we are using a default then
-		// set the value on the commnads flag
-		cmd.Flags().Set("idp-protocol", idpProtocol) //nolint: errcheck
-	}
-
-	idProviderReg, err := registry.GetIdentityProviderRegistration(idpProtocol)
-	if err != nil {
-		return fmt.Errorf("getting identity provider registration for %s: %w", idpProtocol, err)
-	}
 	if err := params.ConfigSet.SetValue("idp-protocol", idpProtocol); err != nil {
 		return fmt.Errorf("setting idp-protocol value: %w", err)
-	}
-	params.IdentityProvider = idProviderReg.Name
-
-	idProviderCfg, err := idProviderReg.ConfigurationItemsFunc(params.DiscoveryProvider)
-	if err != nil {
-		return fmt.Errorf("getting config itemsd for %s: %w", idProviderReg.Name, err)
-	}
-	if err := params.ConfigSet.AddSet(idProviderCfg); err != nil {
-		return err
 	}
 
 	return nil
@@ -289,27 +262,37 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) e
 func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	// look for a flag first
 	for i, arg := range args {
+		if arg == "--cluster-auth" {
+			params.ConfigSet.Add(&config.Item{Name: "cluster-auth", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--oidc-user" {
+			params.ConfigSet.Add(&config.Item{Name: "oidc-user", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--oidc-server" {
+			params.ConfigSet.Add(&config.Item{Name: "oidc-server", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--oidc-client-id" {
+			params.ConfigSet.Add(&config.Item{Name: "oidc-client-id", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--oidc-client-secret" {
+			params.ConfigSet.Add(&config.Item{Name: "oidc-client-secret", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--oidc-tenant-id" {
+			params.ConfigSet.Add(&config.Item{Name: "oidc-tenant-id", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--cluster-url" {
+			params.ConfigSet.Add(&config.Item{Name: "cluster-url", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+		if arg == "--cluster-auth" {
+			params.ConfigSet.Add(&config.Item{Name: "cluster-auth", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+		}
+	}
+	for i, arg := range args {
 		if arg == "--idp-protocol" {
 			return args[i+1], true, nil
 		}
 	}
-
-	// look in app config
-	idProtocol, err := config.GetValue("idp-protocol", params.DiscoveryProvider)
-	if err != nil {
-		return "", false, fmt.Errorf("getting idp-protocol from config: %w", err)
-	}
-	// Default to the first supported provider if empty
-	if idProtocol == "" {
-		discoReg, err := registry.GetDiscoveryProviderRegistration(params.DiscoveryProvider)
-		if err != nil {
-			return "", false, err
-		}
-		idProtocol = discoReg.SupportedIdentityProviders[0]
-		zap.S().Debugw("no idp-protocol, using default for provider", "idp-protocol", idProtocol)
-	}
-
-	return idProtocol, false, nil
+	return "", false, nil
 }
 
 func ensureConfigFolder(path string) error {
