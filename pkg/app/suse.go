@@ -108,11 +108,19 @@ func setCluster(clusterID string, input *UseInput) {
 
 	output, err := exec.Command("Kubectl", "config",
 		"set-cluster", clusterID,
-		"--server", clusterUrl,
-		"--certificate-authority", authority).Output()
+		"--server", clusterUrl).Output()
 
 	if err != nil {
-		zap.S().Errorf("Failed to config cluster %s. Error: %s", clusterID, err)
+		zap.S().Errorf("Failed to config cluster %s server. Error: %s", clusterID, err)
+	} else {
+		zap.S().Infof("Successfully. Output: %s", output)
+	}
+
+	output, err = exec.Command("Kubectl", "config",
+		"set", "clusters."+clusterID+".certificate-authority-data", authority).Output()
+
+	if err != nil {
+		zap.S().Errorf("Failed to config cluster %s authority-data. Error: %s", clusterID, err)
 	} else {
 		zap.S().Infof("Successfully. Output: %s", output)
 	}
