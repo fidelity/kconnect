@@ -261,30 +261,40 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) e
 
 func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	// look for a flag first
+	getFromConfig(params, "oidc-user")
+	getFromConfig(params, "oidc-server")
+	getFromConfig(params, "oidc-client-id")
+	getFromConfig(params, "oidc-client-secret")
+	getFromConfig(params, "oidc-tenant-id")
+	getFromConfig(params, "cluster-url")
+	getFromConfig(params, "cluster-auth")
+	getFromConfig(params, "cluster-id")
+	getFromConfig(params, "login")
+
 	for i, arg := range args {
-		if arg == "--cluster-auth" {
-			params.ConfigSet.Add(&config.Item{Name: "cluster-auth", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
-		}
 		if arg == "--oidc-user" {
-			params.ConfigSet.Add(&config.Item{Name: "oidc-user", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "oidc-user", args[i+1])
 		}
 		if arg == "--oidc-server" {
-			params.ConfigSet.Add(&config.Item{Name: "oidc-server", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "oidc-server", args[i+1])
 		}
 		if arg == "--oidc-client-id" {
-			params.ConfigSet.Add(&config.Item{Name: "oidc-client-id", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "oidc-client-id", args[i+1])
 		}
 		if arg == "--oidc-client-secret" {
-			params.ConfigSet.Add(&config.Item{Name: "oidc-client-secret", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "oidc-client-secret", args[i+1])
 		}
 		if arg == "--oidc-tenant-id" {
-			params.ConfigSet.Add(&config.Item{Name: "oidc-tenant-id", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "oidc-tenant-id", args[i+1])
 		}
 		if arg == "--cluster-url" {
-			params.ConfigSet.Add(&config.Item{Name: "cluster-url", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "cluster-url", args[i+1])
 		}
 		if arg == "--cluster-auth" {
-			params.ConfigSet.Add(&config.Item{Name: "cluster-auth", Type: config.ItemType("string"), Value: args[i+1], DefaultValue: ""})
+			addItem(params, "cluster-auth", args[i+1])
+		}
+		if arg == "--login" {
+			addItem(params, "login", args[i+1])
 		}
 	}
 	for i, arg := range args {
@@ -293,6 +303,22 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 		}
 	}
 	return "", false, nil
+}
+
+func getFromConfig(params *app.UseInput, key string) {
+	value, err := config.GetValue(key, "eks")
+	if err == nil && value != "" {
+		addItem(params, key, value)
+	}
+}
+
+func addItem(params *app.UseInput, key string, value string) {
+	if params.ConfigSet.Exists(key) {
+		params.ConfigSet.SetValue(key, value)
+	} else {
+		params.ConfigSet.Add(
+			&config.Item{Name: key, Type: config.ItemType("string"), Value: value, DefaultValue: ""})
+	}
 }
 
 func ensureConfigFolder(path string) error {
