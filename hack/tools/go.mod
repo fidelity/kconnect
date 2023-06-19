@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/golang/mock v1.6.0
-	k8s.io/code-generator v0.27.2
+	k8s.io/code-generator v0.27.3
 	sigs.k8s.io/controller-tools v0.12.0
 )
 
