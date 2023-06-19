@@ -42,8 +42,9 @@ func (a *App) Suse(ctx context.Context, input *UseInput) error {
 	oidcUser := getValue(input, noInput, "oidc-user", "input oidc user.", true)
 	oidcClientID := getValue(input, noInput, "oidc-client-id", "input oidc client ID.", true)
 	oidcClientSecret := getValue(input, noInput, "oidc-client-secret", "input oidc client secret.", true)
-	tenantID := getValue(input, noInput, "oidc-tenant-id", "input tenant ID.", true)
+	tenantID := getValue(input, noInput, "oidc-tenant-id", "input tenant ID.", false)
 	login := getValue(input, noInput, "login", "input login type.", false)
+	azLogin := getValue(input, noInput, "azure-kubelogin", "Use azure kubelogin.", true)
 
 	if login == "" {
 		login = "devicecode"
@@ -53,7 +54,11 @@ func (a *App) Suse(ctx context.Context, input *UseInput) error {
 		setCluster(clusterID, clusterUrl, authority)
 	}
 
-	setCredentials(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
+	if azLogin == "true" {
+		setCredentials(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
+	} else {
+		setCredentials2(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
+	}
 
 	setContext(clusterID, oidcUser)
 
@@ -113,6 +118,30 @@ func setContext(clusterID string, oidcUser string) {
 		zap.S().Errorf("Failed to current context %s. Error: %s", oidcUser, err)
 	} else {
 		zap.S().Infof("Successfully. Output: %s", output)
+	}
+
+}
+
+func setCredentials2(clusterID string, oidcServer string, oidcUser string, oidcClientID string,
+	oidcClientSecret string, tenantID string, login string) {
+
+	zap.S().Infof("Setting up users for cluster %s", clusterID)
+
+	output, err := exec.Command("kubectl", "config",
+		"set-credentials", oidcUser,
+		"--exec-api-version", "client.authentication.k8s.io/v1beta1",
+		"--exec-command", "kubectl",
+		"--exec-arg=oidc-login",
+		"--exec-arg=get-token",
+		"--exec-arg=--oidc-issuer-url="+oidcServer,
+		"--exec-arg=--oidc-client-id="+oidcClientID,
+		"--exec-arg=--oidc-client-secret="+oidcClientSecret,
+		"--exec-arg=--insecure-skip-tls-verify").Output()
+
+	if err != nil {
+		zap.S().Errorf("Failed to setup user %s. Error: %s", oidcUser, err)
+	} else {
+		zap.S().Infof("Setup user successfully. Output: %s", output)
 	}
 
 }

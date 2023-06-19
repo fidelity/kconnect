@@ -270,6 +270,7 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	getFromConfig(params, "cluster-auth")
 	getFromConfig(params, "cluster-id")
 	getFromConfig(params, "login")
+	getFromConfig(params, "azure-kubelogin")
 
 	for i, arg := range args {
 		if arg == "--oidc-user" {
@@ -295,6 +296,9 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 		}
 		if arg == "--login" {
 			addItem(params, "login", args[i+1])
+		}
+		if arg == "--azure-kubelogin" {
+			addItem(params, "azure-kubelogin", args[i+1])
 		}
 	}
 	for i, arg := range args {
