@@ -18,49 +18,70 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"os/exec"
 
 	"github.com/fidelity/kconnect/pkg/prompt"
 	"go.uber.org/zap"
 )
 
+type eks struct {
+	ClusterID        string `json:"cluster-id"`
+	OidcServer       string `json:"oidc-server"`
+	OidcClientId     string `json:"oidc-client-id"`
+	OidcClientSecret string `json:"oidc-client-secret"`
+	ClusterUrl       string `json:"cluster-url"`
+	ClusterAuth      string `json:"cluster-auth"`
+	LoginType        string `json:"login-type"`
+}
+
 func (a *App) Suse(ctx context.Context, input *UseInput) error {
 	a.logger.Debug("use command")
 
-	noInput := input.CommonConfig.NoInput
-	clusterID := *input.ClusterID
-	if clusterID == "" {
-		clusterID = getValue(input, noInput, "cluster-id", "input cluster ID.", true)
-	}
-	if clusterID == "" {
-		panic("ClusterID is neither passed nor stored in config file.")
+	config := getValue(input, true, "config", "input config file path", true)
+
+	res, err := a.httpClient.Get(config, nil)
+	if err != nil {
+		panic(err)
 	}
 
-	clusterUrl := getValue(input, noInput, "cluster-url", "input cluster url.", false)
-	authority := getValue(input, noInput, "cluster-auth", "input certificate authority data.", false)
-	oidcServer := getValue(input, noInput, "oidc-server", "input oidc server.", true)
-	oidcUser := getValue(input, noInput, "oidc-user", "input oidc user.", true)
-	oidcClientID := getValue(input, noInput, "oidc-client-id", "input oidc client ID.", true)
-	oidcClientSecret := getValue(input, noInput, "oidc-client-secret", "input oidc client secret.", true)
-	tenantID := getValue(input, noInput, "oidc-tenant-id", "input tenant ID.", false)
-	login := getValue(input, noInput, "login", "input login type.", false)
-	azLogin := getValue(input, noInput, "azure-kubelogin", "Use azure kubelogin.", true)
-
-	if login == "" {
-		login = "devicecode"
+	eks := &eks{}
+	if err := json.Unmarshal([]byte(res.Body()), eks); err != nil {
+		return errors.New("bad payload")
 	}
+
+	clusterID := eks.ClusterID
+	if clusterID == "" {
+		panic("cluster ID is not set!")
+	}
+
+	clusterUrl := eks.ClusterUrl
+	authority := eks.ClusterAuth
+	oidcServer := eks.OidcServer
+
+	oidcClientID := eks.OidcClientId
+	oidcClientSecret := eks.OidcClientSecret
+
+	// login := ""
+	// oidcUser := ""
+	// tenantID := ""
+	// azLogin := getValue(input, true, "azure-kubelogin", "Use azure kubelogin.", false)
+	// if login == "" {
+	// 	login = "devicecode"
+	// }
 
 	if clusterUrl != "" {
 		setCluster(clusterID, clusterUrl, authority)
 	}
 
-	if azLogin == "true" {
-		setCredentials(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
-	} else {
-		setCredentials2(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
-	}
+	// if azLogin == "true" {
+	// 	setCredentials(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
+	// } else {
+	setCredentials2(clusterID, oidcServer, oidcClientID, oidcClientID, oidcClientSecret)
+	// }
 
-	setContext(clusterID, oidcUser)
+	setContext(clusterID, oidcClientID)
 
 	return nil
 
@@ -123,7 +144,7 @@ func setContext(clusterID string, oidcUser string) {
 }
 
 func setCredentials2(clusterID string, oidcServer string, oidcUser string, oidcClientID string,
-	oidcClientSecret string, tenantID string, login string) {
+	oidcClientSecret string) {
 
 	zap.S().Infof("Setting up users for cluster %s", clusterID)
 
@@ -146,29 +167,29 @@ func setCredentials2(clusterID string, oidcServer string, oidcUser string, oidcC
 
 }
 
-func setCredentials(clusterID string, oidcServer string, oidcUser string, oidcClientID string,
-	oidcClientSecret string, tenantID string, login string) {
+// func setCredentials(clusterID string, oidcServer string, oidcUser string, oidcClientID string,
+// 	oidcClientSecret string, tenantID string, login string) {
 
-	zap.S().Infof("Setting up users for cluster %s", clusterID)
+// 	zap.S().Infof("Setting up users for cluster %s", clusterID)
 
-	output, err := exec.Command("kubectl", "config",
-		"set-credentials", oidcUser,
-		"--exec-api-version", "client.authentication.k8s.io/v1beta1",
-		"--exec-command", "kubelogin",
-		"--exec-arg=get-token",
-		"--exec-arg=--login="+login,
-		"--exec-arg=--server-id="+oidcServer,
-		"--exec-arg=--client-id="+oidcClientID,
-		"--exec-arg=--client-secret="+oidcClientSecret,
-		"--exec-arg=--tenant-id="+tenantID).Output()
+// 	output, err := exec.Command("kubectl", "config",
+// 		"set-credentials", oidcUser,
+// 		"--exec-api-version", "client.authentication.k8s.io/v1beta1",
+// 		"--exec-command", "kubelogin",
+// 		"--exec-arg=get-token",
+// 		"--exec-arg=--login="+login,
+// 		"--exec-arg=--server-id="+oidcServer,
+// 		"--exec-arg=--client-id="+oidcClientID,
+// 		"--exec-arg=--client-secret="+oidcClientSecret,
+// 		"--exec-arg=--tenant-id="+tenantID).Output()
 
-	if err != nil {
-		zap.S().Errorf("Failed to setup user %s. Error: %s", oidcUser, err)
-	} else {
-		zap.S().Infof("Setup user successfully. Output: %s", output)
-	}
+// 	if err != nil {
+// 		zap.S().Errorf("Failed to setup user %s. Error: %s", oidcUser, err)
+// 	} else {
+// 		zap.S().Infof("Setup user successfully. Output: %s", output)
+// 	}
 
-}
+// }
 
 func setCluster(clusterID string, clusterUrl string, authority string) {
 

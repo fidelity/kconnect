@@ -261,16 +261,17 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) e
 
 func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	// look for a flag first
-	getFromConfig(params, "oidc-user")
-	getFromConfig(params, "oidc-server")
-	getFromConfig(params, "oidc-client-id")
-	getFromConfig(params, "oidc-client-secret")
-	getFromConfig(params, "oidc-tenant-id")
-	getFromConfig(params, "cluster-url")
-	getFromConfig(params, "cluster-auth")
-	getFromConfig(params, "cluster-id")
-	getFromConfig(params, "login")
-	getFromConfig(params, "azure-kubelogin")
+	// getFromConfig(params, "oidc-user")
+	// getFromConfig(params, "oidc-server")
+	// getFromConfig(params, "oidc-client-id")
+	// getFromConfig(params, "oidc-client-secret")
+	// getFromConfig(params, "oidc-tenant-id")
+	// getFromConfig(params, "cluster-url")
+	// getFromConfig(params, "cluster-auth")
+	// getFromConfig(params, "cluster-id")
+
+	// getFromConfig(params, "login")
+	// getFromConfig(params, "azure-kubelogin")
 
 	for i, arg := range args {
 		if arg == "--oidc-user" {
@@ -300,6 +301,12 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 		if arg == "--azure-kubelogin" {
 			addItem(params, "azure-kubelogin", args[i+1])
 		}
+		if arg == "--config" {
+			addItem(params, "config", args[i+1])
+		}
+		if arg == "--no-input" {
+			addItem(params, "no-input", args[i+1])
+		}
 	}
 	for i, arg := range args {
 		if arg == "--idp-protocol" {
@@ -309,12 +316,12 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	return "", false, nil
 }
 
-func getFromConfig(params *app.UseInput, key string) {
-	value, err := config.GetValue(key, "eks")
-	if err == nil && value != "" {
-		addItem(params, key, value)
-	}
-}
+// func getFromConfig(params *app.UseInput, key string) {
+// 	value, err := config.GetValue(key, "eks")
+// 	if err == nil && value != "" {
+// 		addItem(params, key, value)
+// 	}
+// }
 
 func addItem(params *app.UseInput, key string, value string) {
 	if params.ConfigSet.Exists(key) {
