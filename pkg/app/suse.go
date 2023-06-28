@@ -24,7 +24,6 @@ import (
 	"os/exec"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
-	config11 "github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/prompt"
 	"go.uber.org/zap"
 )
@@ -90,11 +89,9 @@ func (a *App) Suse(ctx context.Context, input *UseInput) error {
 		entry := historyv1alpha.NewHistoryEntry()
 		entry.Spec.Alias = input.Alias
 		entry.Spec.ConfigFile = input.Kubeconfig
-		input.Username = oidcClientID
-		input.ConfigSet.Add(&config11.Item{Name: "username", Type: config11.ItemType("string"), Value: oidcClientID, DefaultValue: ""})
 		entry.Spec.Flags = a.filterConfig(input)
 		entry.Spec.Identity = "oidc"
-		// entry.Spec oidcClientID
+		entry.Spec.Flags["username"] = oidcClientID
 		entry.Spec.Provider = "azure-ad"
 		entry.Spec.ProviderID = clusterID
 

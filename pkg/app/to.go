@@ -55,8 +55,11 @@ func (a *App) ConnectTo(ctx context.Context, params *ConnectToInput) error {
 	if entry == nil {
 		return history.ErrEntryNotFound
 	}
-	historyID := entry.ObjectMeta.Name
 
+	setContext(entry.Spec.ProviderID, entry.Spec.Flags["username"])
+	return nil
+
+	historyID := entry.ObjectMeta.Name
 	cs, err := a.buildConnectToConfig(params.ConfigFile, entry.Spec.Provider, entry.Spec.Identity, entry)
 	if err != nil {
 		return fmt.Errorf("building connectTo config set: %w", err)
