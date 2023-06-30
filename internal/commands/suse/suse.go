@@ -17,14 +17,18 @@ limitations under the License.
 package suse
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-
+	kconnectv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/internal/helpers"
 	"github.com/fidelity/kconnect/pkg/app"
 	"github.com/fidelity/kconnect/pkg/config"
@@ -32,9 +36,12 @@ import (
 	"github.com/fidelity/kconnect/pkg/flags"
 	"github.com/fidelity/kconnect/pkg/history"
 	"github.com/fidelity/kconnect/pkg/history/loader"
+	khttp "github.com/fidelity/kconnect/pkg/http"
 	"github.com/fidelity/kconnect/pkg/provider/common"
 	"github.com/fidelity/kconnect/pkg/provider/registry"
 	"github.com/fidelity/kconnect/pkg/utils"
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var (
@@ -177,7 +184,7 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zap.S().Debugw("running `use` command", "provider", registration.Name)
-
+			setupIdpProtocol(cmd, os.Args, params)
 			if err := ensureConfigFolder(defaults.AppDirectory()); err != nil {
 				return fmt.Errorf("ensuring app directory exists: %w", err)
 			}
@@ -261,17 +268,63 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) e
 
 func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	// look for a flag first
-	// getFromConfig(params, "oidc-user")
-	// getFromConfig(params, "oidc-server")
-	// getFromConfig(params, "oidc-client-id")
-	// getFromConfig(params, "oidc-client-secret")
-	// getFromConfig(params, "oidc-tenant-id")
-	// getFromConfig(params, "cluster-url")
-	// getFromConfig(params, "cluster-auth")
-	// getFromConfig(params, "cluster-id")
+	getFromConfig(params, "oidc-user")
+	getFromConfig(params, "oidc-server")
+	getFromConfig(params, "oidc-client-id")
+	getFromConfig(params, "oidc-client-secret")
+	getFromConfig(params, "oidc-tenant-id")
+	getFromConfig(params, "cluster-url")
+	getFromConfig(params, "cluster-auth")
+	getFromConfig(params, "cluster-id")
 
-	// getFromConfig(params, "login")
-	// getFromConfig(params, "azure-kubelogin")
+	getFromConfig(params, "login")
+	getFromConfig(params, "azure-kubelogin")
+	getFromConfig(params, "config-url")
+	getFromConfig(params, "ca-cert")
+
+	for i, arg := range args {
+		if arg == "--config-url" {
+			addItem(params, "config-url", args[i+1])
+		}
+		if arg == "--ca-cert" {
+			addItem(params, "ca-cert", args[i+1])
+		}
+	}
+
+	if params.ConfigSet.Get("config-url") != nil {
+		config := params.ConfigSet.Get("config-url").Value
+		if config != nil {
+			configValue := config.(string)
+			if strings.HasPrefix(configValue, "https://") {
+				if params.ConfigSet.Get("ca-cert") != nil {
+					caCert := params.ConfigSet.Get("ca-cert").Value
+					if caCert != nil {
+						SetTransport(caCert.(string))
+					}
+				} else {
+					SetTransport("")
+				}
+
+				kclient := khttp.NewHTTPClient()
+				res, err := kclient.Get(configValue, nil)
+				if err == nil {
+					appConfiguration := &kconnectv1alpha.Configuration{}
+					if err := json.Unmarshal([]byte(res.Body()), appConfiguration); err == nil {
+						eks := appConfiguration.Spec.Providers["eks"]
+						for k, v := range eks {
+							if k != "" && v != "" {
+								addItem(params, k, v)
+							}
+						}
+					} else {
+						panic("bad http config body")
+					}
+				} else {
+					panic(err)
+				}
+			}
+		}
+	}
 
 	for i, arg := range args {
 		if arg == "--oidc-user" {
@@ -295,17 +348,14 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 		if arg == "--cluster-auth" {
 			addItem(params, "cluster-auth", args[i+1])
 		}
+		if arg == "--cluster-id" {
+			addItem(params, "cluster-id", args[i+1])
+		}
 		if arg == "--login" {
 			addItem(params, "login", args[i+1])
 		}
 		if arg == "--azure-kubelogin" {
 			addItem(params, "azure-kubelogin", args[i+1])
-		}
-		if arg == "--config" {
-			addItem(params, "config", args[i+1])
-		}
-		if arg == "--no-input" {
-			addItem(params, "no-input", args[i+1])
 		}
 	}
 	for i, arg := range args {
@@ -316,12 +366,32 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	return "", false, nil
 }
 
-// func getFromConfig(params *app.UseInput, key string) {
-// 	value, err := config.GetValue(key, "eks")
-// 	if err == nil && value != "" {
-// 		addItem(params, key, value)
-// 	}
-// }
+func getFromConfig(params *app.UseInput, key string) {
+	value, err := config.GetValue(key, "eks")
+	if err == nil && value != "" {
+		addItem(params, key, value)
+	}
+}
+
+func SetTransport(file string) {
+
+	var config *tls.Config
+	if file != "" {
+		caCert, err := ioutil.ReadFile(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		config = &tls.Config{
+			RootCAs: caCertPool,
+		}
+	} else {
+		config = &tls.Config{InsecureSkipVerify: true}
+	}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = config
+
+}
 
 func addItem(params *app.UseInput, key string, value string) {
 	if params.ConfigSet.Exists(key) {

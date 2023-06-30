@@ -18,8 +18,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os/exec"
 
@@ -28,50 +26,21 @@ import (
 	"go.uber.org/zap"
 )
 
-type eks struct {
-	ClusterID        string `json:"cluster-id"`
-	OidcServer       string `json:"oidc-server"`
-	OidcClientId     string `json:"oidc-client-id"`
-	OidcClientSecret string `json:"oidc-client-secret"`
-	ClusterUrl       string `json:"cluster-url"`
-	ClusterAuth      string `json:"cluster-auth"`
-	LoginType        string `json:"login-type"`
-}
-
 func (a *App) Suse(ctx context.Context, input *UseInput) error {
 	a.logger.Debug("use command")
 
-	config := getValue(input, true, "config", "input config file path", true)
-
-	res, err := a.httpClient.Get(config, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	eks := &eks{}
-	if err := json.Unmarshal([]byte(res.Body()), eks); err != nil {
-		return errors.New("bad payload")
-	}
-
-	clusterID := eks.ClusterID
+	clusterID := *input.ClusterID
 	if clusterID == "" {
-		panic("cluster ID is not set!")
+		clusterID = getValue(input, "cluster-id", "input cluster ID.", true)
 	}
-
-	clusterUrl := eks.ClusterUrl
-	authority := eks.ClusterAuth
-	oidcServer := eks.OidcServer
-
-	oidcClientID := eks.OidcClientId
-	oidcClientSecret := eks.OidcClientSecret
-
-	// login := ""
-	// oidcUser := ""
-	// tenantID := ""
-	// azLogin := getValue(input, true, "azure-kubelogin", "Use azure kubelogin.", false)
-	// if login == "" {
-	// 	login = "devicecode"
-	// }
+	clusterUrl := getValue(input, "cluster-url", "input cluster url.", false)
+	authority := getValue(input, "cluster-auth", "input certificate authority data.", false)
+	oidcServer := getValue(input, "oidc-server", "input oidc server.", true)
+	oidcClientID := getValue(input, "oidc-client-id", "input oidc client ID.", true)
+	oidcClientSecret := getValue(input, "oidc-client-secret", "input oidc client secret.", true)
+	// tenantID := getValue(input, true, "oidc-tenant-id", "input tenant ID.", false)
+	// login := getValue(input, "login", "input login type.", false)
+	// azLogin := getValue(input, "azure-kubelogin", "Use azure kubelogin.", false)
 
 	if clusterUrl != "" {
 		setCluster(clusterID, clusterUrl, authority)
@@ -105,32 +74,38 @@ func (a *App) Suse(ctx context.Context, input *UseInput) error {
 
 }
 
-func getValue(input *UseInput, noInput bool, key string, msg string, required bool) (value string) {
-	if noInput {
+func getValue(input *UseInput, key string, msg string, required bool) (value string) {
+	// if noInput {
+	item := input.ConfigSet.Get(key)
+	if item == nil {
+		value = readUserInput(input, key, msg, required)
+	} else {
+		value = item.Value.(string)
+		fmt.Println("Use default value for " + key + ", " + value)
+	}
+	// }
+	if required && value == "" {
+		panic("You need to input, no default value found for " + key)
+	}
+	return
+}
+
+func readUserInput(input *UseInput, key string, msg string, required bool) string {
+	userInput, _ := prompt.Input(key, msg, false)
+	if userInput == "" {
 		item := input.ConfigSet.Get(key)
 		if item == nil {
 			if required {
 				panic(key + " is neither passed nor found in config file!")
 			}
 		} else {
-			value = item.Value.(string)
+			return item.Value.(string)
 		}
 	} else {
-		userInput, _ := prompt.Input(key, msg, false)
-		if userInput == "" {
-			item := input.ConfigSet.Get(key)
-			if item == nil {
-				if required {
-					panic(key + " is neither passed nor found in config file!")
-				}
-			} else {
-				value = item.Value.(string)
-			}
-		} else {
-			value = userInput
-		}
+		fmt.Println("Use input for " + key + ", " + userInput)
+		return userInput
 	}
-	return
+	return ""
 }
 
 func setContext(clusterID string, oidcUser string) {
