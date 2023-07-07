@@ -281,6 +281,7 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	getFromConfig(params, "azure-kubelogin")
 	getFromConfig(params, "config-url")
 	getFromConfig(params, "ca-cert")
+	getFromConfig(params, "oidc-use-pkce")
 
 	for i, arg := range args {
 		if arg == "--config-url" {
@@ -356,6 +357,9 @@ func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 		}
 		if arg == "--azure-kubelogin" {
 			addItem(params, "azure-kubelogin", args[i+1])
+		}
+		if arg == "--oidc-use-pkce" {
+			addItem(params, "oidc-use-pkce", "true")
 		}
 	}
 	for i, arg := range args {

@@ -37,7 +37,15 @@ func (a *App) Suse(ctx context.Context, input *UseInput) error {
 	authority := getValue(input, "cluster-auth", "input certificate authority data.", false)
 	oidcServer := getValue(input, "oidc-server", "input oidc server.", true)
 	oidcClientID := getValue(input, "oidc-client-id", "input oidc client ID.", true)
-	oidcClientSecret := getValue(input, "oidc-client-secret", "input oidc client secret.", true)
+	var oidcClientSecret string
+
+	usePkce := false
+	oidcUsePkce := input.ConfigSet.Get("oidc-use-pkce")
+	if oidcUsePkce != nil {
+		usePkce = true
+	} else {
+		oidcClientSecret = getValue(input, "oidc-client-secret", "input oidc client secret.", true)
+	}
 	// tenantID := getValue(input, true, "oidc-tenant-id", "input tenant ID.", false)
 	// login := getValue(input, "login", "input login type.", false)
 	// azLogin := getValue(input, "azure-kubelogin", "Use azure kubelogin.", false)
@@ -49,7 +57,11 @@ func (a *App) Suse(ctx context.Context, input *UseInput) error {
 	// if azLogin == "true" {
 	// 	setCredentials(clusterID, oidcServer, oidcUser, oidcClientID, oidcClientSecret, tenantID, login)
 	// } else {
-	setCredentials2(clusterID, oidcServer, oidcClientID, oidcClientID, oidcClientSecret)
+	if usePkce {
+		setCredentials3(clusterID, oidcServer, oidcClientID, oidcClientID)
+	} else {
+		setCredentials2(clusterID, oidcServer, oidcClientID, oidcClientID, oidcClientSecret)
+	}
 	// }
 
 	setContext(clusterID, oidcClientID)
@@ -150,6 +162,29 @@ func setCredentials2(clusterID string, oidcServer string, oidcUser string, oidcC
 		"--exec-arg=--oidc-issuer-url="+oidcServer,
 		"--exec-arg=--oidc-client-id="+oidcClientID,
 		"--exec-arg=--oidc-client-secret="+oidcClientSecret,
+		"--exec-arg=--insecure-skip-tls-verify").Output()
+
+	if err != nil {
+		zap.S().Errorf("Failed to setup user %s. Error: %s", oidcUser, err)
+	} else {
+		zap.S().Infof("Setup user successfully. Output: %s", output)
+	}
+
+}
+
+func setCredentials3(clusterID string, oidcServer string, oidcUser string, oidcClientID string) {
+
+	zap.S().Infof("Setting up users for cluster %s", clusterID)
+
+	output, err := exec.Command("kubectl", "config",
+		"set-credentials", oidcUser,
+		"--exec-api-version", "client.authentication.k8s.io/v1beta1",
+		"--exec-command", "kubectl",
+		"--exec-arg=oidc-login",
+		"--exec-arg=get-token",
+		"--exec-arg=--oidc-issuer-url="+oidcServer,
+		"--exec-arg=--oidc-client-id="+oidcClientID,
+		"--exec-arg=--oidc-use-pkce",
 		"--exec-arg=--insecure-skip-tls-verify").Output()
 
 	if err != nil {
