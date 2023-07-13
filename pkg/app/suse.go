@@ -91,6 +91,10 @@ func getValue(input *UseInput, key string, msg string, required bool) (value str
 	item := input.ConfigSet.Get(key)
 	if item == nil {
 		value = readUserInput(input, key, msg, required)
+	} else if item.Value == nil {
+		value = readUserInput(input, key, msg, required)
+	} else if item.Value.(string) == "" {
+		value = readUserInput(input, key, msg, required)
 	} else {
 		value = item.Value.(string)
 		fmt.Println("Use default value for " + key + ", " + value)
