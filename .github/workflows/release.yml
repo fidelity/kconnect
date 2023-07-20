@@ -12,18 +12,18 @@ jobs:
           DOCKER_CLI_EXPERIMENTAL: "enabled"
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
               with:
                   fetch-depth: 0
                   submodules: true
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v1
+              uses: docker/setup-qemu-action@v2
             - name: Set up Go
-              uses: actions/setup-go@v2
+              uses: actions/setup-go@v3
               with:
                   go-version: 1.17
             - name: Login to DockerHub
-              uses: docker/login-action@v1
+              uses: docker/login-action@v2
               with:
                 password: ${{secrets.DKR_TOKEN}}
                 username: ${{secrets.DKR_USER}}
@@ -34,9 +34,9 @@ jobs:
             #   env:
             #     SNAP_TOKEN: ${{secrets.SNAP_LOGIN}}
             - name: Run GoReleaser
-              uses: goreleaser/goreleaser-action@v2
+              uses: goreleaser/goreleaser-action@v3
               with:
                   version: latest
-                  args: release --rm-dist
+                  args: release --clean
               env:
                   GITHUB_TOKEN: ${{ secrets.GH_PAT }}

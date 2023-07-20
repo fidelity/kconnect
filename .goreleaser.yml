@@ -30,9 +30,10 @@ archives:
       id: default
       builds:
         - default
-      name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
-      replacements:
-        darwin: macos
+      name_template: >-
+        {{ .ProjectName }}_
+        {{- if eq .Os "darwin" }}macos{{ end }}_
+        {{ .Arch }}
       format: tar.gz
       format_overrides:
           - goos: windows
@@ -55,7 +56,7 @@ changelog:
 
 brews:
   -
-    tap:
+    repository:
       owner: fidelity
       name: homebrew-tap
     homepage: "https://github.com/fidelity/kconnect"
@@ -181,9 +182,10 @@ docker_manifests:
 nfpms:
   -
     package_name: kconnect
-    replacements:
-      darwin: macos
-    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    file_name_template: >-
+        {{ .ProjectName }}_
+        {{- if eq .Os "darwin" }}macos{{ end }}_
+        {{ .Arch }}
     vendor: kconnect authors
     maintainer: Robert Casale <robert.casale@fidelity.com>
     homepage: https://github.com/fidelity/kconnect
@@ -199,9 +201,10 @@ nfpms:
 # snapcrafts:
 #   -
 #     name: kconnect
-#     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-#     replacements:
-#       darwin: macos
+#     name_template: >-
+#        {{ .ProjectName }}_
+#        {{- if eq .Os "darwin" }}macos{{ end }}_
+#        {{ .Arch }}
 #     publish: true
 #     summary: "The Kubernetes Connection Manager CLI"
 #     description: "kconnect is a CLI utility that can be used to discover and securely access Kubernetes clusters across multiple operating environments."
