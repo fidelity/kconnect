@@ -30,10 +30,7 @@ archives:
       id: default
       builds:
         - default
-      name_template: >-
-        {{ .ProjectName }}_
-        {{- if eq .Os "darwin" }}macos{{ end }}_
-        {{ .Arch }}
+      name_template: '{{ .ProjectName }}_{{ if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}'
       format: tar.gz
       format_overrides:
           - goos: windows
@@ -182,10 +179,7 @@ docker_manifests:
 nfpms:
   -
     package_name: kconnect
-    file_name_template: >-
-        {{ .ProjectName }}_
-        {{- if eq .Os "darwin" }}macos{{ end }}_
-        {{ .Arch }}
+    file_name_template: '{{ .ProjectName }}_{{ if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}'
     vendor: kconnect authors
     maintainer: Robert Casale <robert.casale@fidelity.com>
     homepage: https://github.com/fidelity/kconnect
