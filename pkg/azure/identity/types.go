@@ -29,6 +29,7 @@ type Client interface {
 	GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudienceURN string, endpoint *wstrust.Endpoint) (*WSTrustResponse, error)
 	GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*OauthToken, error)
 	GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig, resource string) (*OauthToken, error)
+	GetOauth2TokenFromAzureAccessToken(cfg *AuthenticationConfig, resource string) (*OauthToken, error)
 }
 
 type AuthorityConfig struct {
@@ -104,6 +105,14 @@ type RequestSecurityTokenResponse struct {
 
 type RequestedSecurityToken struct {
 	Assertion string `xml:",innerxml"`
+}
+
+type AzureAccessToken struct {
+	Type         string `json:"tokenType"`
+	ExpiresOn    string `json:"expiresOn"`
+	Subscription string `json:"subscription"`
+	AccessToken  string `json:"accessToken"`
+	Tenant       string `json:"tenant"`
 }
 
 type OauthToken struct {

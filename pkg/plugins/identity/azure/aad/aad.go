@@ -17,10 +17,13 @@ limitations under the License.
 package aad
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -129,12 +132,27 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 		return nil, fmt.Errorf("getting user realm: %w", err)
 	}
 
-	id := identity.NewActiveDirectoryIdentity(authCfg, userRealm, ProviderName, p.httpClient)
+	interactiveLoginRequired := false
 
-	_, err = exec.Command("az", "login", "--username", cfg.Username, "--password", cfg.Password).Output()
+	cmd := exec.Command("az", "login", "--username", cfg.Username, "--password", cfg.Password)
+	stderr := &bytes.Buffer{}
+	cmd.Stderr = stderr
+	err = cmd.Run()
+
 	if err != nil {
-		return nil, fmt.Errorf("azure cli: %w", err)
+		if strings.Contains(stderr.String(), "Interactive authentication is needed.") {
+			interactiveLoginRequired = true
+			cmd = exec.Command("az", "login", "--tenant", cfg.TenantID)
+			cmd.Stdout = nil
+			cmd.Stdin = os.Stdin
+			cmd.Stderr = os.Stderr
+			cmd.Run()
+		} else {
+			return nil, fmt.Errorf("azure cli: %w", err)
+		}
 	}
+
+	id := identity.NewActiveDirectoryIdentity(authCfg, userRealm, ProviderName, p.httpClient, interactiveLoginRequired)
 
 	return &provid.AuthenticateOutput{
 		Identity: id,

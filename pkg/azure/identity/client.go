@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"sort"
 	"strings"
 	"text/template"
@@ -151,6 +152,28 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 	}
 
 	return token, err
+}
+
+func (c *AzureADClient) GetOauth2TokenFromAzureAccessToken(cfg *AuthenticationConfig, resource string) (*OauthToken, error) {
+
+	output, err := exec.Command("az", "account", "get-access-token", "--resource", resource).Output()
+
+	if err != nil {
+		return nil, fmt.Errorf("error calling `az account get-access-token` from azure-cli: %w", err)
+	}
+
+	azureAccessToken := &AzureAccessToken{}
+	if err := json.Unmarshal(output, azureAccessToken); err != nil {
+		return nil, fmt.Errorf("unmarshalling azure access token: %w", err)
+	}
+
+	token := &OauthToken{
+		Type:        azureAccessToken.Type,
+		Resource:    resource,
+		AccessToken: azureAccessToken.AccessToken,
+	}
+
+	return token, nil
 }
 
 func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig, resource string) (*OauthToken, error) {
