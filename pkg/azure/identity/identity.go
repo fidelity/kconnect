@@ -57,13 +57,14 @@ func (a *AuthorizerIdentity) IdentityProviderName() string {
 	return a.idProviderName
 }
 
-func NewActiveDirectoryIdentity(authCfg *AuthenticationConfig, userRealm *UserRealm, idProviderName string, httpClient khttp.Client) *ActiveDirectoryIdentity {
+func NewActiveDirectoryIdentity(authCfg *AuthenticationConfig, userRealm *UserRealm, idProviderName string, httpClient khttp.Client, interactiveLoginRequired bool) *ActiveDirectoryIdentity {
 	return &ActiveDirectoryIdentity{
 		//authorizer:     authorizer,
-		idProviderName: idProviderName,
-		realm:          userRealm,
-		authCfg:        authCfg,
-		httpClient:     httpClient,
+		idProviderName:           idProviderName,
+		realm:                    userRealm,
+		authCfg:                  authCfg,
+		httpClient:               httpClient,
+		interactiveLoginRequired: interactiveLoginRequired,
 	}
 }
 
@@ -71,8 +72,9 @@ type ActiveDirectoryIdentity struct {
 	authCfg *AuthenticationConfig
 	realm   *UserRealm
 
-	idProviderName string
-	httpClient     khttp.Client
+	idProviderName           string
+	httpClient               khttp.Client
+	interactiveLoginRequired bool
 }
 
 func (a *ActiveDirectoryIdentity) Type() string {
@@ -119,13 +121,21 @@ func (a *ActiveDirectoryIdentity) GetOAuthToken(resource string) (*OauthToken, e
 		}
 
 	case AccountTypeManaged:
-		token, err = identityClient.GetOauth2TokenFromUsernamePassword(a.authCfg, resource)
+		if a.interactiveLoginRequired {
+			token, err = identityClient.GetOauth2TokenFromAzureAccessToken(a.authCfg, resource)
+		} else {
+			token, err = identityClient.GetOauth2TokenFromUsernamePassword(a.authCfg, resource)
+		}
 		if err != nil {
 			return nil, err //TODO: specific error
 		}
 	case AccountTypeUnknown: //TODO: need to check other parts
 		if a.realm.CloudInstanceName == "microsoftonline.com" && a.realm.CloudAudienceURN == "urn:federation:MicrosoftOnline" {
-			token, err = identityClient.GetOauth2TokenFromUsernamePassword(a.authCfg, resource)
+			if a.interactiveLoginRequired {
+				token, err = identityClient.GetOauth2TokenFromAzureAccessToken(a.authCfg, resource)
+			} else {
+				token, err = identityClient.GetOauth2TokenFromUsernamePassword(a.authCfg, resource)
+			}
 			if err != nil {
 				return nil, err //TODO: specific error
 			}
@@ -160,8 +170,9 @@ func (a *ActiveDirectoryIdentity) Clone(opts ...CloneOption) *ActiveDirectoryIde
 			FederationProtocol:    a.realm.FederationProtocol,
 			FederationMetadataURL: a.realm.FederationMetadataURL,
 		},
-		idProviderName: a.idProviderName,
-		httpClient:     a.httpClient,
+		idProviderName:           a.idProviderName,
+		httpClient:               a.httpClient,
+		interactiveLoginRequired: a.interactiveLoginRequired,
 	}
 	if a.authCfg.Endpoints != nil {
 		copyID.authCfg.Endpoints = &Endpoints{

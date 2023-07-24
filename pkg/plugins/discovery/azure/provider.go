@@ -105,7 +105,7 @@ func (p *aksClusterProvider) Name() string {
 func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
 	cfg := &aksClusterProviderConfig{}
 	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
+		return fmt.Errorf("unmarshalling config items into aksClusteProviderConfig: %w", err)
 	}
 	validate := validator.New()
 	if err := validate.Struct(cfg); err != nil {
