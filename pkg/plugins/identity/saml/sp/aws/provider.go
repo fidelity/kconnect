@@ -27,6 +27,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 
@@ -266,7 +267,8 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, rol
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Region: &account.Region,
+		Region:              &account.Region,
+		STSRegionalEndpoint: endpoints.RegionalSTSEndpoint,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating aws session: %w", err)
