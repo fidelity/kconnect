@@ -16,6 +16,8 @@ limitations under the License.
 
 package oidc
 
+const Oidc = "oidc"
+
 // Identity represents an oidc identity
 type Identity struct {
 	OidcServer string
@@ -25,11 +27,11 @@ type Identity struct {
 }
 
 func (i *Identity) Type() string {
-	return "oidc"
+	return Oidc
 }
 
 func (i *Identity) Name() string {
-	return "oidc"
+	return Oidc
 }
 
 func (i *Identity) IsExpired() bool {
@@ -37,5 +39,5 @@ func (i *Identity) IsExpired() bool {
 }
 
 func (i *Identity) IdentityProviderName() string {
-	return "oidc"
+	return Oidc
 }

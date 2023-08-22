@@ -105,37 +105,43 @@ func (p *oidcIdentityProvider) getConfigFromUrl(configSet config.ConfigurationSe
 		config := configSet.Get("config-url").Value
 		if config != nil {
 			configValue := config.(string)
-			if strings.HasPrefix(configValue, "http://") {
-				if configSet.Get("ca-cert") != nil {
-					caCert := configSet.Get("ca-cert").Value
-					if caCert != nil {
-						SetTransport(caCert.(string))
-					}
-				} else {
-					SetTransport("")
-				}
-
-				kclient := khttp.NewHTTPClient()
-				res, err := kclient.Get(configValue, nil)
-				if err == nil {
-					appConfiguration := &kconnectv1alpha.Configuration{}
-					if err := json.Unmarshal([]byte(res.Body()), appConfiguration); err == nil {
-						oidc := appConfiguration.Spec.Providers["oidc"]
-						for k, v := range oidc {
-							if k != "" && v != "" {
-								addItem(configSet, k, v)
-							}
-						}
-					} else {
-						p.logger.Errorf("Error loading payload from config URL, error is: %w", err)
-					}
-				} else {
-					p.logger.Errorf("Error calling config URL, error is: %w", err)
-				}
+			if strings.HasPrefix(configValue, "https://") {
+				readConfigs(p, configSet, configValue)
 			}
 		}
 	}
+}
 
+func readConfigs(p *oidcIdentityProvider, configSet config.ConfigurationSet, configValue string) {
+	if configSet.Get("ca-cert") != nil {
+		caCert := configSet.Get("ca-cert").Value
+		if caCert != nil {
+			SetTransport(caCert.(string))
+		}
+	} else {
+		SetTransport("")
+	}
+	kclient := khttp.NewHTTPClient()
+	res, err := kclient.Get(configValue, nil)
+	if err == nil {
+		addItems(p, configSet, res.Body())
+	} else {
+		p.logger.Errorf("Error calling config URL, error is: %w", err)
+	}
+}
+
+func addItems(p *oidcIdentityProvider, configSet config.ConfigurationSet, body string) {
+	appConfiguration := &kconnectv1alpha.Configuration{}
+	if err := json.Unmarshal([]byte(body), appConfiguration); err == nil {
+		oidc := appConfiguration.Spec.Providers["oidc"]
+		for k, v := range oidc {
+			if k != "" && v != "" {
+				addItem(configSet, k, v)
+			}
+		}
+	} else {
+		p.logger.Errorf("Error loading payload from config URL, error is: %w", err)
+	}
 }
 
 func addItem(configSet config.ConfigurationSet, key string, value string) {
