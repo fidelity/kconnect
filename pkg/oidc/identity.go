@@ -14,12 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package oidc
 
-import (
-	// Initialize the discovery plugins
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/aws"
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/oidc"
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/rancher"
-)
+// Identity represents an oidc identity
+type Identity struct {
+	OidcServer string
+	OidcId     string
+	OidcSecret string
+	UsePkce    string
+}
+
+func (i *Identity) Type() string {
+	return "oidc"
+}
+
+func (i *Identity) Name() string {
+	return "oidc"
+}
+
+func (i *Identity) IsExpired() bool {
+	return true
+}
+
+func (i *Identity) IdentityProviderName() string {
+	return "oidc"
+}

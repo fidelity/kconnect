@@ -14,12 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package oidc
 
 import (
-	// Initialize the discovery plugins
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/aws"
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/azure"
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/oidc"
-	_ "github.com/fidelity/kconnect/pkg/plugins/discovery/rancher"
+	"context"
+
+	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
+
+func (p *oidcClusterProvider) Discover(ctx context.Context, input *discovery.DiscoverInput) (*discovery.DiscoverOutput, error) {
+
+	cluster, _ := p.getCluster(ctx)
+	clusters := make(map[string]*discovery.Cluster)
+	clusters[cluster.ID] = cluster
+	discoverOutput := &discovery.DiscoverOutput{
+		DiscoveryProvider: ProviderName,
+		IdentityProvider:  "oidc",
+		Clusters:          clusters,
+	}
+
+	return discoverOutput, nil
+}
