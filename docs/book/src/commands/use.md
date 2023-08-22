@@ -76,6 +76,7 @@ kconnect use [flags]
 * [kconnect](index.md)	 - The Kubernetes Connection Manager CLI
 * [kconnect use aks](use_aks.md)	 - Connect to the aks cluster provider and choose a cluster.
 * [kconnect use eks](use_eks.md)	 - Connect to the eks cluster provider and choose a cluster.
+* [kconnect use oidc](use_oidc.md)	 - Connect to the oidc cluster provider and choose a cluster.
 * [kconnect use rancher](use_rancher.md)	 - Connect to the rancher cluster provider and choose a cluster.
 
 

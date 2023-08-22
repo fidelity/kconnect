@@ -21,6 +21,7 @@ import (
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/aws/iam"
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/aad"
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/azure/env"
+	_ "github.com/fidelity/kconnect/pkg/plugins/identity/oidc"
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/rancher/activedirectory"
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/saml"
 	_ "github.com/fidelity/kconnect/pkg/plugins/identity/static/token"
