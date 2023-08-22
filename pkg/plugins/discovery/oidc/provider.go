@@ -102,8 +102,22 @@ func (p *oidcClusterProvider) setup(cs config.ConfigurationSet, userID identity.
 	if err := p.readRequiredFields(); err != nil {
 		return err
 	}
+	p.logParameters()
 
 	return nil
+}
+
+func (p *oidcClusterProvider) logParameters() {
+
+	p.logger.Infof("Using oidc-server-url: %s.", p.identity.OidcServer)
+	p.logger.Infof("Using oidc-client-id: %s.", p.identity.OidcId)
+	if p.identity.UsePkce == True {
+		p.logger.Infof("using pkce.")
+	}
+	p.logger.Infof("Using cluster-id: %s.", *p.config.ClusterID)
+	p.logger.Infof("Using cluster-url: %s.", p.config.ClusterUrl)
+	p.logger.Infof("Using cluster-auth: %s.", p.config.ClusterAuth)
+
 }
 
 // For required parameter, if not exists in default config file or config url, read user input.
@@ -125,7 +139,7 @@ func (p *oidcClusterProvider) readRequiredFields() error {
 		p.identity.OidcServer = value
 	}
 
-	if p.identity.UsePkce == "" && p.identity.OidcSecret == "" {
+	if p.identity.UsePkce != True && p.identity.OidcSecret == "" {
 		value, err := readUserInput(oidc.OidcSecretConfigItem, oidc.OidcSecretConfigDescription)
 		if err != nil {
 			return err

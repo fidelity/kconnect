@@ -26,6 +26,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
+const True = "true"
+
 func (p *oidcClusterProvider) GetConfig(ctx context.Context, input *discovery.GetConfigInput) (*discovery.GetConfigOutput, error) {
 
 	clusterName := input.Cluster.Name
@@ -61,7 +63,7 @@ func (p *oidcClusterProvider) GetConfig(ctx context.Context, input *discovery.Ge
 		"--oidc-client-id=" + oidcID.OidcId,
 	}
 
-	if oidcID.UsePkce == "true" {
+	if oidcID.UsePkce == True {
 		args = append(args, "--oidc-use-pkce")
 	} else {
 		args = append(args, "--oidc-client-secret="+oidcID.OidcSecret)
