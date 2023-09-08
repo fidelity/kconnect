@@ -254,6 +254,7 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 
 func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (*historyv1alpha.HistoryEntry, bool) {
 	for _, existingEntry := range historyList.Items {
+		entry.Spec.ConfigFile = existingEntry.Spec.ConfigFile // Ignore this field to prevent a duplicated alias from being created if the user passed -k
 		if existingEntry.Equals(entry) {
 			return &existingEntry, true
 		}
