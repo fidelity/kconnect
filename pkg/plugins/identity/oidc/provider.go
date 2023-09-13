@@ -22,6 +22,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 
 	"go.uber.org/zap"
@@ -38,6 +39,7 @@ import (
 
 const (
 	ProviderName = "oidc"
+	True         = "true"
 )
 
 func init() {
@@ -95,9 +97,72 @@ func (p *oidcIdentityProvider) Authenticate(ctx context.Context, input *identity
 		UsePkce:    cfg.UsePkce,
 	}
 
+	ids, err := p.readRequiredFields(*id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = executeOidcLogin(ids); err != nil {
+		return nil, err
+	}
+
 	return &identity.AuthenticateOutput{
-		Identity: id,
+		Identity: &ids,
 	}, nil
+}
+
+func executeOidcLogin(id oidc.Identity) error {
+
+	args := []string{
+		"oidc-login",
+		"get-token",
+		"--oidc-issuer-url=" + id.OidcServer,
+		"--oidc-client-id=" + id.OidcId,
+	}
+
+	if id.UsePkce == True {
+		args = append(args, "--oidc-use-pkce")
+	} else {
+		args = append(args, "--oidc-client-secret="+id.OidcSecret)
+	}
+	args = append(args, "--insecure-skip-tls-verify")
+
+	cmd := exec.Command("kubectl", args...)
+	_, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("error executing kubectl oidc-login: %w", err)
+	}
+	return nil
+}
+
+func (p *oidcIdentityProvider) readRequiredFields(id oidc.Identity) (oidc.Identity, error) {
+
+	if id.OidcId == "" {
+		value, err := oidc.ReadUserInput(oidc.OidcIdConfigItem, oidc.OidcIdConfigDescription)
+		if err != nil {
+			return id, err
+		}
+		id.OidcId = value
+	}
+
+	if id.OidcServer == "" {
+		value, err := oidc.ReadUserInput(oidc.OidcServerConfigItem, oidc.OidcServerConfigDescription)
+		if err != nil {
+			return id, err
+		}
+		id.OidcServer = value
+	}
+
+	if id.UsePkce != True && id.OidcSecret == "" {
+		value, err := oidc.ReadUserInput(oidc.OidcSecretConfigItem, oidc.OidcSecretConfigDescription)
+		if err != nil {
+			return id, err
+		}
+		id.OidcSecret = value
+	}
+
+	return id, nil
+
 }
 
 func (p *oidcIdentityProvider) getConfigFromUrl(configSet config.ConfigurationSet) {
@@ -113,13 +178,32 @@ func (p *oidcIdentityProvider) getConfigFromUrl(configSet config.ConfigurationSe
 }
 
 func readConfigs(p *oidcIdentityProvider, configSet config.ConfigurationSet, configValue string) {
-	if configSet.Get("ca-cert") != nil {
-		caCert := configSet.Get("ca-cert").Value
-		if caCert != nil {
-			SetTransport(caCert.(string))
+	skipSsl := false
+	if configSet.Get("skip-ssl") != nil {
+		skip := configSet.Get("skip-ssl").Value
+		if skip != nil {
+			if skip.(string) == True {
+				skipSsl = true
+			}
 		}
-	} else {
+	}
+	if skipSsl {
 		SetTransport("")
+	} else {
+		readCa := false
+		if configSet.Get("ca-cert") != nil {
+			caCert := configSet.Get("ca-cert").Value
+			if caCert != nil {
+				if caCert.(string) != "" {
+					readCa = true
+					SetTransport(caCert.(string))
+				}
+			}
+		}
+		if !readCa {
+			p.logger.Errorf("CA cert is required to call the config url.")
+			return
+		}
 	}
 	kclient := khttp.NewHTTPClient()
 	res, err := kclient.Get(configValue, nil)
