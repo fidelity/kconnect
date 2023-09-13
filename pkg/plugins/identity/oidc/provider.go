@@ -178,29 +178,13 @@ func (p *oidcIdentityProvider) getConfigFromUrl(configSet config.ConfigurationSe
 }
 
 func readConfigs(p *oidcIdentityProvider, configSet config.ConfigurationSet, configValue string) {
-	skipSsl := false
-	if configSet.Get("skip-ssl") != nil {
-		skip := configSet.Get("skip-ssl").Value
-		if skip != nil {
-			if skip.(string) == True {
-				skipSsl = true
-			}
-		}
-	}
-	if skipSsl {
+	if getValue(configSet, "skip-ssl") == True {
 		SetTransport("")
 	} else {
-		readCa := false
-		if configSet.Get("ca-cert") != nil {
-			caCert := configSet.Get("ca-cert").Value
-			if caCert != nil {
-				if caCert.(string) != "" {
-					readCa = true
-					SetTransport(caCert.(string))
-				}
-			}
-		}
-		if !readCa {
+		caCert := getValue(configSet, "ca-cert")
+		if caCert != "" {
+			SetTransport(caCert)
+		} else {
 			p.logger.Errorf("CA cert is required to call the config url.")
 			return
 		}
@@ -254,6 +238,16 @@ func SetTransport(file string) {
 		config = &tls.Config{InsecureSkipVerify: true}
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = config
+}
+
+func getValue(configSet config.ConfigurationSet, key string) (value string) {
+	if configSet.Get(key) != nil {
+		val := configSet.Get(key).Value
+		if val != nil {
+			value = val.(string)
+		}
+	}
+	return
 }
 
 // ConfigurationItems will return the configuration items for the identity plugin based
