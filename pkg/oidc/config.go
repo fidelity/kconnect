@@ -17,7 +17,10 @@ limitations under the License.
 package oidc
 
 import (
+	"fmt"
+
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/prompt"
 )
 
 const (
@@ -39,6 +42,8 @@ const (
 	ConfigUrlConfigDescription   = "configuration endpoint"
 	CaCertConfigItem             = "ca-cert"
 	CaCertConfigDescription      = "ca cert for configuration url"
+	SkipTlsVerifyConfigItem      = "skip-ssl"
+	SkipTlsVerifyDescription     = "flag to skip ssl for calling config url"
 )
 
 // SharedConfig will return shared configuration items for OIDC based cluster and identity providers
@@ -52,6 +57,15 @@ func SharedConfig() config.ConfigurationSet {
 	cs.String(ClusterAuthConfigItem, "", ClusterAuthConfigDescription) //nolint: errcheck
 	cs.String(ConfigUrlConfigItem, "", ConfigUrlConfigDescription)     //nolint: errcheck
 	cs.String(CaCertConfigItem, "", CaCertConfigDescription)           //nolint: errcheck
+	cs.String(SkipTlsVerifyConfigItem, "", SkipTlsVerifyDescription)   //nolint: errcheck
 
 	return cs
+}
+
+func ReadUserInput(key string, msg string) (string, error) {
+	userInput, err := prompt.Input(key, msg, false)
+	if userInput == "" || err != nil {
+		return userInput, fmt.Errorf("error reading input for %s", key)
+	}
+	return userInput, nil
 }

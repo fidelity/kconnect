@@ -73,3 +73,13 @@ func CheckKubeloginPrereq() error {
 	}
 	return nil
 }
+
+func CheckKubectlOidcLoginPrereq() error {
+
+	cmd := exec.Command("kubectl", "oidc-login", "version")
+	_, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("error finding kubectl oidc-login: %w", err)
+	}
+	return nil
+}

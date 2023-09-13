@@ -22,12 +22,12 @@ import (
 
 	"github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/oidc"
-	"github.com/fidelity/kconnect/pkg/prompt"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/common"
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
 	"github.com/fidelity/kconnect/pkg/provider/identity"
 	"github.com/fidelity/kconnect/pkg/provider/registry"
+	"github.com/fidelity/kconnect/pkg/utils"
 	"go.uber.org/zap"
 )
 
@@ -123,32 +123,8 @@ func (p *oidcClusterProvider) logParameters() {
 // For required parameter, if not exists in default config file or config url, read user input.
 func (p *oidcClusterProvider) readRequiredFields() error {
 
-	if p.identity.OidcId == "" {
-		value, err := readUserInput(oidc.OidcIdConfigItem, oidc.OidcIdConfigDescription)
-		if err != nil {
-			return err
-		}
-		p.identity.OidcId = value
-	}
-
-	if p.identity.OidcServer == "" {
-		value, err := readUserInput(oidc.OidcServerConfigItem, oidc.OidcServerConfigDescription)
-		if err != nil {
-			return err
-		}
-		p.identity.OidcServer = value
-	}
-
-	if p.identity.UsePkce != True && p.identity.OidcSecret == "" {
-		value, err := readUserInput(oidc.OidcSecretConfigItem, oidc.OidcSecretConfigDescription)
-		if err != nil {
-			return err
-		}
-		p.identity.OidcSecret = value
-	}
-
 	if p.config.ClusterUrl == "" {
-		value, err := readUserInput(oidc.ClusterUrlConfigItem, oidc.ClusterUrlConfigDescription)
+		value, err := oidc.ReadUserInput(oidc.ClusterUrlConfigItem, oidc.ClusterUrlConfigDescription)
 		if err != nil {
 			return err
 		}
@@ -156,7 +132,7 @@ func (p *oidcClusterProvider) readRequiredFields() error {
 	}
 
 	if p.config.ClusterAuth == "" {
-		value, err := readUserInput(oidc.ClusterAuthConfigItem, oidc.ClusterAuthConfigDescription)
+		value, err := oidc.ReadUserInput(oidc.ClusterAuthConfigItem, oidc.ClusterAuthConfigDescription)
 		if err != nil {
 			return err
 		}
@@ -164,7 +140,7 @@ func (p *oidcClusterProvider) readRequiredFields() error {
 	}
 
 	if *p.config.ClusterID == "" {
-		value, err := readUserInput(oidc.ClusterIdConfigItem, oidc.ClusterIdConfigDescription)
+		value, err := oidc.ReadUserInput(oidc.ClusterIdConfigItem, oidc.ClusterIdConfigDescription)
 		if err != nil {
 			return err
 		}
@@ -175,20 +151,12 @@ func (p *oidcClusterProvider) readRequiredFields() error {
 
 }
 
-func readUserInput(key string, msg string) (string, error) {
-	userInput, err := prompt.Input(key, msg, false)
-	if userInput == "" || err != nil {
-		return userInput, fmt.Errorf("error reading input for %s", key)
-	}
-	return userInput, nil
-}
-
 func (p *oidcClusterProvider) ListPreReqs() []*provider.PreReq {
 	return []*provider.PreReq{}
 }
 
 func (p *oidcClusterProvider) CheckPreReqs() error {
-	return nil
+	return utils.CheckKubectlOidcLoginPrereq()
 }
 
 // ConfigurationItems returns the configuration items for this provider

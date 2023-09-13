@@ -59,7 +59,7 @@ func (p *oidcClusterProvider) GetConfig(ctx context.Context, input *discovery.Ge
 	args := []string{
 		"oidc-login",
 		"get-token",
-		"--oidc-issuer-url=oidc-server",
+		"--oidc-issuer-url=" + oidcID.OidcServer,
 		"--oidc-client-id=" + oidcID.OidcId,
 	}
 
