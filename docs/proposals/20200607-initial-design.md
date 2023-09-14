@@ -21,7 +21,7 @@ Provide a CLI utility that can be used to discover and securely access Kubernete
 
 ## Motivation
 
-There doesn't exist a good open source solution that based on your user credentials (i.e. SAML, OAuth2/OIDC, IAM) will discover what Kuberneres clusters you have access to and how to get get the kubeconfig file for a cluster you have access to.
+There doesn't exist a good open source solution that based on your user credentials (i.e. SAML, OAuth2/OIDC, IAM) will discover what Kuberneres clusters you have access to and how to get the kubeconfig file for a cluster you have access to.
 
 For companies who have adopted Kubernetes as part a wider Cloud Native strategy and who operate a large fleet of clusters it is difficult for users to discover what cluster they have access to and how to access them. The problem of discovering what clusters you have access to is compounded for companies that have adopted multi-cloud or hybrid-cloud.
 
