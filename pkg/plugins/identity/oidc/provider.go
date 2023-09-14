@@ -38,8 +38,9 @@ import (
 )
 
 const (
-	ProviderName = "oidc"
-	True         = "true"
+	ProviderName      = "oidc"
+	True              = "true"
+	FailCallConfigUrl = "Failed accessing config url, you need to continue to input missing information."
 )
 
 func init() {
@@ -185,7 +186,8 @@ func readConfigs(p *oidcIdentityProvider, configSet config.ConfigurationSet, con
 		if caCert != "" {
 			SetTransport(caCert)
 		} else {
-			p.logger.Errorf("CA cert is required to call the config url.")
+			p.logger.Warnf("CA cert is required to call the config url.")
+			p.logger.Info(FailCallConfigUrl)
 			return
 		}
 	}
@@ -195,6 +197,7 @@ func readConfigs(p *oidcIdentityProvider, configSet config.ConfigurationSet, con
 		addItems(p, configSet, res.Body())
 	} else {
 		p.logger.Errorf("Error calling config URL, error is: %w", err)
+		p.logger.Info(FailCallConfigUrl)
 	}
 }
 
