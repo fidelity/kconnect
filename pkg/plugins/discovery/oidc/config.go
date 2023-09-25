@@ -68,7 +68,9 @@ func (p *oidcClusterProvider) GetConfig(ctx context.Context, input *discovery.Ge
 	} else {
 		args = append(args, "--oidc-client-secret="+oidcID.OidcSecret)
 	}
-	args = append(args, "--insecure-skip-tls-verify")
+	if oidcID.SkipOidcTlsVerify == True {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
 
 	execConfig := &api.ExecConfig{
 		APIVersion:      "client.authentication.k8s.io/v1beta1",
