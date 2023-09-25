@@ -44,20 +44,23 @@ const (
 	CaCertConfigDescription      = "ca cert for configuration url"
 	SkipTlsVerifyConfigItem      = "skip-ssl"
 	SkipTlsVerifyDescription     = "flag to skip ssl for calling config url"
+	SkipOidcTlsVerifyConfigItem  = "skip-oidc-ssl"
+	SkipOidcTlsVerifyDescription = "flag to skip ssl for calling oidc server"
 )
 
 // SharedConfig will return shared configuration items for OIDC based cluster and identity providers
 func SharedConfig() config.ConfigurationSet {
 	cs := config.NewConfigurationSet()
-	cs.String(OidcServerConfigItem, "", OidcServerConfigDescription)   //nolint: errcheck
-	cs.String(OidcIdConfigItem, "", OidcIdConfigDescription)           //nolint: errcheck
-	cs.String(OidcSecretConfigItem, "", OidcSecretConfigDescription)   //nolint: errcheck
-	cs.String(UsePkceConfigItem, "", UsePkceConfigDescription)         //nolint: errcheck
-	cs.String(ClusterUrlConfigItem, "", ClusterUrlConfigDescription)   //nolint: errcheck
-	cs.String(ClusterAuthConfigItem, "", ClusterAuthConfigDescription) //nolint: errcheck
-	cs.String(ConfigUrlConfigItem, "", ConfigUrlConfigDescription)     //nolint: errcheck
-	cs.String(CaCertConfigItem, "", CaCertConfigDescription)           //nolint: errcheck
-	cs.String(SkipTlsVerifyConfigItem, "", SkipTlsVerifyDescription)   //nolint: errcheck
+	cs.String(OidcServerConfigItem, "", OidcServerConfigDescription)         //nolint: errcheck
+	cs.String(OidcIdConfigItem, "", OidcIdConfigDescription)                 //nolint: errcheck
+	cs.String(OidcSecretConfigItem, "", OidcSecretConfigDescription)         //nolint: errcheck
+	cs.String(UsePkceConfigItem, "", UsePkceConfigDescription)               //nolint: errcheck
+	cs.String(ClusterUrlConfigItem, "", ClusterUrlConfigDescription)         //nolint: errcheck
+	cs.String(ClusterAuthConfigItem, "", ClusterAuthConfigDescription)       //nolint: errcheck
+	cs.String(ConfigUrlConfigItem, "", ConfigUrlConfigDescription)           //nolint: errcheck
+	cs.String(CaCertConfigItem, "", CaCertConfigDescription)                 //nolint: errcheck
+	cs.String(SkipTlsVerifyConfigItem, "", SkipTlsVerifyDescription)         //nolint: errcheck
+	cs.String(SkipOidcTlsVerifyConfigItem, "", SkipOidcTlsVerifyDescription) //nolint: errcheck
 
 	return cs
 }

@@ -67,6 +67,7 @@ kconnect use oidc [flags]
       --oidc-use-pkce string        if use pkce
       --password string             The password to use for authentication
       --set-current                 Sets the current context in the kubeconfig to the selected cluster (default true)
+      --skip-oidc-ssl string        flag to skip ssl for calling oidc server
       --skip-ssl string             flag to skip ssl for calling config url
       --username string             The username used for authentication
 ```
@@ -95,6 +96,7 @@ Use `--idp-protocol=oidc`
       --oidc-client-secret string   oidc client secret
       --oidc-server string          oidc server url
       --oidc-use-pkce string        if use pkce
+      --skip-oidc-ssl string        flag to skip ssl for calling oidc server
       --skip-ssl string             flag to skip ssl for calling config url
 ```
 

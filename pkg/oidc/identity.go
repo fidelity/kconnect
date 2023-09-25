@@ -20,10 +20,11 @@ const Oidc = "oidc"
 
 // Identity represents an oidc identity
 type Identity struct {
-	OidcServer string
-	OidcId     string
-	OidcSecret string
-	UsePkce    string
+	OidcServer        string
+	OidcId            string
+	OidcSecret        string
+	UsePkce           string
+	SkipOidcTlsVerify string
 }
 
 func (i *Identity) Type() string {

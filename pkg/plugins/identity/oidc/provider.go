@@ -70,10 +70,11 @@ type oidcIdentityProvider struct {
 }
 
 type providerConfig struct {
-	OidcServer string `json:"oidc-server"`
-	OidcId     string `json:"oidc-client-id"`
-	OidcSecret string `json:"oidc-client-secret"`
-	UsePkce    string `json:"oidc-use-pkce"`
+	OidcServer        string `json:"oidc-server"`
+	OidcId            string `json:"oidc-client-id"`
+	OidcSecret        string `json:"oidc-client-secret"`
+	UsePkce           string `json:"oidc-use-pkce"`
+	SkipOidcTlsVerify string `json:"skip-oidc-ssl"`
 }
 
 func (p *oidcIdentityProvider) Name() string {
@@ -92,10 +93,11 @@ func (p *oidcIdentityProvider) Authenticate(ctx context.Context, input *identity
 	}
 
 	id := &oidc.Identity{
-		OidcServer: cfg.OidcServer,
-		OidcId:     cfg.OidcId,
-		OidcSecret: cfg.OidcSecret,
-		UsePkce:    cfg.UsePkce,
+		OidcServer:        cfg.OidcServer,
+		OidcId:            cfg.OidcId,
+		OidcSecret:        cfg.OidcSecret,
+		UsePkce:           cfg.UsePkce,
+		SkipOidcTlsVerify: cfg.SkipOidcTlsVerify,
 	}
 
 	ids, err := p.readRequiredFields(*id)
@@ -126,7 +128,9 @@ func executeOidcLogin(id oidc.Identity) error {
 	} else {
 		args = append(args, "--oidc-client-secret="+id.OidcSecret)
 	}
-	args = append(args, "--insecure-skip-tls-verify")
+	if id.SkipOidcTlsVerify == True {
+		args = append(args, "--insecure-skip-tls-verify")
+	}
 
 	cmd := exec.Command("kubectl", args...)
 	_, err := cmd.Output()
