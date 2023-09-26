@@ -231,6 +231,11 @@ func addItem(configSet config.ConfigurationSet, key string, value string) {
 func SetTransport(file string) {
 
 	var config *tls.Config
+	skipReadCert := false
+	if file == "" {
+		skipReadCert = true
+	}
+
 	if file != "" {
 		caCert, err := os.ReadFile(file)
 		if err != nil {
@@ -242,7 +247,7 @@ func SetTransport(file string) {
 			RootCAs: caCertPool,
 		}
 	} else {
-		config = &tls.Config{InsecureSkipVerify: true}
+		config = &tls.Config{InsecureSkipVerify: skipReadCert}
 	}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = config
 }
