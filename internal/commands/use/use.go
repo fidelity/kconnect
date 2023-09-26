@@ -83,6 +83,10 @@ specified cluster provider.
   [kubelogin](https://github.com/Azure/kubelogin)
   [azure-cli](https://github.com/Azure/azure-cli)
 `
+	oidcDescNote = `
+* Note: kconnect use oidc requires kube-oidc-login and rename to kubectl-oidc_login.
+  [kube-oidc-login](https://github.com/int128/kubelogin)
+`
 	usageExample = `
   # Connect to EKS and choose an available EKS cluster.
   {{.CommandPath}} use eks
@@ -101,7 +105,7 @@ specified cluster provider.
 
 // Command creates the use command
 func Command() (*cobra.Command, error) {
-	longDesc := longDescHead + longDescBody + longDescFoot + eksDescNote + aksDescNote
+	longDesc := longDescHead + longDescBody + longDescFoot + eksDescNote + aksDescNote + oidcDescNote
 	useCmd := &cobra.Command{
 		Use:     "use",
 		Short:   shortDesc,
@@ -140,6 +144,8 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 		providerLongDesc += eksDescNote
 	} else if registration.Name == "aks" {
 		providerLongDesc += aksDescNote
+	} else if registration.Name == "oidc" {
+		providerLongDesc += oidcDescNote
 	}
 	providerUsageExample := registration.UsageExample + usageExampleFoot
 

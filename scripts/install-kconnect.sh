@@ -12,6 +12,7 @@ latest_helm_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://g
 latest_kubelogin_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/kubelogin/releases/latest | sed 's#.*/##')
 latest_aws_iam_authenticator_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/latest | sed 's#.*/##' | cut -c2-)
 latest_azure_cli_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/azure-cli/releases/latest | sed 's#.*/##')
+latest_oidc_login_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/int128/kubelogin/releases/latest | sed 's#.*/##')
 
 echo "kconnect version: $latest_kconnect_release_tag"
 echo "kubectl version: $latest_kubectl_release_tag"
@@ -19,6 +20,7 @@ echo "helm version: $latest_helm_release_tag"
 echo "kubelogin version: $latest_kubelogin_release_tag"
 echo "aws-iam-authenticator version: $latest_aws_iam_authenticator_release_tag"
 echo "azure-cli version: $latest_azure_cli_release_tag"
+echo "oidc-login version: $latest_oidc_login_release_tag"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # linux
@@ -49,13 +51,14 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     aws_iam_authenticator_url=$(echo "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/vTAG/aws-iam-authenticator_TAG_linux_ARCH" | sed "s/TAG/$latest_aws_iam_authenticator_release_tag/g" | sed "s/ARCH/$arch/" )
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-linux-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     azure_url="https://aka.ms/InstallAzureCli"
-
+    oidc_login_url=$(echo "https://github.com/int128/kubelogin/releases/download/TAG/kubelogin_linux_ARCH.zip" | sed "s/TAG/$latest_oidc_login_release_tag/" | sed "s/ARCH/$arch/" )
     echo "kconnect url: $kconnect_url" 
     echo "kubectl url: $kubectl_url"
     echo "helm url: $helm_url"
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
     echo "kubelogin url: $kubelogin_url"
     echo "azure url: $azure_url"
+    echo "oidc-login url: $oidc_login_url"
     
     # download 
     curl -s -L $kconnect_url -o kconnect.tar.gz
@@ -64,11 +67,14 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     curl -s -L $aws_iam_authenticator_url -o aws-iam-authenticator
     curl -s -L $kubelogin_url -o kubelogin.zip
     curl -s -L $azure_url -o azure-cli-install.sh
+    curl -s -L $oidc_login_url -o oidclogin.zip
 
     # unzip
     tar -xf kconnect.tar.gz
     tar -xf helm.tar.gz
     mv linux-*/helm .
+    unzip -qq oidclogin.zip
+    mv kubelogin kubectl-oidc_login
     unzip -qq kubelogin.zip
     mv bin/linux_amd64/kubelogin .
 
@@ -78,12 +84,14 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     rm -rf linux-*
     rm -f kubelogin.zip
     rm -rf bin
+    rm -f oidclogin.zip
 
     # permissions
     chmod +x kubectl
     chmod +x aws-iam-authenticator
     chmod +x kubelogin
     chmod +x azure-cli-install.sh
+    chmod +x kubectl-oidc_login
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     
@@ -94,6 +102,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     aws_iam_authenticator_url=$(echo "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/vTAG/aws-iam-authenticator_TAG_darwin_amd64" | sed "s/TAG/$latest_aws_iam_authenticator_release_tag/g" )
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-darwin-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     azure_url="https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-macos"
+    oidc_login_url=$(echo "https://github.com/int128/kubelogin/releases/download/TAG/kubelogin_darwin_amd64.zip" | sed "s/TAG/$latest_oidc_login_release_tag/" )
     
     echo "kconnect url: $kconnect_url" 
     echo "kubectl url: $kubectl_url"
@@ -101,6 +110,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
     echo "kubelogin url: $kubelogin_url"
     echo "azure url: $azure_url"
+    echo "oidc-login url: $oidc_login_url"
 
     # download 
     curl -s -L $kconnect_url -o kconnect.tar.gz
@@ -108,11 +118,14 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     curl -s -L $helm_url -o helm.tar.gz
     curl -s -L $aws_iam_authenticator_url -o aws-iam-authenticator
     curl -s -L $kubelogin_url -o kubelogin.zip
+    curl -s -L $oidc_login_url -o oidclogin.zip
 
     # unzip
     tar -xf kconnect.tar.gz
     tar -xf helm.tar.gz
     mv darwin-*/helm .
+    unzip -qq oidclogin.zip
+    mv kubelogin kubectl-oidc_login
     unzip -qq kubelogin.zip
     mv bin/darwin_amd64/kubelogin .
 
@@ -122,11 +135,13 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     rm -rf darwin-*
     rm -f kubelogin.zip
     rm -rf bin
+    rm -f oidclogin.zip
 
     # permissions
     chmod +x kubectl
     chmod +x aws-iam-authenticator
     chmod +x kubelogin
+    chmod +x kubectl-oidc_login
 
 elif [[ "$OSTYPE" == "msys" ]]; then
     # Win git bash
