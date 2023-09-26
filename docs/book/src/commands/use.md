@@ -33,6 +33,9 @@ specified cluster provider.
   [kubelogin](https://github.com/Azure/kubelogin)
   [azure-cli](https://github.com/Azure/azure-cli)
 
+* Note: kconnect use oidc requires kube-oidc-login and rename to kubectl-oidc_login.
+  [kube-oidc-login](https://github.com/int128/kubelogin)
+
 
 ```bash
 kconnect use [flags]

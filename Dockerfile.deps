@@ -1,6 +1,7 @@
 FROM alpine:3.17 AS builder
 
 ARG AWS_IAM_AUTH_VERSION=0.5.9
+ARG ODIC_LOGIN_VERSION=1.28.0
 ARG KUBELOGIN_VERSION=0.0.14
 ARG KUBECTL_VERSION=1.22.11
 ARG HELM_VERSION=3.9.0
@@ -18,6 +19,13 @@ RUN curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/${TARGETOS}/${TA
 RUN curl -L \
     https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTH_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTH_VERSION}_${TARGETOS}_${TARGETARCH} -o aws-iam-authenticator && \
     chmod +x ./aws-iam-authenticator
+
+# oidclogin
+RUN curl -L \
+    https://github.com/int128/kubelogin/releases/download/v${ODIC_LOGIN_VERSION}/kubelogin_${TARGETOS}_${TARGETARCH}.zip -o oidclogin.zip && \
+    unzip oidclogin.zip  && \
+    mv kubelogin kubectl-oidc_login && \
+    chmod +x ./kubectl-oidc_login
 
 # kubelogin
 RUN curl -L \
@@ -39,6 +47,7 @@ ARG TARGETVARIANT
 
 COPY --from=builder kubectl .
 COPY --from=builder aws-iam-authenticator .
+COPY --from=builder kubectl-oidc_login .
 COPY --from=builder bin/${TARGETOS}_${TARGETARCH}/kubelogin .
 COPY --from=builder ${TARGETOS}-${TARGETARCH}/helm .
 COPY kconnect .

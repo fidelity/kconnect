@@ -19,6 +19,9 @@ entry ID or alias.  When the user reconnects using a connection history entry,
 kconnect regenerates the kubectl configuration context and refreshes their access
 token.
 
+* Note: kconnect use oidc requires kube-oidc-login and rename to kubectl-oidc_login.
+  [kube-oidc-login](https://github.com/int128/kubelogin)
+
 
 ```bash
 kconnect use oidc [flags]
