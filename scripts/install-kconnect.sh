@@ -152,13 +152,15 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     aws_iam_authenticator_url=$(echo "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/vTAG/aws-iam-authenticator_TAG_windows_amd64.exe" | sed "s/TAG/$latest_aws_iam_authenticator_release_tag/g" )
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-win-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     azure_url=$(echo "https://github.com/Azure/azure-cli/releases/download/TAG/TAG.msi" | sed "s/TAG/$latest_azure_cli_release_tag/g")
-    
+    oidc_login_url=$(echo "https://github.com/int128/kubelogin/releases/download/TAG/kubelogin_windows_amd64.zip" | sed "s/TAG/$latest_oidc_login_release_tag/" )
+
     echo "kconnect url: $kconnect_url" 
     echo "kubectl url: $kubectl_url"
     echo "helm url: $helm_url"
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
     echo "kubelogin url: $kubelogin_url"
     echo "azure url: $azure_url"
+    echo "oidc-login url: $oidc_login_url"
 
     # download 
     curl -k -s -L $kconnect_url -o kconnect.zip
@@ -166,12 +168,15 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     curl -k -s -L $helm_url -o helm.zip
     curl -k -s -L $aws_iam_authenticator_url -o aws-iam-authenticator.exe
     curl -k -s -L $kubelogin_url -o kubelogin.zip
+    curl -s -L $oidc_login_url -o oidclogin.zip
     curl -k -s -LO $azure_url
 
     # unzip
     unzip -qq kconnect.zip
     unzip -qq helm.zip
     mv windows-amd64/helm.exe .
+    unzip -qq oidclogin.zip
+    mv kubelogin.exe kubectl-oidc_login.exe
     unzip -qq kubelogin.zip
     mv bin/windows_amd64/kubelogin.exe .
 
@@ -180,6 +185,7 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     rm -f helm.zip
     rm -rf windows-amd64
     rm -f kubelogin.zip
+    rm -f oidclogin.zip
     rm -rf bin
 
 fi
