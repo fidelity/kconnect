@@ -15,6 +15,7 @@
     - [aks](./commands/use_aks.md)
     - [eks](./commands/use_eks.md)
     - [rancher](./commands/use_rancher.md)
+    - [oidc](./commands/use_oidc.md)
   - [version](./commands/version.md)
 - [Releasing kconnect](./release.md)
 - [Contributing](./contributing.md)
