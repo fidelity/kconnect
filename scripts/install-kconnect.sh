@@ -28,7 +28,10 @@ install_kconnect() {
   if [[ -d $INSTALL_PATH/$KCONNECT_DIR ]]; then
     rm -rf $INSTALL_PATH/$KCONNECT_DIR
   fi
-  mv $KCONNECT_DIR $INSTALL_PATH
+  rm -f $KCONNECT_DIR/README.md
+  rm -f $KCONNECT_DIR/LICENSE
+  mv $KCONNECT_DIR/* $INSTALL_PATH
+  rm -rf $KCONNECT_DIR
 }
 
 USER=""
