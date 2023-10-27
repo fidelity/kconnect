@@ -63,11 +63,11 @@ There are 2 logical parts to a "host" plugin:
 * Discover - this will use the users credentials to discover clusters. For example, this might be using the AWS SDK to query for EKS clusters.
 * Generate - this will be used when the kubeconfig file is generated. It will also be the place where any additional files will be written (e.g. AWS config file)
 
-!["highlevel"](./artefacts/hl.png)
+!["highlevel"](../artefacts/hl.png)
 
 The sequence diagram for connecting to a cluster using kconnect is:
 
-!["sequence diagram"](./artefacts/sequence.png)
+!["sequence diagram"](../artefacts/sequence.png)
 [Original source](./artefacts/sequence.plantuml)
 
 ### User Stories
