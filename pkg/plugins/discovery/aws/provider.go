@@ -71,10 +71,11 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 
 type eksClusteProviderConfig struct {
 	common.ClusterProviderConfig
-	Region       *string `json:"region"`
-	RegionFilter *string `json:"region-filter"`
-	RoleArn      *string `json:"role-arn"`
-	RoleFilter   *string `json:"role-filter"`
+	AssumeRoleARN *string `json:"assume-role-arn"`
+	Region        *string `json:"region"`
+	RegionFilter  *string `json:"region-filter"`
+	RoleArn       *string `json:"role-arn"`
+	RoleFilter    *string `json:"role-filter"`
 }
 
 // EKSClusterProvider will discover EKS clusters in AWS
@@ -129,8 +130,9 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := aws.SharedConfig()
 
 	cs.String("aws-shared-credentials-file", os.Getenv("AWS_SHARED_CREDENTIALS_FILE"), "Location to store AWS credentials file")
+	cs.String("assume-role-arn", "", "ARN of the AWS role to be assumed")
 	cs.String("region-filter", "", "A regex filter to apply to the AWS regions list, e.g. '^us-|^eu-' will only show US and eu regions") //nolint: errcheck
-	cs.String("role-arn", "", "ARN of the AWS role to be assumed")                                                                       //nolint: errcheck
+	cs.String("role-arn", "", "ARN of the AWS role to be logged in with")                                                                //nolint: errcheck
 	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name")    //nolint: errcheck
 
 	return cs, nil

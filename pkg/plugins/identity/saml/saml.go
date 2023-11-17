@@ -184,6 +184,7 @@ func (p *samlIdentityProvider) bindAndValidateConfig(cs config.ConfigurationSet)
 
 func (p *samlIdentityProvider) createAccount(cs config.ConfigurationSet) (*cfg.IDPAccount, error) {
 	account := &cfg.IDPAccount{
+		Username:        p.config.Username,
 		URL:             p.config.IdpEndpoint,
 		Provider:        p.config.IdpProvider,
 		MFA:             "Auto",
