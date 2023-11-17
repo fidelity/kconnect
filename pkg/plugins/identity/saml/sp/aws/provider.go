@@ -27,6 +27,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -75,6 +76,11 @@ type ServiceProvider struct {
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 	account.Profile = "kconnect-saml-provider"
+
+	assumeRoleCfg := cfg.Get("assume-role-arn")
+	if assumeRoleCfg != nil && assumeRoleCfg.Value.(string) != "" {
+		account.AssumeRoleARN = assumeRoleCfg.Value.(string)
+	}
 
 	regionCfg := cfg.Get("region")
 	if regionCfg == nil || regionCfg.Value.(string) == "" {
@@ -129,6 +135,18 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	awsCreds, err := p.loginToStsUsingRole(account, role, samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("logging into AWS using STS and SAMLAssertion: %w", err)
+	}
+
+	// switch AWS IAM role
+	if account.AssumeRoleARN != "" {
+		awsCreds, err = p.assumeRoleARN(account, awsCreds)
+		if err != nil {
+			return nil, fmt.Errorf("assuming role in AWS: %w", err)
+		}
+		if err := cfg.SetValue("assume-role-arn", account.AssumeRoleARN); err != nil {
+			return nil, fmt.Errorf("setting assume-role-arn config value: %w", err)
+		}
+		p.logger.Debugw("role assumed", "assume-role", account.AssumeRoleARN)
 	}
 
 	// Create profile based on the AWS creds
@@ -297,6 +315,40 @@ func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *sam
 		AWSSecurityToken: aws.StringValue(resp.Credentials.SessionToken),
 		PrincipalARN:     aws.StringValue(resp.AssumedRoleUser.Arn),
 		Expires:          resp.Credentials.Expiration.Local(),
+		Region:           account.Region,
+	}, nil
+}
+
+func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsconfig.AWSCredentials) (*awsconfig.AWSCredentials, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:              &account.Region,
+		STSRegionalEndpoint: endpoints.RegionalSTSEndpoint,
+		Credentials: credentials.NewStaticCredentials(
+			awsCreds.AWSAccessKey,
+			awsCreds.AWSSecretKey,
+			awsCreds.AWSSessionToken,
+		),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("creating aws session: %w", err)
+	}
+	assumeRoleInput := &sts.AssumeRoleInput{
+		RoleArn:         &account.AssumeRoleARN,
+		RoleSessionName: &account.Username,
+		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
+	}
+	out, err := sts.New(sess).AssumeRole(assumeRoleInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assume role: %w", err)
+	}
+
+	return &awsconfig.AWSCredentials{
+		AWSAccessKey:     aws.StringValue(out.Credentials.AccessKeyId),
+		AWSSecretKey:     aws.StringValue(out.Credentials.SecretAccessKey),
+		AWSSessionToken:  aws.StringValue(out.Credentials.SessionToken),
+		AWSSecurityToken: aws.StringValue(out.Credentials.SessionToken),
+		PrincipalARN:     aws.StringValue(out.AssumedRoleUser.Arn),
+		Expires:          out.Credentials.Expiration.Local(),
 		Region:           account.Region,
 	}, nil
 }
