@@ -77,11 +77,6 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 	account.Profile = "kconnect-saml-provider"
 
-	assumeRoleCfg := cfg.Get("assume-role-arn")
-	if assumeRoleCfg != nil && assumeRoleCfg.Value.(string) != "" {
-		account.AssumeRoleARN = assumeRoleCfg.Value.(string)
-	}
-
 	regionCfg := cfg.Get("region")
 	if regionCfg == nil || regionCfg.Value.(string) == "" {
 		return ErrNoRegion
@@ -138,15 +133,16 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	}
 
 	// switch AWS IAM role
-	if account.AssumeRoleARN != "" {
-		awsCreds, err = p.assumeRoleARN(account, awsCreds)
+	assumeRoleARN := cfg.Get("assume-role-arn")
+	if assumeRoleARN != nil && assumeRoleARN.Value.(string) != "" {
+		awsCreds, err = p.assumeRoleARN(account, awsCreds, assumeRoleARN.Value.(string))
 		if err != nil {
 			return nil, fmt.Errorf("assuming role in AWS: %w", err)
 		}
-		if err := cfg.SetValue("assume-role-arn", account.AssumeRoleARN); err != nil {
+		if err := cfg.SetValue("assume-role-arn", assumeRoleARN.Value.(string)); err != nil {
 			return nil, fmt.Errorf("setting assume-role-arn config value: %w", err)
 		}
-		p.logger.Debugw("role assumed", "assume-role", account.AssumeRoleARN)
+		p.logger.Debugw("role assumed", "assume-role", assumeRoleARN.Value.(string))
 	}
 
 	// Create profile based on the AWS creds
@@ -319,7 +315,7 @@ func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *sam
 	}, nil
 }
 
-func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsconfig.AWSCredentials) (*awsconfig.AWSCredentials, error) {
+func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsconfig.AWSCredentials, assumeRoleARN string) (*awsconfig.AWSCredentials, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:              &account.Region,
 		STSRegionalEndpoint: endpoints.RegionalSTSEndpoint,
@@ -333,7 +329,7 @@ func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsco
 		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
 	assumeRoleInput := &sts.AssumeRoleInput{
-		RoleArn:         &account.AssumeRoleARN,
+		RoleArn:         &assumeRoleARN,
 		RoleSessionName: &account.Username,
 		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
 	}
