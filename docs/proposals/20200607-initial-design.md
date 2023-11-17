@@ -27,7 +27,7 @@ For companies who have adopted Kubernetes as part a wider Cloud Native strategy 
 
 Companies adopt a variety of mechanisms such as sharing kubeconfig (perhaps via keybase or git), listing clusters on a wiki but these solutions are very rarely coherent or user friendly. And depending on the mechanism employed they could represent a significant security risk.
 
-We propose the creation of an open source CLI that can be used to discover what clusters you have access to across multiple hosting providers based on your credentials and for it to then generate a kubeconfig for you that can be used to access the cluster.  Additionally the CLI should keep a history of the clusters you have generated a kubeconfig so that you can choose to regenerate the kubeconfig by choosing choosing a item from your history.
+We propose the creation of an open source CLI that can be used to discover what clusters you have access to across multiple hosting providers based on your credentials and for it to then generate a kubeconfig for you that can be used to access the cluster.  Additionally the CLI should keep a history of the clusters you have generated a kubeconfig so that you can choose to regenerate the kubeconfig by choosing a item from your history.
 
 ### Goals
 
