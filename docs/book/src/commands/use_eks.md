@@ -52,6 +52,7 @@ kconnect use eks [flags]
 
 ```bash
   -a, --alias string                         Friendly name to give to give the connection
+      --assume-role-arn string               ARN of the AWS role to be assumed
       --aws-shared-credentials-file string   Location to store AWS credentials file
   -c, --cluster-id string                    Id of the cluster to use.
   -h, --help                                 help for eks
@@ -65,7 +66,7 @@ kconnect use eks [flags]
       --password string                      The password to use for authentication
       --region string                        AWS region to connect to
       --region-filter string                 A regex filter to apply to the AWS regions list, e.g. '^us-|^eu-' will only show US and eu regions
-      --role-arn string                      ARN of the AWS role to be assumed
+      --role-arn string                      ARN of the AWS role to be logged in with
       --role-filter string                   A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name
       --set-current                          Sets the current context in the kubeconfig to the selected cluster (default true)
       --username string                      The username used for authentication
