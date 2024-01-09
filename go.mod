@@ -2,8 +2,6 @@ module github.com/fidelity/kconnect
 
 go 1.21
 
-toolchain go1.21.4
-
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
