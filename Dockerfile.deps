@@ -1,10 +1,10 @@
 FROM alpine:3.17 AS builder
 
-ARG AWS_IAM_AUTH_VERSION=0.5.9
+ARG AWS_IAM_AUTH_VERSION=0.6.14
 ARG ODIC_LOGIN_VERSION=1.28.0
-ARG KUBELOGIN_VERSION=0.0.14
-ARG KUBECTL_VERSION=1.22.11
-ARG HELM_VERSION=3.9.0
+ARG KUBELOGIN_VERSION=0.1.0
+ARG KUBECTL_VERSION=1.26.12
+ARG HELM_VERSION=3.13.3
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -36,7 +36,7 @@ RUN curl -L \
 RUN curl -L https://get.helm.sh/helm-v${HELM_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz -o helm.tar.gz && \
     tar xvfz helm.tar.gz
 
-FROM mcr.microsoft.com/azure-cli:2.48.1
+FROM mcr.microsoft.com/azure-cli:2.56.0
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /app/
