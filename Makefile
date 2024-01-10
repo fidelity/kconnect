@@ -86,7 +86,7 @@ release: # Builds a release
 
 .PHONY: release-local
 release-local: # Builds a relase locally
-	goreleaser --snapshot --skip-publish --rm-dist
+	goreleaser --snapshot --skip=publish --clean
 
 ##@ Test & CI
 
