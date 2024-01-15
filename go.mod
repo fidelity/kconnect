@@ -13,7 +13,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/aws/aws-sdk-go v1.49.16
-	github.com/beevik/etree v1.2.0
+	github.com/beevik/etree v1.3.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.11.2
 	github.com/go-playground/validator/v10 v10.16.0
