@@ -19,15 +19,16 @@ package aws
 import (
 	"fmt"
 
-	"github.com/versent/saml2aws/pkg/awsconfig"
+	"github.com/versent/saml2aws/v2/pkg/awsconfig"
 
+	kawsconfig "github.com/fidelity/kconnect/pkg/aws/awsconfig"
 	"github.com/fidelity/kconnect/pkg/provider/identity"
 )
 
 // NewIdentityStore will create a new AWS identity store
 func NewIdentityStore(profile, idProviderName, awsCredsFile string) (identity.Store, error) {
-
-	configProvider := awsconfig.NewSharedCredentials(profile)
+	path, _ := kawsconfig.LocateConfigFile()
+	configProvider := awsconfig.NewSharedCredentials(profile, path)
 	if awsCredsFile != "" {
 		configProvider.Filename = awsCredsFile
 	}

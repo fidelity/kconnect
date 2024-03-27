@@ -58,34 +58,28 @@ When choosing an issue to work on its preferable that you choose a issue that is
 git checkout -b <feature-name>
 ```
 
-4. Use `git submodule` for saml2aws third party dependency
-
-```bash
-git submodule update --init --recursive
-```
-
-5. Make the change, including any additional tests
-6. Run the tests:
+4. Make the change, including any additional tests
+5. Run the tests:
 
 ```bash
 make test
 ```
 
-7. Check for linting errors:
+6. Check for linting errors:
 
 ```bash
 make lint
 ```
 
-8. Build and manually test kconnect locally:
+7. Build and manually test kconnect locally:
 
 ```bash
 make build
 ```
 
-9. Commit and push your branch. We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for the commits and PRs. .
-10. Create a pull request. If the PR is a work in progress ensure that that **PR is created as a draft**.
-11. Check that the PR checks pass
+8. Commit and push your branch. We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for the commits and PRs.
+9. Create a pull request. If the PR is a work in progress ensure that that **PR is created as a draft**.
+10. Check that the PR checks pass
 
 Once a PR has been created it will be reviewed by one of the maintainers of kconnect.
 

@@ -22,9 +22,9 @@ import (
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/versent/saml2aws"
-	"github.com/versent/saml2aws/pkg/cfg"
-	"github.com/versent/saml2aws/pkg/creds"
+	"github.com/versent/saml2aws/v2"
+	"github.com/versent/saml2aws/v2/pkg/cfg"
+	"github.com/versent/saml2aws/v2/pkg/creds"
 	"go.uber.org/zap"
 
 	kaws "github.com/fidelity/kconnect/pkg/aws"
