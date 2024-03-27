@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"hash/fnv"
 
-	"github.com/versent/saml2aws/pkg/awsconfig"
+	"github.com/versent/saml2aws/v2/pkg/awsconfig"
 )
 
 var (
