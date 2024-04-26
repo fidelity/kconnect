@@ -98,7 +98,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/trimble-oss/go-webauthn-client v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc // indirect
-	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
