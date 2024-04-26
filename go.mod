@@ -35,7 +35,7 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.18.1
+	github.com/spf13/viper v1.18.2
 	github.com/versent/saml2aws/v2 v2.36.15
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0
