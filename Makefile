@@ -98,12 +98,16 @@ fmt:
 test:
 	go test ./...
 
+.PHONY: tidy
+tidy:
+	go mod tidy
+
 .PHONY: vet
 vet:
 	go vet ./...
 
 .PHONY: ci
-ci: fmt vet test build # Target for CI
+ci: fmt vet tidy test build # Target for CI
 
 
 ##@ Utility
