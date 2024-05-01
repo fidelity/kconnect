@@ -40,3 +40,11 @@ jobs:
                   args: release --clean
               env:
                   GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+            - name: Update new version in krew-index
+              uses: rajatjindal/krew-release-bot@v0.0.46
+              env:
+                ## KREW_RELEASE_BOT_WEBHOOK_URL env helps you test your setup without actually publishing
+                ## remove this env when you are ready for real release
+                KREW_RELEASE_BOT_WEBHOOK_URL: https://krew-release-bot-dryrun.rajatjindal.com/github-action-webhook
+                UPSTREAM_KREW_INDEX_REPO_OWNER: fidelity
+                UPSTREAM_KREW_INDEX_REPO_NAME: kconnect
