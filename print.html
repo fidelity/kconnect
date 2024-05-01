@@ -1219,28 +1219,23 @@ git pull
 <pre><code class="language-bash">git checkout -b &lt;feature-name&gt;
 </code></pre>
 <ol start="4">
-<li>Use <code>git submodule</code> for saml2aws third party dependency</li>
-</ol>
-<pre><code class="language-bash">git submodule update --init --recursive
-</code></pre>
-<ol start="5">
 <li>Make the change, including any additional tests</li>
 <li>Run the tests:</li>
 </ol>
 <pre><code class="language-bash">make test
 </code></pre>
-<ol start="7">
+<ol start="6">
 <li>Check for linting errors:</li>
 </ol>
 <pre><code class="language-bash">make lint
 </code></pre>
-<ol start="8">
+<ol start="7">
 <li>Build and manually test kconnect locally:</li>
 </ol>
 <pre><code class="language-bash">make build
 </code></pre>
-<ol start="9">
-<li>Commit and push your branch. We follow <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> for the commits and PRs. .</li>
+<ol start="8">
+<li>Commit and push your branch. We follow <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> for the commits and PRs.</li>
 <li>Create a pull request. If the PR is a work in progress ensure that that <strong>PR is created as a draft</strong>.</li>
 <li>Check that the PR checks pass</li>
 </ol>
