@@ -92,7 +92,7 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 
 	// Loop through the struct fields and see if there
 	// is a matching flag
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		field := t.Field(i)
 
 		fieldV := val.Field(i)

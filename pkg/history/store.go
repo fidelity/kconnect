@@ -243,9 +243,8 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 
 	filteredEntries := []*historyv1alpha.HistoryEntry{}
 	for _, entry := range historyList.Items {
-		filterEntry := entry
-		if filter(&filterEntry) {
-			filteredEntries = append(filteredEntries, &filterEntry)
+		if filter(&entry) {
+			filteredEntries = append(filteredEntries, &entry)
 		}
 	}
 

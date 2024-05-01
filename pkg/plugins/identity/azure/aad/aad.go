@@ -84,7 +84,7 @@ type aadConfig struct {
 
 	TenantID string           `json:"tenant-id" validate:"required"`
 	ClientID string           `json:"client-id" validate:"required"`
-	AADHost  identity.AADHost `json:"aad-host" validate:"required"`
+	AADHost  identity.AADHost `json:"aad-host"  validate:"required"`
 }
 
 func (p *aadIdentityProvider) Name() string {

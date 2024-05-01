@@ -36,8 +36,8 @@ type ClusterProviderConfig struct {
 // IdentityProviderConfig represents the base configuration for an
 // identity provider.
 type IdentityProviderConfig struct {
-	Username    string `json:"username" validate:"required"`
-	Password    string `json:"password" validate:"required"`
+	Username    string `json:"username"     validate:"required"`
+	Password    string `json:"password"     validate:"required"`
 	IdpProtocol string `json:"idp-protocol" validate:"required"`
 }
 

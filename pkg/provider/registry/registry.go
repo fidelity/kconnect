@@ -129,8 +129,7 @@ func ListDiscoveryPluginRegistrations() []*DiscoveryPluginRegistration {
 
 	plugins := []*DiscoveryPluginRegistration{}
 	for _, registration := range discoveryPlugins {
-		pluginRegistration := registration
-		plugins = append(plugins, pluginRegistration)
+		plugins = append(plugins, registration)
 	}
 
 	return plugins
@@ -142,8 +141,7 @@ func ListIdentityPluginRegistrations() []*IdentityPluginRegistration {
 
 	plugins := []*IdentityPluginRegistration{}
 	for _, registration := range identityPlugins {
-		pluginRegistration := registration
-		plugins = append(plugins, pluginRegistration)
+		plugins = append(plugins, registration)
 	}
 
 	return plugins

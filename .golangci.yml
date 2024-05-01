@@ -1,12 +1,6 @@
 run:
     timeout: 10m
     tests: false
-    skip-dirs:
-    - third_party/*
-    - pkg/azure/wstrust
-    skip-files:
-    - "zz_generated.*\\.go$"
-    - ".*_mock\\.go"
 
 issues:
   max-same-issues: 0
@@ -14,6 +8,12 @@ issues:
   exclude-rules:
     - linters: [golint]
       text: "should not use dot imports|don't use an underscore in package name"
+  exclude-dirs:
+    - third_party/*
+    - pkg/azure/wstrust
+  exclude-files:
+    - "zz_generated.*\\.go$"
+    - ".*_mock\\.go"
 
 linters-settings:
   gomoddirectives:
@@ -51,3 +51,4 @@ linters:
     - nosnakecase # deprecated by the owner
     - interfacebloat
     - forcetypeassert # maybe enable in the future
+    - depguard # maybe enable in the future
