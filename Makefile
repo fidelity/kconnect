@@ -107,7 +107,7 @@ vet:
 	go vet ./...
 
 .PHONY: ci
-ci: fmt vet tidy test build # Target for CI
+ci: tidy fmt vet test build # Target for CI
 
 
 ##@ Utility
