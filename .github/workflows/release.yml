@@ -45,6 +45,6 @@ jobs:
               env:
                 ## KREW_RELEASE_BOT_WEBHOOK_URL env helps you test your setup without actually publishing
                 ## remove this env when you are ready for real release
-                KREW_RELEASE_BOT_WEBHOOK_URL: https://krew-release-bot-dryrun.rajatjindal.com/github-action-webhook
+                # KREW_RELEASE_BOT_WEBHOOK_URL: https://krew-release-bot-dryrun.rajatjindal.com/github-action-webhook
                 UPSTREAM_KREW_INDEX_REPO_OWNER: fidelity
                 UPSTREAM_KREW_INDEX_REPO_NAME: krew-index
