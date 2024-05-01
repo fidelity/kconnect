@@ -58,7 +58,7 @@ type awsProviderConfig struct {
 	sp.ProviderConfig
 
 	Partition string `json:"partition" validate:"required"`
-	Region    string `json:"region" validate:"required"`
+	Region    string `json:"region"    validate:"required"`
 }
 
 func NewServiceProvider(itemSelector provider.SelectItemFunc) sp.ServiceProvider {

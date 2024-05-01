@@ -66,9 +66,8 @@ func FilterHistoryWithFuncs(list *historyv1alpha.HistoryEntryList, filterSpec *F
 
 	entries := []historyv1alpha.HistoryEntry{}
 	for _, entry := range list.Items {
-		entryToFilter := entry
-		if FilterEntry(&entryToFilter, filterSpec, filterFucs) {
-			entries = append(entries, entryToFilter)
+		if FilterEntry(&entry, filterSpec, filterFucs) {
+			entries = append(entries, entry)
 		}
 	}
 	list.Items = entries
