@@ -38,7 +38,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/versent/saml2aws/v2 v2.36.15
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/mod v0.17.0
 	gopkg.in/ini.v1 v1.67.0
