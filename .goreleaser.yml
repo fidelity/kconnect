@@ -62,7 +62,7 @@ brews:
       - aws-iam-authenticator
       - Azure/kubelogin/kubelogin
       - kubernetes-cli
-    folder: Formula
+    directory: Formula
 
 dockers:
   -
