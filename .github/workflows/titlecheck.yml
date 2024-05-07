@@ -2,6 +2,8 @@ name: titlecheck
 
 # Run on PR
 on:
+  # enable for testing new changes
+  # pull_request:
   pull_request_target:
     types:
       - opened
@@ -20,6 +22,6 @@ jobs:
         success-state: Title follows the specification.
         failure-state: Title does not follow the specification.
         context-name: conventional-pr-title
-        preset: conventional-changelog-angular@latest
+        preset: conventional-changelog-angular@7.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
