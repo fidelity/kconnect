@@ -12,13 +12,13 @@ kconnect help
 
 The general workflow for using kconnect is the following:
 
-- `kconnect configure` - import configuration that contains defaults for your origanisation - **1 time**
+- `kconnect configure` - import configuration that contains defaults for your organisation - **1 time**
 - `kconnect use` - connect to a cluster for the first time - **only the first time**
 - `kconnect to` - use to reconnect to a cluster that you have already connected to - **most used command day-to-day**
 
 ## Creating and importing configuration
 
-Before using `kconnect` to connect to a Kubernetes cluster you may want to import an idetitiy provider configuration with your (or your organisations) defaults so that you don't have to supply all connection settings each time you connect to a new cluster.
+Before using `kconnect` to connect to a Kubernetes cluster you may want to import an identity provider configuration with your (or your organisations) defaults so that you don't have to supply all connection settings each time you connect to a new cluster.
 
 You will need to create a configuration file (see example [here](https://github.com/fidelity/kconnect/blob/main/examples/config.yaml)). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).
 
@@ -64,4 +64,4 @@ kconnect to 01EM615GB2YX3C6WZ9MCWBDWBF
 
 Flags can be replaced with environment variables by following the format `UPPERCASED_SNAKE_CASE` and appending to the `KCONNECT_` prefix.
 
-For example`--username`can be set as`KCONNECT_USERNAME`; or `--idp-protocol` as`KCONNECT_IDP_PROTOCOL`.
+For example `--username` can be set as `KCONNECT_USERNAME`; or `--idp-protocol` as `KCONNECT_IDP_PROTOCOL`.
