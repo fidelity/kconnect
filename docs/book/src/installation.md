@@ -13,7 +13,7 @@
 
 <em>NOTE:</em> `kconnect` requires [az cli](https://github.com/Azure/azure-cli) for interactive authentication to Azure AKS clusters.
 
-<em>NOTE:></em> For specific tested and pinned versions, use the `install-kconnect.sh` script or the `with-deps` docker image 
+<em>NOTE:></em> For specific tested and pinned versions, use the `install-kconnect.sh` script or the `with-deps` docker image
 
 ## kubectl plugin
 
@@ -55,7 +55,7 @@ We are working on publishing as a snap.
 
 The latest [release](https://github.com/fidelity/kconnect/releases) contains a binary for Windows.
 
-We have an open issue to support chocolatey in the future/
+We have an open issue to support chocolatey in the future.
 
 ## Docker
 
@@ -75,4 +75,4 @@ chmod 700 install-kconnect.sh
 ./install-kconnect.sh
 ```
 
-This works on Linux, Macos and Windows (using GitBash terminal)
+This works on Linux, macOS and Windows (using GitBash terminal)
