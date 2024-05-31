@@ -1,6 +1,6 @@
-#!/bin/bash  
+#!/bin/bash
 
-set -e 
+set -e
 
 echo "creating directory kconnect"
 mkdir -p kconnect
@@ -10,7 +10,7 @@ latest_kconnect_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https
 latest_kubectl_release_tag=$(curl -k -L --silent https://dl.k8s.io/release/stable.txt)
 latest_helm_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/helm/helm/releases/latest | sed 's#.*/##')
 latest_kubelogin_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/kubelogin/releases/latest | sed 's#.*/##')
-latest_aws_iam_authenticator_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/latest | sed 's#.*/##' | cut -c2-)
+latest_aws_iam_authenticator_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/tag/v0.6.14 | sed 's#.*/##' | cut -c2-)
 latest_azure_cli_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/Azure/azure-cli/releases/latest | sed 's#.*/##')
 latest_oidc_login_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/int128/kubelogin/releases/latest | sed 's#.*/##')
 
@@ -52,15 +52,15 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-linux-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     azure_url="https://aka.ms/InstallAzureCli"
     oidc_login_url=$(echo "https://github.com/int128/kubelogin/releases/download/TAG/kubelogin_linux_ARCH.zip" | sed "s/TAG/$latest_oidc_login_release_tag/" | sed "s/ARCH/$arch/" )
-    echo "kconnect url: $kconnect_url" 
+    echo "kconnect url: $kconnect_url"
     echo "kubectl url: $kubectl_url"
     echo "helm url: $helm_url"
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
     echo "kubelogin url: $kubelogin_url"
     echo "azure url: $azure_url"
     echo "oidc-login url: $oidc_login_url"
-    
-    # download 
+
+    # download
     curl -s -L $kconnect_url -o kconnect.tar.gz
     curl -s -LO $kubectl_url
     curl -s -L $helm_url -o helm.tar.gz
@@ -94,7 +94,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     chmod +x kubectl-oidc_login
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    
+
     # Mac OSX
     kconnect_url=$(echo "https://github.com/fidelity/kconnect/releases/download/TAG/kconnect_macos_amd64.tar.gz" | sed "s/TAG/$latest_kconnect_release_tag/" )
     kubectl_url=$(echo "https://dl.k8s.io/release/TAG/bin/darwin/amd64/kubectl" | sed "s/TAG/$latest_kubectl_release_tag/" )
@@ -103,8 +103,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     kubelogin_url=$(echo "https://github.com/Azure/kubelogin/releases/download/TAG/kubelogin-darwin-amd64.zip" | sed "s/TAG/$latest_kubelogin_release_tag/")
     azure_url="https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-macos"
     oidc_login_url=$(echo "https://github.com/int128/kubelogin/releases/download/TAG/kubelogin_darwin_amd64.zip" | sed "s/TAG/$latest_oidc_login_release_tag/" )
-    
-    echo "kconnect url: $kconnect_url" 
+
+    echo "kconnect url: $kconnect_url"
     echo "kubectl url: $kubectl_url"
     echo "helm url: $helm_url"
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
@@ -112,7 +112,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "azure url: $azure_url"
     echo "oidc-login url: $oidc_login_url"
 
-    # download 
+    # download
     curl -s -L $kconnect_url -o kconnect.tar.gz
     curl -s -LO $kubectl_url
     curl -s -L $helm_url -o helm.tar.gz
@@ -145,7 +145,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
 elif [[ "$OSTYPE" == "msys" ]]; then
     # Win git bash
-   
+
     kconnect_url=$(echo "https://github.com/fidelity/kconnect/releases/download/TAG/kconnect_windows_amd64.zip" | sed "s/TAG/$latest_kconnect_release_tag/" )
     kubectl_url=$(echo "https://dl.k8s.io/release/TAG/bin/windows/amd64/kubectl.exe" | sed "s/TAG/$latest_kubectl_release_tag/" )
     helm_url=$(echo "https://get.helm.sh/helm-TAG-windows-amd64.zip" | sed "s/TAG/$latest_helm_release_tag/" )
@@ -154,7 +154,7 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     azure_url=$(echo "https://github.com/Azure/azure-cli/releases/download/TAG/TAG.msi" | sed "s/TAG/$latest_azure_cli_release_tag/g")
     oidc_login_url=$(echo "https://github.com/int128/kubelogin/releases/download/TAG/kubelogin_windows_amd64.zip" | sed "s/TAG/$latest_oidc_login_release_tag/" )
 
-    echo "kconnect url: $kconnect_url" 
+    echo "kconnect url: $kconnect_url"
     echo "kubectl url: $kubectl_url"
     echo "helm url: $helm_url"
     echo "aws_iam_authenticator url: $aws_iam_authenticator_url"
@@ -162,7 +162,7 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     echo "azure url: $azure_url"
     echo "oidc-login url: $oidc_login_url"
 
-    # download 
+    # download
     curl -k -s -L $kconnect_url -o kconnect.zip
     curl -k -s -LO $kubectl_url
     curl -k -s -L $helm_url -o helm.zip
