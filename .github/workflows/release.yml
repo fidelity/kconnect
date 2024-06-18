@@ -33,16 +33,16 @@ jobs:
             #     echo "$SNAP_TOKEN" | snapcraft login --with -
             #   env:
             #     SNAP_TOKEN: ${{secrets.SNAP_LOGIN}}
-            - name: Run GoReleaser
-              uses: goreleaser/goreleaser-action@v5
-              with:
-                  version: latest
-                  args: release --clean
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+            # - name: Run GoReleaser
+            #   uses: goreleaser/goreleaser-action@v5
+            #   with:
+            #       version: latest
+            #       args: release --clean
+            #   env:
+            #       GITHUB_TOKEN: ${{ secrets.GH_PAT }}
             - name: Update new version in fidelity/krew-index
               uses: rajatjindal/krew-release-bot@v0.0.46
-              env:
+              with:
                 ## KREW_RELEASE_BOT_WEBHOOK_URL env helps you test your setup without actually publishing
                 ## remove this env when you are ready for real release
                 # KREW_RELEASE_BOT_WEBHOOK_URL: https://krew-release-bot-dryrun.rajatjindal.com/github-action-webhook
