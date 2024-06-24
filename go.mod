@@ -18,7 +18,7 @@ require (
 	github.com/beevik/etree v1.4.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.11.2
-	github.com/go-playground/validator/v10 v10.20.0
+	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
