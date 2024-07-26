@@ -174,7 +174,7 @@
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> for authentication to AWS EKS clusters.</p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> for non-interactive authentication to Azure AKS clusters.</p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/azure-cli">az cli</a> for interactive authentication to Azure AKS clusters.</p>
-<p><em>NOTE:&gt;</em> For specific tested and pinned versions, use the <code>install-kconnect.sh</code> script or the <code>with-deps</code> docker image </p>
+<p><em>NOTE:&gt;</em> For specific tested and pinned versions, use the <code>install-kconnect.sh</code> script or the <code>with-deps</code> docker image</p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
 <pre><code class="language-bash">kubectl krew index add fidelity https://github.com/fidelity/krew-index.git
@@ -196,7 +196,7 @@ kubectl krew install fidelity/connect
 <p>We are working on publishing as a snap.</p>
 <h2><a class="header" href="#windows" id="windows">Windows</a></h2>
 <p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains a binary for Windows.</p>
-<p>We have an open issue to support chocolatey in the future/</p>
+<p>We have an open issue to support chocolatey in the future.</p>
 <h2><a class="header" href="#docker" id="docker">Docker</a></h2>
 <p>You can also use kconnect via Docker by using the images we publish to Docker Hub:</p>
 <pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
@@ -208,7 +208,7 @@ docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-prot
 chmod 700 install-kconnect.sh
 ./install-kconnect.sh
 </code></pre>
-<p>This works on Linux, Macos and Windows (using GitBash terminal)</p>
+<p>This works on Linux, macOS and Windows (using GitBash terminal)</p>
 
                     </main>
 

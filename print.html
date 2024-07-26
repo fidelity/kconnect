@@ -200,7 +200,7 @@
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/kubernetes-sigs/aws-iam-authenticator">aws-iam-authenticator</a> for authentication to AWS EKS clusters.</p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/kubelogin">kubelogin</a> for non-interactive authentication to Azure AKS clusters.</p>
 <p><em>NOTE:</em> <code>kconnect</code> requires <a href="https://github.com/Azure/azure-cli">az cli</a> for interactive authentication to Azure AKS clusters.</p>
-<p><em>NOTE:&gt;</em> For specific tested and pinned versions, use the <code>install-kconnect.sh</code> script or the <code>with-deps</code> docker image </p>
+<p><em>NOTE:&gt;</em> For specific tested and pinned versions, use the <code>install-kconnect.sh</code> script or the <code>with-deps</code> docker image</p>
 <h2><a class="header" href="#kubectl-plugin" id="kubectl-plugin">kubectl plugin</a></h2>
 <p>To install as a kubectl plugin:</p>
 <pre><code class="language-bash">kubectl krew index add fidelity https://github.com/fidelity/krew-index.git
@@ -222,7 +222,7 @@ kubectl krew install fidelity/connect
 <p>We are working on publishing as a snap.</p>
 <h2><a class="header" href="#windows" id="windows">Windows</a></h2>
 <p>The latest <a href="https://github.com/fidelity/kconnect/releases">release</a> contains a binary for Windows.</p>
-<p>We have an open issue to support chocolatey in the future/</p>
+<p>We have an open issue to support chocolatey in the future.</p>
 <h2><a class="header" href="#docker" id="docker">Docker</a></h2>
 <p>You can also use kconnect via Docker by using the images we publish to Docker Hub:</p>
 <pre><code class="language-bash">docker pull docker.io/kconnectcli/kconnect:latest
@@ -234,7 +234,7 @@ docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-prot
 chmod 700 install-kconnect.sh
 ./install-kconnect.sh
 </code></pre>
-<p>This works on Linux, Macos and Windows (using GitBash terminal)</p>
+<p>This works on Linux, macOS and Windows (using GitBash terminal)</p>
 <h1><a class="header" href="#getting-started" id="getting-started">Getting started</a></h1>
 <p>Once you have <a href="installation.html">installed</a> kconnect you can see a list of the commands available by running:</p>
 <pre><code class="language-bash">kconnect help
@@ -246,12 +246,12 @@ chmod 700 install-kconnect.sh
 </ul>
 <p>The general workflow for using kconnect is the following:</p>
 <ul>
-<li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>
+<li><code>kconnect configure</code> - import configuration that contains defaults for your organisation - <strong>1 time</strong></li>
 <li><code>kconnect use</code> - connect to a cluster for the first time - <strong>only the first time</strong></li>
 <li><code>kconnect to</code> - use to reconnect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
 </ul>
 <h2><a class="header" href="#creating-and-importing-configuration" id="creating-and-importing-configuration">Creating and importing configuration</a></h2>
-<p>Before using <code>kconnect</code> to connect to a Kubernetes cluster you may want to import an idetitiy provider configuration with your (or your organisations) defaults so that you don’t have to supply all connection settings each time you connect to a new cluster.</p>
+<p>Before using <code>kconnect</code> to connect to a Kubernetes cluster you may want to import an identity provider configuration with your (or your organisations) defaults so that you don’t have to supply all connection settings each time you connect to a new cluster.</p>
 <p>You will need to create a configuration file (see example <a href="https://github.com/fidelity/kconnect/blob/main/examples/config.yaml">here</a>). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).</p>
 <p>Each new user in your organization can then import the default configurations in this file using the <code>kconnect configure</code> command with the <code>-f</code> flag:</p>
 <pre><code class="language-bash">kconnect configure -f https://raw.githubusercontent.com/fidelity/kconnect/main/examples/config.yaml
@@ -274,7 +274,7 @@ chmod 700 install-kconnect.sh
 </code></pre>
 <h2><a class="header" href="#setting-flags" id="setting-flags">Setting Flags</a></h2>
 <p>Flags can be replaced with environment variables by following the format <code>UPPERCASED_SNAKE_CASE</code> and appending to the <code>KCONNECT_</code> prefix.</p>
-<p>For example<code>--username</code>can be set as<code>KCONNECT_USERNAME</code>; or <code>--idp-protocol</code> as<code>KCONNECT_IDP_PROTOCOL</code>.</p>
+<p>For example <code>--username</code> can be set as <code>KCONNECT_USERNAME</code>; or <code>--idp-protocol</code> as <code>KCONNECT_IDP_PROTOCOL</code>.</p>
 <h2><a class="header" href="#kconnect" id="kconnect">kconnect</a></h2>
 <p>The Kubernetes Connection Manager CLI</p>
 <h3><a class="header" href="#synopsis" id="synopsis">Synopsis</a></h3>
@@ -1171,12 +1171,12 @@ git pull
 <pre><code class="language-bash">sudo docker run -v /path/to/repo/.krew.yaml:/tmp/template-file.yaml rajatjindal/krew-release-bot:v0.0.38 krew-release-bot template --tag 0.3.0 --template-file /tmp/template-file.yaml
 </code></pre>
 <ol start="10">
-<li>Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob/main/plugins/connect.yaml with the output you just obtainted (note: these manual steps will be automated in future)</li>
+<li>Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob/main/plugins/connect.yaml with the output you just obtained (note: these manual steps will be automated in future)</li>
 </ol>
 <h2><a class="header" href="#implementation" id="implementation">Implementation</a></h2>
 <p>We use <a href="https://goreleaser.com/">goreleaser</a> to do the majority of the build, packaging and release. The <a href="https://github.com/fidelity/kconnect/blob/main/.goreleaser.yml">.goreleaser.yml</a> configuration file drives this.</p>
 <p>The <strong>goreleaser</strong> GitHub Action that kicks off goreleaser on tagging the main branch is located <a href="https://github.com/fidelity/kconnect/blob/main/.github/workflows/release.yml">here</a>.</p>
-<p>There is an additional GitHub workflow thats used to publish the docs to GitHub pages and that’s located <a href="https://github.com/fidelity/kconnect/blob/main/.github/workflows/release-docs.yml">here</a>.</p>
+<p>There is an additional GitHub workflow that is used to publish the docs to GitHub pages and that is located <a href="https://github.com/fidelity/kconnect/blob/main/.github/workflows/release-docs.yml">here</a>.</p>
 <p>Thank you for considering to contribute to kconnect 🎉👍</p>
 <p>This document will provide help on how to go about this. You can contribute in the following ways:</p>
 <ul>

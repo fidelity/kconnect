@@ -174,12 +174,12 @@
 </ul>
 <p>The general workflow for using kconnect is the following:</p>
 <ul>
-<li><code>kconnect configure</code> - import configuration that contains defaults for your origanisation - <strong>1 time</strong></li>
+<li><code>kconnect configure</code> - import configuration that contains defaults for your organisation - <strong>1 time</strong></li>
 <li><code>kconnect use</code> - connect to a cluster for the first time - <strong>only the first time</strong></li>
 <li><code>kconnect to</code> - use to reconnect to a cluster that you have already connected to - <strong>most used command day-to-day</strong></li>
 </ul>
 <h2><a class="header" href="#creating-and-importing-configuration" id="creating-and-importing-configuration">Creating and importing configuration</a></h2>
-<p>Before using <code>kconnect</code> to connect to a Kubernetes cluster you may want to import an idetitiy provider configuration with your (or your organisations) defaults so that you don’t have to supply all connection settings each time you connect to a new cluster.</p>
+<p>Before using <code>kconnect</code> to connect to a Kubernetes cluster you may want to import an identity provider configuration with your (or your organisations) defaults so that you don’t have to supply all connection settings each time you connect to a new cluster.</p>
 <p>You will need to create a configuration file (see example <a href="https://github.com/fidelity/kconnect/blob/main/examples/config.yaml">here</a>). The configuration file can be imported from a local file or remote location via HTTP/HTTPS (and from stdin).</p>
 <p>Each new user in your organization can then import the default configurations in this file using the <code>kconnect configure</code> command with the <code>-f</code> flag:</p>
 <pre><code class="language-bash">kconnect configure -f https://raw.githubusercontent.com/fidelity/kconnect/main/examples/config.yaml
@@ -202,7 +202,7 @@
 </code></pre>
 <h2><a class="header" href="#setting-flags" id="setting-flags">Setting Flags</a></h2>
 <p>Flags can be replaced with environment variables by following the format <code>UPPERCASED_SNAKE_CASE</code> and appending to the <code>KCONNECT_</code> prefix.</p>
-<p>For example<code>--username</code>can be set as<code>KCONNECT_USERNAME</code>; or <code>--idp-protocol</code> as<code>KCONNECT_IDP_PROTOCOL</code>.</p>
+<p>For example <code>--username</code> can be set as <code>KCONNECT_USERNAME</code>; or <code>--idp-protocol</code> as <code>KCONNECT_IDP_PROTOCOL</code>.</p>
 
                     </main>
 
