@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -140,14 +139,13 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	err = cmd.Run()
 
 	if err != nil {
-		if strings.Contains(stderr.String(), "Interactive authentication is needed.") {
-			interactiveLoginRequired = true
-			cmd = exec.Command("az", "login", "--tenant", cfg.TenantID)
-			cmd.Stdout = nil
-			cmd.Stdin = os.Stdin
-			cmd.Stderr = os.Stderr
-			cmd.Run()
-		} else {
+		interactiveLoginRequired = true
+		cmd = exec.Command("az", "login", "--tenant", cfg.TenantID)
+		cmd.Stdout = nil
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
 			return nil, fmt.Errorf("azure cli: %w", err)
 		}
 	}

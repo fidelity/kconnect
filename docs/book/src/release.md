@@ -30,7 +30,7 @@ git push origin 0.3.0
 ```bash
 sudo docker run -v /path/to/repo/.krew.yaml:/tmp/template-file.yaml rajatjindal/krew-release-bot:v0.0.38 krew-release-bot template --tag 0.3.0 --template-file /tmp/template-file.yaml
 ```
-10. Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob/main/plugins/connect.yaml with the output you just obtainted (note: these manual steps will be automated in future)
+10. Take the output of this command (excluding logging output). Update this file https://github.com/fidelity/krew-index/blob/main/plugins/connect.yaml with the output you just obtained (note: these manual steps will be automated in future)
 
 ## Implementation
 
@@ -38,5 +38,5 @@ We use [goreleaser](https://goreleaser.com/) to do the majority of the build, pa
 
 The **goreleaser** GitHub Action that kicks off goreleaser on tagging the main branch is located [here](https://github.com/fidelity/kconnect/blob/main/.github/workflows/release.yml).
 
-There is an additional GitHub workflow thats used to publish the docs to GitHub pages and that's located [here](https://github.com/fidelity/kconnect/blob/main/.github/workflows/release-docs.yml).
+There is an additional GitHub workflow that is used to publish the docs to GitHub pages and that is located [here](https://github.com/fidelity/kconnect/blob/main/.github/workflows/release-docs.yml).
 
