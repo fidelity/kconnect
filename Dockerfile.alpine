@@ -1,8 +1,7 @@
-FROM alpine:3.19
+FROM alpine:3.20
 
-RUN apk --no-cache add ca-certificates
-COPY  kconnect /
+RUN apk --no-cache add ca-certificates && adduser -D kconnect
+COPY kconnect /
 
-RUN adduser -D kconnect
 USER kconnect
 ENTRYPOINT ["/kconnect"]
