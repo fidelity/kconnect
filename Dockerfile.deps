@@ -36,9 +36,7 @@ RUN curl -L \
 RUN curl -L https://get.helm.sh/helm-v${HELM_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz -o helm.tar.gz && \
     tar xvfz helm.tar.gz
 
-# Azure CLI
-FROM mcr.microsoft.com/azure-cli:2.67.0
-RUN apk --no-cache add ca-certificates
+FROM python:alpine
 
 WORKDIR /app/
 ENV PATH="/app:${PATH}"
@@ -53,6 +51,10 @@ COPY --from=builder bin/${TARGETOS}_${TARGETARCH}/kubelogin .
 COPY --from=builder ${TARGETOS}-${TARGETARCH}/helm .
 COPY kconnect .
 
-RUN adduser -D kconnect
+# Azure CLI
+RUN apk --no-cache add ca-certificates cargo gcc libffi-dev make musl-dev openssl-dev python3-dev && \
+    pip install --upgrade pip && \
+    pip install azure-cli && \
+    adduser -D kconnect
 USER kconnect
 ENTRYPOINT ["/app/kconnect"]
