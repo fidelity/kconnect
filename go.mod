@@ -7,7 +7,7 @@ toolchain go1.23.4
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.11.29
+	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/beevik/etree v1.5.0
