@@ -34,7 +34,8 @@ import (
 
 func NewSession(region, profile, accessKey, secretKey, sessionToken, awsSharedCredentialsFile string) (*session.Session, error) {
 	cfg := aws.Config{
-		Region: aws.String(region),
+		Region:     aws.String(region),
+		MaxRetries: aws.Int(5), // set the maximum number of retries
 	}
 
 	if profile != "" {
