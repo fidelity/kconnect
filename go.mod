@@ -27,7 +27,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/versent/saml2aws/v2 v2.36.18
 	go.uber.org/zap v1.27.0
-	golang.org/x/mod v0.23.0
+	golang.org/x/mod v0.24.0
 	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.32.2
