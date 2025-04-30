@@ -31,6 +31,7 @@ linters:
     fast: true
     enable-all: true
     disable:
+    - cyclop
     - gochecknoglobals
     - gochecknoinits
     - lll
@@ -38,17 +39,10 @@ linters:
     - whitespace
     - godot
     - godox
-    - maligned
     - nlreturn
-    - exhaustivestruct
     - gofumpt
     - gci
-    - ifshort
     - tagliatelle
-    - gomnd
-    - execinquery
-    - scopelint # deprecated by the owner
-    - nosnakecase # deprecated by the owner
     - interfacebloat
     - forcetypeassert # maybe enable in the future
     - depguard # maybe enable in the future

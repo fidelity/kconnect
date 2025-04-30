@@ -44,9 +44,10 @@ var (
 )
 
 const (
-	shortDesc         = "Connect to a Kubernetes cluster provider and cluster."
-	shortDescProvider = "Connect to the %s cluster provider and choose a cluster."
-	longDescHead      = `
+	configFilePermission = 0755
+	shortDesc            = "Connect to a Kubernetes cluster provider and cluster."
+	shortDescProvider    = "Connect to the %s cluster provider and choose a cluster."
+	longDescHead         = `
 Connect to a managed Kubernetes cluster provider via the configured identity
 provider, prompting the user to enter or choose connection settings appropriate
 to the provider and a target cluster once connected.
@@ -323,18 +324,16 @@ func ensureConfigFolder(path string) error {
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("getting details of config folder %s: %w", path, err)
 	} else if err != nil && os.IsNotExist(err) {
-		errDir := os.MkdirAll(path, 0755)
+		errDir := os.MkdirAll(path, configFilePermission)
 		if errDir != nil {
 			return fmt.Errorf("creating config directory %s: %w", path, err)
 		}
-
 		return nil
 	}
 
 	if !info.IsDir() {
 		return ErrMustBeDirectory
 	}
-
 	return nil
 }
 
