@@ -12,18 +12,18 @@ jobs:
           DOCKER_CLI_EXPERIMENTAL: "enabled"
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
                   submodules: true
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v2
+              uses: docker/setup-qemu-action@v3
             - name: Set up Go
-              uses: actions/setup-go@v3
+              uses: actions/setup-go@v5
               with:
                   go-version: '1.22'
             - name: Login to DockerHub
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                 password: ${{secrets.DKR_TOKEN}}
                 username: ${{secrets.DKR_USER}}
