@@ -288,7 +288,7 @@ func (a *App) getDiscoveryProvider(name *string, scopedToIdentityProvider *strin
 
 	prov, err := registry.GetDiscoveryProvider(*name, &provider.PluginCreationInput{
 		Logger:        a.logger.With("provider", name),
-		IsInteractice: a.interactive,
+		IsInteractive: a.interactive,
 		ItemSelector:  a.itemSelector,
 		ScopedTo:      scopedToIdentityProvider,
 		HTTPClient:    a.httpClient,
@@ -307,7 +307,7 @@ func (a *App) getIdentityProvider(name *string, scopedToDiscoveryProvider *strin
 
 	prov, err := registry.GetIdentityProvider(*name, &provider.PluginCreationInput{
 		Logger:        a.logger.With("provider", name),
-		IsInteractice: a.interactive,
+		IsInteractive: a.interactive,
 		ItemSelector:  a.itemSelector,
 		ScopedTo:      scopedToDiscoveryProvider,
 		HTTPClient:    a.httpClient,

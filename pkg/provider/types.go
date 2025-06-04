@@ -46,7 +46,7 @@ type PreReq interface {
 // PluginCreationInput is the input to plugin Init
 type PluginCreationInput struct {
 	Logger        *zap.SugaredLogger
-	IsInteractice bool
+	IsInteractive bool
 	ItemSelector  SelectItemFunc
 	ScopedTo      *string
 	HTTPClient    khttp.Client

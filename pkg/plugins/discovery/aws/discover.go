@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	awsgo "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/eks"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
@@ -50,7 +50,7 @@ func (p *eksClusterProvider) Discover(ctx context.Context, input *discovery.Disc
 	}
 
 	for _, clusterName := range clusters {
-		clusterDetail, err := p.getClusterConfig(*clusterName)
+		clusterDetail, err := p.getClusterConfig(clusterName)
 		if err != nil {
 			return nil, fmt.Errorf("getting cluster config: %w", err)
 		}
@@ -61,16 +61,18 @@ func (p *eksClusterProvider) Discover(ctx context.Context, input *discovery.Disc
 	return discoverOutput, nil
 }
 
-func (p *eksClusterProvider) listClusters() ([]*string, error) {
+func (p *eksClusterProvider) listClusters() ([]string, error) {
 	input := &eks.ListClustersInput{}
+	clusters := []string{}
 
-	clusters := []*string{}
-	err := p.eksClient.ListClustersPages(input, func(page *eks.ListClustersOutput, lastPage bool) bool {
+	paginator := eks.NewListClustersPaginator(p.eksClient, input)
+
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf("listing clusters: %w", err)
+		}
 		clusters = append(clusters, page.Clusters...)
-		return true
-	})
-	if err != nil {
-		return nil, fmt.Errorf("listing clusters: %w", err)
 	}
 
 	return clusters, nil
@@ -79,10 +81,10 @@ func (p *eksClusterProvider) listClusters() ([]*string, error) {
 func (p *eksClusterProvider) getClusterConfig(clusterName string) (*discovery.Cluster, error) {
 
 	input := &eks.DescribeClusterInput{
-		Name: awsgo.String(clusterName),
+		Name: aws.String(clusterName),
 	}
 
-	output, err := p.eksClient.DescribeCluster(input)
+	output, err := p.eksClient.DescribeCluster(context.TODO(), input)
 	if err != nil {
 		return nil, fmt.Errorf("describing cluster %s: %w", clusterName, err)
 	}

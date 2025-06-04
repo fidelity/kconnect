@@ -17,62 +17,52 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/client"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/eks"
-	"github.com/aws/aws-sdk-go/service/eks/eksiface"
-	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/iam/iamiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	"github.com/fidelity/kconnect/internal/version"
 )
 
-func NewSession(region, profile, accessKey, secretKey, sessionToken, awsSharedCredentialsFile string) (*session.Session, error) {
-	cfg := aws.Config{
-		Region: aws.String(region),
-	}
+func NewSession(region, profile, accessKey, secretKey, sessionToken, awsSharedCredentialsFile string) (*aws.Config, error) {
+	var opts []func(*config.LoadOptions) error
+	opts = append(opts, config.WithRegion(region))
 
 	if profile != "" {
-		cfg.Credentials = credentials.NewSharedCredentials(awsSharedCredentialsFile, profile)
+		opts = append(opts, config.WithSharedConfigProfile(profile))
+		if awsSharedCredentialsFile != "" {
+			opts = append(opts, config.WithSharedCredentialsFiles([]string{awsSharedCredentialsFile}))
+		}
 	} else if accessKey != "" && secretKey != "" {
-		cfg.Credentials = credentials.NewStaticCredentials(accessKey, secretKey, sessionToken)
+		opts = append(opts, config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(accessKey, secretKey, sessionToken),
+		))
 	}
 
-	options := session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		Config:            cfg,
-	}
-
-	awsSession, err := session.NewSessionWithOptions(options)
+	awsCfg, err := config.LoadDefaultConfig(context.TODO(), opts...)
 	if err != nil {
 		return nil, fmt.Errorf("creating new aws session in region %s using creds: %w", region, err)
 	}
 
-	return awsSession, nil
+	return &awsCfg, nil
 }
 
-func NewIAMClient(session client.ConfigProvider) iamiface.IAMAPI {
-	iamClient := iam.New(session)
-	iamClient.Handlers.Build.PushFrontNamed(getUserAgentHandler())
-
+func NewIAMClient(cfg aws.Config) *iam.Client {
+	iamClient := iam.NewFromConfig(cfg, func(o *iam.Options) {
+		o.APIOptions = append(o.APIOptions, middleware.AddUserAgentKeyValue("kconnect.fidelity.github.com", version.Get().String()))
+	})
 	return iamClient
 }
 
-func NewEKSClient(session client.ConfigProvider) eksiface.EKSAPI {
-	eksClient := eks.New(session)
-	eksClient.Handlers.Build.PushFrontNamed(getUserAgentHandler())
-
+func NewEKSClient(cfg aws.Config) *eks.Client {
+	eksClient := eks.NewFromConfig(cfg, func(o *eks.Options) {
+		o.APIOptions = append(o.APIOptions, middleware.AddUserAgentKeyValue("kconnect.fidelity.github.com", version.Get().String()))
+	})
 	return eksClient
-}
-
-func getUserAgentHandler() request.NamedHandler {
-	return request.NamedHandler{
-		Name: "kconnect/user-agent",
-		Fn:   request.MakeAddToUserAgentHandler("kconnect.fidelity.github.com", version.Get().String()),
-	}
 }
