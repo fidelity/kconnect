@@ -60,7 +60,7 @@ func init() {
 func New(input *provider.PluginCreationInput) (identity.Provider, error) {
 	return &oidcIdentityProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 	}, nil
 }
 

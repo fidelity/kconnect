@@ -53,7 +53,7 @@ func init() {
 func New(input *provider.PluginCreationInput) (provid.Provider, error) {
 	return &envIdentityProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 	}, nil
 }
 

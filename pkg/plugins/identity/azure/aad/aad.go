@@ -67,7 +67,7 @@ func New(input *provider.PluginCreationInput) (provid.Provider, error) {
 
 	return &aadIdentityProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 		httpClient:  input.HTTPClient,
 	}, nil
 }

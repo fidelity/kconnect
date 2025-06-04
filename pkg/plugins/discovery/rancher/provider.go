@@ -63,7 +63,7 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 
 	return &rancherClusterProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 		httpClient:  input.HTTPClient,
 	}, nil
 }

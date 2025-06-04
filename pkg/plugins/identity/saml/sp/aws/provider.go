@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -26,18 +27,17 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	"github.com/versent/saml2aws/v2"
 	"github.com/versent/saml2aws/v2/pkg/awsconfig"
 	"github.com/versent/saml2aws/v2/pkg/cfg"
 
 	kaws "github.com/fidelity/kconnect/pkg/aws"
-	"github.com/fidelity/kconnect/pkg/config"
+	kcfg "github.com/fidelity/kconnect/pkg/config"
 	"github.com/fidelity/kconnect/pkg/plugins/identity/saml/sp"
 	"github.com/fidelity/kconnect/pkg/provider"
 	"github.com/fidelity/kconnect/pkg/provider/identity"
@@ -73,7 +73,7 @@ type ServiceProvider struct {
 	itemSelector provider.SelectItemFunc
 }
 
-func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.ConfigurationSet) error {
+func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg kcfg.ConfigurationSet) error {
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 	account.Profile = "kconnect-saml-provider"
 
@@ -91,7 +91,7 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg config.Co
 	return nil
 }
 
-func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg config.ConfigurationSet) (identity.Identity, error) {
+func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAssertions string, cfg kcfg.ConfigurationSet) (identity.Identity, error) {
 	data, err := base64.StdEncoding.DecodeString(samlAssertions)
 	if err != nil {
 		return nil, fmt.Errorf("decoding SAMLAssertion: %w", err)
@@ -165,7 +165,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	return awsIdentity, nil
 }
 
-func (p *ServiceProvider) setProfileName(profileName string, cfg config.ConfigurationSet) error {
+func (p *ServiceProvider) setProfileName(profileName string, cfg kcfg.ConfigurationSet) error {
 	if cfg.ExistsWithValue("static-profile") {
 		p.logger.Debug("static profile name found")
 		item := cfg.Get("static-profile")
@@ -280,70 +280,67 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, rol
 }
 
 func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *saml2aws.AWSRole, samlAssertion string) (*awsconfig.AWSCredentials, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:              &account.Region,
-		STSRegionalEndpoint: endpoints.RegionalSTSEndpoint,
-	})
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(account.Region),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
 
-	svc := sts.New(sess)
+	svc := sts.NewFromConfig(cfg)
 
 	params := &sts.AssumeRoleWithSAMLInput{
 		PrincipalArn:    aws.String(role.PrincipalARN),
 		RoleArn:         aws.String(role.RoleARN),
 		SAMLAssertion:   aws.String(samlAssertion),
-		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
+		DurationSeconds: aws.Int32(int32(account.SessionDuration)),
 	}
 
 	p.logger.Info("requesting AWS credentials using SAML")
 
-	resp, err := svc.AssumeRoleWithSAML(params)
+	resp, err := svc.AssumeRoleWithSAML(context.TODO(), params)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving STS credentials using SAML: %w", err)
 	}
-
 	return &awsconfig.AWSCredentials{
-		AWSAccessKey:     aws.StringValue(resp.Credentials.AccessKeyId),
-		AWSSecretKey:     aws.StringValue(resp.Credentials.SecretAccessKey),
-		AWSSessionToken:  aws.StringValue(resp.Credentials.SessionToken),
-		AWSSecurityToken: aws.StringValue(resp.Credentials.SessionToken),
-		PrincipalARN:     aws.StringValue(resp.AssumedRoleUser.Arn),
+		AWSAccessKey:     aws.ToString(resp.Credentials.AccessKeyId),
+		AWSSecretKey:     aws.ToString(resp.Credentials.SecretAccessKey),
+		AWSSessionToken:  aws.ToString(resp.Credentials.SessionToken),
+		AWSSecurityToken: aws.ToString(resp.Credentials.SessionToken),
+		PrincipalARN:     aws.ToString(resp.AssumedRoleUser.Arn),
 		Expires:          resp.Credentials.Expiration.Local(),
 		Region:           account.Region,
 	}, nil
 }
 
 func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsconfig.AWSCredentials, assumeRoleARN string) (*awsconfig.AWSCredentials, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:              &account.Region,
-		STSRegionalEndpoint: endpoints.RegionalSTSEndpoint,
-		Credentials: credentials.NewStaticCredentials(
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(account.Region),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			awsCreds.AWSAccessKey,
 			awsCreds.AWSSecretKey,
 			awsCreds.AWSSessionToken,
-		),
-	})
+		)),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
 	assumeRoleInput := &sts.AssumeRoleInput{
 		RoleArn:         &assumeRoleARN,
 		RoleSessionName: &account.Username,
-		DurationSeconds: aws.Int64(int64(account.SessionDuration)),
+		DurationSeconds: aws.Int32(int32(account.SessionDuration)),
 	}
-	out, err := sts.New(sess).AssumeRole(assumeRoleInput)
+	out, err := sts.NewFromConfig(cfg).AssumeRole(context.TODO(), assumeRoleInput)
 	if err != nil {
 		return nil, fmt.Errorf("failed to assume role: %w", err)
 	}
 
 	return &awsconfig.AWSCredentials{
-		AWSAccessKey:     aws.StringValue(out.Credentials.AccessKeyId),
-		AWSSecretKey:     aws.StringValue(out.Credentials.SecretAccessKey),
-		AWSSessionToken:  aws.StringValue(out.Credentials.SessionToken),
-		AWSSecurityToken: aws.StringValue(out.Credentials.SessionToken),
-		PrincipalARN:     aws.StringValue(out.AssumedRoleUser.Arn),
+		AWSAccessKey:     aws.ToString(out.Credentials.AccessKeyId),
+		AWSSecretKey:     aws.ToString(out.Credentials.SecretAccessKey),
+		AWSSessionToken:  aws.ToString(out.Credentials.SessionToken),
+		AWSSecurityToken: aws.ToString(out.Credentials.SessionToken),
+		PrincipalARN:     aws.ToString(out.AssumedRoleUser.Arn),
 		Expires:          out.Credentials.Expiration.Local(),
 		Region:           account.Region,
 	}, nil
@@ -379,10 +376,10 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 	return "", fmt.Errorf("getting response element Destination or SubjectConfirmationData: %w", ErrMissingResponseElement)
 }
 
-func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
+func (p *ServiceProvider) Validate(configItems kcfg.ConfigurationSet) error {
 	cfg := &awsProviderConfig{}
 
-	if err := config.Unmarshall(configItems, cfg); err != nil {
+	if err := kcfg.Unmarshall(configItems, cfg); err != nil {
 		return fmt.Errorf("unmarshlling config set: %w", err)
 	}
 
@@ -394,7 +391,7 @@ func (p *ServiceProvider) Validate(configItems config.ConfigurationSet) error {
 	return nil
 }
 
-func (p *ServiceProvider) ConfigurationItems() config.ConfigurationSet {
+func (p *ServiceProvider) ConfigurationItems() kcfg.ConfigurationSet {
 	cs := kaws.SharedConfig()
 
 	return cs

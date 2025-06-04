@@ -73,7 +73,7 @@ func New(input *provider.PluginCreationInput) (identity.Provider, error) {
 
 	return &samlIdentityProvider{
 		logger:            input.Logger,
-		interactive:       input.IsInteractice,
+		interactive:       input.IsInteractive,
 		itemSelector:      input.ItemSelector,
 		scopedToDiscovery: *input.ScopedTo,
 	}, nil

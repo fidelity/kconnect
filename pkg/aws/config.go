@@ -17,7 +17,6 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/fidelity/kconnect/pkg/config"
 )
 
@@ -47,8 +46,8 @@ func AddRegionConfig(cs config.ConfigurationSet) {
 }
 
 func AddPartitionConfig(cs config.ConfigurationSet) {
-	cs.String(PartitionConfigItem, endpoints.AwsPartition().ID(), "AWS partition to use") //nolint: errcheck
-	cs.SetRequired(ProfileConfigItem)                                                     //nolint: errcheck
+	cs.String(PartitionConfigItem, "aws", "AWS partition to use") //nolint: errcheck
+	cs.SetRequired(ProfileConfigItem)                             //nolint: errcheck
 }
 
 func AddIAMConfigs(cs config.ConfigurationSet) {

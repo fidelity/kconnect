@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go/service/eks/eksiface"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"go.uber.org/zap"
 
 	"github.com/fidelity/kconnect/pkg/aws"
@@ -65,11 +65,11 @@ func init() {
 func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 	return &eksClusterProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 	}, nil
 }
 
-type eksClusteProviderConfig struct {
+type eksClusterProviderConfig struct {
 	common.ClusterProviderConfig
 	AssumeRoleARN *string `json:"assume-role-arn"`
 	Region        *string `json:"region"`
@@ -80,9 +80,9 @@ type eksClusteProviderConfig struct {
 
 // EKSClusterProvider will discover EKS clusters in AWS
 type eksClusterProvider struct {
-	config    *eksClusteProviderConfig
+	config    *eksClusterProviderConfig
 	identity  *aws.Identity
-	eksClient eksiface.EKSAPI
+	eksClient *eks.Client
 
 	interactive bool
 	logger      *zap.SugaredLogger
@@ -94,9 +94,9 @@ func (p *eksClusterProvider) Name() string {
 }
 
 func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
-	cfg := &eksClusteProviderConfig{}
+	cfg := &eksClusterProviderConfig{}
 	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into eksClusteProviderConfig: %w", err)
+		return fmt.Errorf("unmarshalling config items into eksClusterProviderConfig: %w", err)
 	}
 	p.config = cfg
 
@@ -111,8 +111,7 @@ func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID identity.I
 	if err != nil {
 		return fmt.Errorf("creating aws session: %w", err)
 	}
-
-	p.eksClient = aws.NewEKSClient(sess)
+	p.eksClient = aws.NewEKSClient(*sess)
 
 	return nil
 }

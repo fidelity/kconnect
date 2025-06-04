@@ -70,7 +70,7 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 
 	return &aksClusterProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 		httpClient:  input.HTTPClient,
 	}, nil
 }

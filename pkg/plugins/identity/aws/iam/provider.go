@@ -54,7 +54,7 @@ func init() {
 func New(input *provider.PluginCreationInput) (identity.Provider, error) {
 	return &iamIdentityProvider{
 		logger:      input.Logger,
-		interactive: input.IsInteractice,
+		interactive: input.IsInteractive,
 	}, nil
 }
 
@@ -95,11 +95,11 @@ func (p *iamIdentityProvider) Authenticate(ctx context.Context, input *identity.
 		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
 
-	creds, err := sess.Config.Credentials.Get()
+	creds, err := sess.Credentials.Retrieve(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("getting credentials: %w", err)
 	}
-	p.logger.Debugw("found aws iam credentials", "provider", creds.ProviderName)
+	p.logger.Debugw("found aws iam credentials", "provider", creds.Source)
 
 	id := &kaws.Identity{
 		ProfileName:     cfg.Profile,
