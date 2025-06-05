@@ -35,7 +35,7 @@ func ResolvePartition(cfg config.ConfigurationSet) error {
 }
 
 func ResolvePartitionRegions(partitionID string) []string {
-	var regions = []string{}
+	var regions []string
 	switch partitionID {
 	case "aws-cn":
 		regions = awsChinaRegions
