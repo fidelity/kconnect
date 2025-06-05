@@ -13,14 +13,12 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
           submodules: true
-
       # Build
       - name: Build
         run: make build
@@ -28,17 +26,17 @@ jobs:
     needs: build
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
           submodules: true
-
       # Run tests
       - name: Tests
-        run: make test
+        run: |
+          sudo apt-get update
+          make test
   # lint:
   #   # The type of runner that the job will run on
   #   runs-on: ubuntu-latest

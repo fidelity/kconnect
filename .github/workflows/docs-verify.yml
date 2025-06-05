@@ -13,6 +13,8 @@ jobs:
         fetch-depth: 2
         submodules: true
     - name: Verify Docs
-      run: make docs-verify
+      run: |
+        sudo apt-get update
+        make docs-verify
     - name: Build Docs
       run: make docs-build
