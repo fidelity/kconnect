@@ -14,7 +14,7 @@ jobs:
         submodules: true
     - name: Verify Docs
       run: |
-        sudo apt-get update
+        sudo apt-get update && sudo apt-get install -y libudev-dev
         make docs-verify
     - name: Build Docs
       run: make docs-build
