@@ -35,7 +35,7 @@ jobs:
       # Run tests
       - name: Tests
         run: |
-          sudo apt-get update
+          sudo apt-get update && sudo apt-get install -y libudev-dev
           make test
   # lint:
   #   # The type of runner that the job will run on
