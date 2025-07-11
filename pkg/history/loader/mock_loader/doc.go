@@ -15,6 +15,6 @@ limitations under the License.
 */
 
 // Run go generate to generate a mock loader
-//go:generate ../../../hack/tools/bin/mockgen -destination loader_mock.go -package mock_loader github.com/fidelity/kconnect/pkg/history/loader Loader
+//go:generate ../../../../hack/tools/bin/mockgen -destination loader_mock.go -package mock_loader github.com/fidelity/kconnect/pkg/history/loader Loader
 
 package mock_loader //nolint: nolintlint

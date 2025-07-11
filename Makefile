@@ -68,14 +68,14 @@ build-cross: # Build the CLI binary for linux/mac/windows
 
 .PHONY: generate
 generate: $(MOCKGEN) $(CONTROLLER_GEN) $(CONVERSION_GEN)  # Generate code for the api definitions
-	go generate
+	go generate ./...
 	$(CONTROLLER_GEN) \
 		paths=./api/... \
 		object:headerFile=./hack/boilerplate.generatego.txt
 
 	$(CONVERSION_GEN) \
-		--input-dirs=./api/v1alpha1 \
-		--output-file-base=zz_generated.conversion \
+		./api/v1alpha1 \
+		--output-file=zz_generated.conversion \
 		--go-header-file=./hack/boilerplate.generatego.txt
 
 ##@ Release
