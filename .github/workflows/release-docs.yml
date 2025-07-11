@@ -16,6 +16,7 @@ jobs:
           submodules: true
       - name: Build Docs
         run: |
+          sudo apt-get update && sudo apt-get install -y libudev-dev
           make docs-build
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
