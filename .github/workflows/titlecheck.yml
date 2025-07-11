@@ -13,10 +13,10 @@ on:
 
 jobs:
   titlecheck:
-    name: PR title follows coventional commit
+    name: PR title follows conventional commit
     runs-on: ubuntu-latest
     steps:
-    - name: Check conventinal title
+    - name: Check conventional title
       uses: amannn/action-semantic-pull-request@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

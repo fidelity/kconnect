@@ -35,19 +35,19 @@ release:
 archives:
     -
       id: default
-      builds:
+      ids:
         - default
       name_template: '{{ .ProjectName }}_{{ if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}'
-      format: tar.gz
+      formats: [tar.gz]
       format_overrides:
           - goos: windows
-            format: zip
+            formats: [zip]
 
 checksum:
     name_template: "{{ .ProjectName }}_checksums.txt"
 
 snapshot:
-    name_template: "{{ .Tag }}-next"
+    version_template: "{{ .Tag }}-next"
 
 changelog:
     sort: asc
