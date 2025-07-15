@@ -47,6 +47,7 @@ func (p *rancherClusterProvider) Resolve(cfg config.ConfigurationSet, identity i
 	if err := p.setup(cfg, identity); err != nil {
 		return fmt.Errorf("setting up rancher provider: %w", err)
 	}
+
 	p.logger.Debug("resolving Rancher configuration items")
 
 	if err := rshared.ResolveCommon(cfg); err != nil {

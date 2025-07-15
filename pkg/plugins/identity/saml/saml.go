@@ -102,6 +102,7 @@ func (p *samlIdentityProvider) Authenticate(ctx context.Context, input *identity
 	if err != nil {
 		return nil, fmt.Errorf("creating saml service provider: %w", err)
 	}
+
 	p.serviceProvider = sp
 
 	if err := p.resolveConfig(input.ConfigSet); err != nil {
@@ -111,6 +112,7 @@ func (p *samlIdentityProvider) Authenticate(ctx context.Context, input *identity
 	if err := p.bindAndValidateConfig(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("binding and validation config: %w", err)
 	}
+
 	if err := p.serviceProvider.Validate(input.ConfigSet); err != nil {
 		return nil, fmt.Errorf("validating service provider: %w", err)
 	}
@@ -202,6 +204,7 @@ func (p *samlIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error 
 
 	if p.interactive {
 		p.logger.Debug("resolving SAML provider flags")
+
 		if err := sp.ResolveConfiguration(cfg); err != nil {
 			return fmt.Errorf("resolving flags: %w", err)
 		}
@@ -214,6 +217,7 @@ func (p *samlIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error 
 
 func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) (identity.Store, error) {
 	var store identity.Store
+
 	var err error
 
 	switch p.scopedToDiscovery {
@@ -221,6 +225,7 @@ func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) 
 		if !cfg.ExistsWithValue("aws-profile") {
 			return nil, kaws.ErrNoProfile
 		}
+
 		profileCfg := cfg.Get("aws-profile")
 		profile := profileCfg.Value.(string)
 		awsCredsFileCfg := cfg.Get("aws-shared-credentials-file")
@@ -229,6 +234,7 @@ func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) 
 	default:
 		return nil, ErrUnsuportedProvider
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("creating identity store: %w", err)
 	}

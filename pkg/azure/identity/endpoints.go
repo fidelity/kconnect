@@ -88,9 +88,11 @@ func (r *oidcEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, error
 	if oidcResp.AuthorizationEndpoint == "" {
 		return nil, ErrAuthorizationEndpointNotFound
 	}
+
 	if oidcResp.TokenEndpoint == "" {
 		return nil, ErrTokenEndpointNotFound
 	}
+
 	if oidcResp.Issuer == "" {
 		return nil, ErrIssuerNotFound
 	}
@@ -113,14 +115,17 @@ func (r *oauthEndpointsResolver) Resolve(cfg *AuthorityConfig) (*Endpoints, erro
 	if err != nil {
 		return nil, err
 	}
+
 	authorizeURL, err := u.Parse(fmt.Sprintf(OAuth2Template, "authorize", VersionQueryString))
 	if err != nil {
 		return nil, err
 	}
+
 	tokenURL, err := u.Parse(fmt.Sprintf(OAuth2Template, "token", VersionQueryString))
 	if err != nil {
 		return nil, err
 	}
+
 	deviceCodeURL, err := u.Parse(fmt.Sprintf(OAuth2Template, "devicecode", VersionQueryString))
 	if err != nil {
 		return nil, err

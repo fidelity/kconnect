@@ -125,6 +125,7 @@ func WithInteractive(interactive bool) Option {
 func DefaultSelectCluster(discoverOutput *discovery.DiscoverOutput) (*discovery.Cluster, error) {
 	clusterNameToID := make(map[string]string)
 	options := []string{}
+
 	for _, cluster := range discoverOutput.Clusters {
 		clusterNameToID[cluster.Name] = cluster.ID
 		options = append(options, cluster.Name)

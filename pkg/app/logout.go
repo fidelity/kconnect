@@ -29,6 +29,12 @@ import (
 	"github.com/fidelity/kconnect/pkg/aws/awsconfig"
 )
 
+const (
+	EKSProviderName     = "eks"
+	AKSProviderName     = "aks"
+	RancherProviderName = "rancher"
+)
+
 type LogoutInput struct {
 	CommonConfig
 	HistoryConfig
@@ -40,30 +46,34 @@ type LogoutInput struct {
 }
 
 func (a *App) Logout(ctx context.Context, params *LogoutInput) error {
-
 	entries, err := a.getClustersToLogout(params)
 	if err != nil {
 		return err
 	}
+
 	if entries == nil || len(entries.Items) == 0 {
 		return ErrNoEntriesFound
 	}
+
 	for i := range entries.Items {
 		err = a.doLogout(params, &entries.Items[i])
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
 func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryEntryList, error) {
 	entries := historyv1alpha.NewHistoryEntryList()
+
 	var err error
 
 	switch {
 	case params.All:
 		zap.S().Infof("will log out of all clusters")
+
 		entries, err = a.historyStore.GetAllSortedByLastUsed()
 		if err != nil {
 			return nil, err
@@ -75,11 +85,14 @@ func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryE
 			if err != nil {
 				return nil, err
 			}
+
 			if entry == nil {
 				return nil, ErrAliasNotFound
 			}
+
 			entries.Items = append(entries.Items, *entry)
 		}
+
 		fallthrough
 	case params.IDs != "":
 		idsList := strings.Split(params.IDs, ",")
@@ -88,37 +101,41 @@ func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryE
 			if err != nil {
 				return nil, err
 			}
+
 			if entry == nil {
 				return nil, ErrAliasNotFound
 			}
+
 			entries.Items = append(entries.Items, *entry)
 		}
 	default:
 		zap.S().Infof("Logging out of current cluster")
+
 		entry, err := a.historyStore.GetLastModified(0)
 		if err != nil {
 			return nil, err
 		}
+
 		entries.Items = append(entries.Items, *entry)
 	}
+
 	return entries, nil
 }
 
 func (a *App) doLogout(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
-
 	// TODO use const for provider
 	switch entry.Spec.Provider {
-	case "eks":
+	case EKSProviderName:
 		err := a.doLogoutEKS(entry)
 		if err != nil {
 			return err
 		}
-	case "aks":
+	case AKSProviderName:
 		err := a.doLogoutAKS(params, entry)
 		if err != nil {
 			return err
 		}
-	case "rancher":
+	case RancherProviderName:
 		err := a.doLogoutRancher(params, entry)
 		if err != nil {
 			return err
@@ -126,62 +143,70 @@ func (a *App) doLogout(params *LogoutInput, entry *historyv1alpha.HistoryEntry) 
 	default:
 		return ErrUnknownProvider
 	}
+
 	return nil
 }
 
 func (a *App) doLogoutEKS(entry *historyv1alpha.HistoryEntry) error {
-
 	zap.S().Infof("logging out of entry (eks): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
+
 	profileName, ok := entry.Spec.Flags["aws-profile"]
 	if !ok {
 		zap.S().Infof("no aws profile name found for entry %s", entry.Name)
 		return nil
 	}
+
 	path, err := awsconfig.LocateConfigFile()
 	if err != nil {
 		return err
 	}
+
 	cfg, err := ini.Load(path)
 	if err != nil {
 		return err
 	}
+
 	cfg.DeleteSection(profileName)
+
 	return cfg.SaveTo(path)
 }
 
 func (a *App) doLogoutAKS(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
-
 	zap.S().Infof("logging out of entry (aks): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
 	return a.deleteUserFromKubeconfigByEntryID(params.Kubeconfig, entry.Name)
 }
 
 func (a *App) doLogoutRancher(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
-
 	zap.S().Infof("logging out of entry (rancher): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
 	return a.deleteUserFromKubeconfigByEntryID(params.Kubeconfig, entry.Name)
 }
 
 func (a *App) deleteUserFromKubeconfigByEntryID(kubeconfigPath, entryID string) error {
-
 	config, err := kubeconfig.Read(kubeconfigPath)
 	if err != nil {
 		return err
 	}
+
 	kubeconfigUser := ""
+
 	for context := range config.Contexts {
 		historyRef, err := historyv1alpha.GetHistoryReferenceFromContext(config.Contexts[context])
 		if err != nil && errors.Is(err, historyv1alpha.ErrNoHistoryExtension) {
 			return err
 		}
+
 		if historyRef.EntryID == entryID {
 			kubeconfigUser = config.Contexts[context].AuthInfo
 			break
 		}
 	}
+
 	if kubeconfigUser == "" {
 		zap.S().Infof("no user found in kubeconfig for entry: %S", entryID)
 		return nil
 	}
+
 	delete(config.AuthInfos, kubeconfigUser)
+
 	return kubeconfig.Write(kubeconfigPath, config, false, false)
 }

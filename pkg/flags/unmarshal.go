@@ -80,11 +80,13 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 	if rv.Kind() != reflect.Ptr {
 		return fmt.Errorf("out interface is kind %s: %w", rv.Kind(), ErrMustBePtr)
 	}
+
 	if rv.IsNil() {
 		return ErrNilStruct
 	}
 
 	val := reflect.Indirect(rv)
+
 	t := val.Type()
 	if val.Kind() != reflect.Struct {
 		return ErrRequireStruct
@@ -109,6 +111,7 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 			if err := b.Unmarshal(flagset, fieldV.Interface()); err != nil {
 				return err
 			}
+
 			continue
 		}
 
@@ -128,8 +131,10 @@ func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
 			if b.IgnoreNotFound {
 				continue
 			}
+
 			return fmt.Errorf("failed looking up flag %s: %w", flagName, ErrFlagNotFound)
 		}
+
 		if flag.Value == nil {
 			//TODO: if field is pointer set to nil
 			continue
@@ -156,24 +161,28 @@ func unmarshallFlag(flag *pflag.Flag, out reflect.Value) error {
 		if err != nil {
 			return err
 		}
+
 		out.SetInt(i)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		ui, err := strconv.ParseUint(flagValueStr, 10, 64)
 		if err != nil {
 			return err
 		}
+
 		out.SetUint(ui)
 	case reflect.Bool:
 		b, err := strconv.ParseBool(flagValueStr)
 		if err != nil {
 			return err
 		}
+
 		out.SetBool(b)
 	case reflect.Float32, reflect.Float64:
 		f, err := strconv.ParseFloat(flagValueStr, 64)
 		if err != nil {
 			return err
 		}
+
 		out.SetFloat(f)
 	case reflect.Ptr:
 		out = out.Elem()
@@ -194,5 +203,6 @@ func getFlagNameFromTag(tag string) string {
 	// as there is only 1 part of the tag but
 	// it will be expanded in the future
 	parts := strings.Split(tag, ",")
+
 	return parts[0]
 }

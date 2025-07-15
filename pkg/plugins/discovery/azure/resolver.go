@@ -49,6 +49,7 @@ func (p *aksClusterProvider) Resolve(cfg config.ConfigurationSet, userID identit
 	if err := p.setup(cfg, userID); err != nil {
 		return fmt.Errorf("setting up aks provider: %w", err)
 	}
+
 	p.logger.Debug("resolving Azure configuration items")
 
 	if cfg.ExistsWithValue(SubscriptionIDConfigItem) && cfg.ExistsWithValue(SubscriptionNameConfigItem) {
@@ -78,6 +79,7 @@ func (p *aksClusterProvider) resolveSubscripionName(cfg config.ConfigurationSet)
 	if err != nil {
 		return fmt.Errorf("getting subscriptions: %w", err)
 	}
+
 	id, ok := options[subscriptionName]
 	if !ok {
 		return fmt.Errorf("looking up subscription %s: %w", subscriptionName, err)

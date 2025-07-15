@@ -46,9 +46,11 @@ func AddCommonConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String(APIEndpointConfigName, "", "The Rancher API endpoint"); err != nil {
 		return fmt.Errorf("setting config item %s: %w", APIEndpointConfigName, err)
 	}
+
 	if err := cs.SetRequired(APIEndpointConfigName); err != nil {
 		return fmt.Errorf("setting %s required: %w", APIEndpointConfigName, err)
 	}
+
 	return nil
 }
 
@@ -57,5 +59,6 @@ func AddUseConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String(ClusterName, "", "The Rancher user friendly cluster name"); err != nil {
 		return fmt.Errorf("setting config item %s: %w", ClusterName, err)
 	}
+
 	return nil
 }

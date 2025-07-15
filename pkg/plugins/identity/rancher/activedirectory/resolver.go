@@ -34,9 +34,11 @@ func (p *radIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
 	if err := prompt.InputAndSet(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
+
 	if err := prompt.InputSensitiveAndSet(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}
+
 	if err := rshared.ResolveCommon(cfg); err != nil {
 		return fmt.Errorf("resolving common Rancher config: %w", err)
 	}

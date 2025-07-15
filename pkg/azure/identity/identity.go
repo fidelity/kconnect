@@ -22,18 +22,18 @@ import (
 	khttp "github.com/fidelity/kconnect/pkg/http"
 )
 
+type AuthorizerIdentity struct {
+	authorizer     autorest.Authorizer
+	name           string
+	idProviderName string
+}
+
 func NewAuthorizerIdentity(name, idProviderName string, authorizer autorest.Authorizer) *AuthorizerIdentity {
 	return &AuthorizerIdentity{
 		name:           name,
 		authorizer:     authorizer,
 		idProviderName: idProviderName,
 	}
-}
-
-type AuthorizerIdentity struct {
-	authorizer     autorest.Authorizer
-	name           string
-	idProviderName string
 }
 
 func (a *AuthorizerIdentity) Type() string {
@@ -57,6 +57,15 @@ func (a *AuthorizerIdentity) IdentityProviderName() string {
 	return a.idProviderName
 }
 
+type ActiveDirectoryIdentity struct {
+	authCfg *AuthenticationConfig
+	realm   *UserRealm
+
+	idProviderName           string
+	httpClient               khttp.Client
+	interactiveLoginRequired bool
+}
+
 func NewActiveDirectoryIdentity(authCfg *AuthenticationConfig, userRealm *UserRealm, idProviderName string, httpClient khttp.Client, interactiveLoginRequired bool) *ActiveDirectoryIdentity {
 	return &ActiveDirectoryIdentity{
 		//authorizer:     authorizer,
@@ -66,15 +75,6 @@ func NewActiveDirectoryIdentity(authCfg *AuthenticationConfig, userRealm *UserRe
 		httpClient:               httpClient,
 		interactiveLoginRequired: interactiveLoginRequired,
 	}
-}
-
-type ActiveDirectoryIdentity struct {
-	authCfg *AuthenticationConfig
-	realm   *UserRealm
-
-	idProviderName           string
-	httpClient               khttp.Client
-	interactiveLoginRequired bool
 }
 
 func (a *ActiveDirectoryIdentity) Type() string {
@@ -100,6 +100,7 @@ func (a *ActiveDirectoryIdentity) GetOAuthToken(resource string) (*OauthToken, e
 	}
 
 	var token *OauthToken
+
 	var err error
 
 	identityClient := NewClient(a.httpClient)
@@ -110,11 +111,14 @@ func (a *ActiveDirectoryIdentity) GetOAuthToken(resource string) (*OauthToken, e
 		if err != nil {
 			return nil, err //TODO: specific error
 		}
+
 		endpoint := doc.UsernamePasswordEndpoint
+
 		wsTrustResponse, err := identityClient.GetWsTrustResponse(a.authCfg, a.realm.CloudAudienceURN, &endpoint)
 		if err != nil {
 			return nil, err //TODO: specific error
 		}
+
 		token, err = identityClient.GetOauth2TokenFromSamlAssertion(a.authCfg, wsTrustResponse.Body.RequestSecurityTokenResponseCollection.RequestSecurityTokenResponse.RequestedSecurityToken.Assertion, resource)
 		if err != nil {
 			return nil, err //TODO: specific error
@@ -126,6 +130,7 @@ func (a *ActiveDirectoryIdentity) GetOAuthToken(resource string) (*OauthToken, e
 		} else {
 			token, err = identityClient.GetOauth2TokenFromUsernamePassword(a.authCfg, resource)
 		}
+
 		if err != nil {
 			return nil, err //TODO: specific error
 		}
@@ -136,6 +141,7 @@ func (a *ActiveDirectoryIdentity) GetOAuthToken(resource string) (*OauthToken, e
 			} else {
 				token, err = identityClient.GetOauth2TokenFromUsernamePassword(a.authCfg, resource)
 			}
+
 			if err != nil {
 				return nil, err //TODO: specific error
 			}

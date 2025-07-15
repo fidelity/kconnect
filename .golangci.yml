@@ -1,48 +1,121 @@
+version: "2"
 run:
-    timeout: 10m
-    tests: false
-
-issues:
-  max-same-issues: 0
-  max-issues-per-linter: 0
-  exclude-rules:
-    - linters: [golint]
-      text: "should not use dot imports|don't use an underscore in package name"
-  exclude-dirs:
-    - third_party/*
-    - pkg/azure/wstrust
-  exclude-files:
-    - "zz_generated.*\\.go$"
-    - ".*_mock\\.go"
-
-linters-settings:
-  gomoddirectives:
-    # Allow local `replace` directives.
-    replace-local: true
-    # List of allowed `replace` directives.
-    # Default: []
-    replace-allow-list:
-    - github.com/spf13/cobra
-  funlen:
-    lines: 110
-    statements: 60
-
+  tests: false
 linters:
-    fast: true
-    enable-all: true
-    disable:
+  default: all
+  disable:
+    - asasalint
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
     - cyclop
+    - depguard
+    - durationcheck
+    - err113
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - ginkgolinter
     - gochecknoglobals
     - gochecknoinits
-    - lll
-    - wsl
-    - whitespace
+    - gochecksumtype
+    - gocritic
     - godot
     - godox
-    - nlreturn
-    - gofumpt
-    - gci
-    - tagliatelle
+    - gosec
+    - gosmopolitan
+    - govet
+    - iface
+    - importas
     - interfacebloat
-    - forcetypeassert # maybe enable in the future
-    - depguard # maybe enable in the future
+    - intrange
+    - ireturn
+    - lll
+    - loggercheck
+    - makezero
+    - mirror
+    - musttag
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - nlreturn
+    - noctx
+    - noinlineerr
+    - nonamedreturns
+    - paralleltest
+    - perfsprint
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - tagliatelle
+    - testifylint
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usetesting
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl
+    - zerologlint
+  settings:
+    funlen:
+      lines: 110
+      statements: 60
+    gomoddirectives:
+      # List of allowed `replace` directives.
+      # Default: []
+      replace-allow-list:
+        - github.com/spf13/cobra
+      # Allow local `replace` directives.
+      replace-local: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - golint
+        text: should not use dot imports|don't use an underscore in package name
+    paths:
+      - "zz_generated.*\\.go$"
+      - ".*_mock\\.go"
+      - third_party/*
+      - pkg/azure/wstrust
+      - examples
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - "zz_generated.*\\.go$"
+      - ".*_mock\\.go"
+      - third_party/*
+      - pkg/azure/wstrust
+      - examples

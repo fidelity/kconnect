@@ -39,6 +39,7 @@ func (p *rancherClusterProvider) GetConfig(ctx context.Context, input *discovery
 	p.logger.Debug("getting cluster config")
 
 	p.logger.Debugw("getting cluster details from Rancher api", "cluster", input.Cluster.ID)
+
 	clusterDetail, err := p.getClusterDetails(input.Cluster.ID)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster detail: %w", err)

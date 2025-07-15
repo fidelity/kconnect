@@ -44,6 +44,7 @@ type netHTTPClient struct {
 
 func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
 	var r *http.Request
+
 	var err error
 
 	if req.Body == nil {
@@ -51,9 +52,11 @@ func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
 	} else {
 		r, err = http.NewRequest(req.Method, req.URL, strings.NewReader(*req.Body))
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("creating http request: %w", err)
 	}
+
 	for k, v := range req.Headers {
 		r.Header.Add(k, v)
 	}
@@ -66,7 +69,6 @@ func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
 	}
 
 	return createResponse(resp)
-
 }
 
 func (n *netHTTPClient) Get(url string, headers map[string]string) (ClientResponse, error) {

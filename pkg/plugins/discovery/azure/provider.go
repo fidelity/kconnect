@@ -77,6 +77,7 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 
 type aksClusterProviderConfig struct {
 	common.ClusterProviderConfig
+
 	SubscriptionID   *string     `json:"subscription-id"`
 	SubscriptionName *string     `json:"subscription-name"`
 	ResourceGroup    *string     `json:"resource-group"`
@@ -100,38 +101,6 @@ type aksClusterProvider struct {
 
 func (p *aksClusterProvider) Name() string {
 	return ProviderName
-}
-
-func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
-	cfg := &aksClusterProviderConfig{}
-	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into aksClusteProviderConfig: %w", err)
-	}
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating config struct: %w", err)
-	}
-
-	p.config = cfg
-
-	// TODO: should we just return a AuthorizerIdentity from the aad provider?
-	switch userID.(type) { //nolint:gocritic,gosimple
-	case *azid.ActiveDirectoryIdentity:
-		id := userID.(*azid.ActiveDirectoryIdentity) //nolint: gosimple
-		p.logger.Debugw("creating bearer authorizer")
-		bearerAuth, err := getBearerAuthFromIdentity(id, "https://management.azure.com/")
-		if err != nil {
-			return fmt.Errorf("getting bearer authorizer: %w", err)
-		}
-		p.authorizer = bearerAuth
-	case *azid.AuthorizerIdentity:
-		id := userID.(*azid.AuthorizerIdentity) //nolint: gosimple
-		p.authorizer = id.Authorizer()
-	default:
-		return ErrUnsupportedIdentity
-	}
-
-	return nil
 }
 
 func (p *aksClusterProvider) ListPreReqs() []*provider.PreReq {
@@ -160,6 +129,42 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	return cs, nil
 }
 
+func (p *aksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+	cfg := &aksClusterProviderConfig{}
+	if err := config.Unmarshall(cs, cfg); err != nil {
+		return fmt.Errorf("unmarshalling config items into aksClusteProviderConfig: %w", err)
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return fmt.Errorf("validating config struct: %w", err)
+	}
+
+	p.config = cfg
+
+	// TODO: should we just return a AuthorizerIdentity from the aad provider?
+	switch userID.(type) { //nolint:gocritic,gosimple
+	case *azid.ActiveDirectoryIdentity:
+		id := userID.(*azid.ActiveDirectoryIdentity) //nolint: gosimple
+
+		p.logger.Debugw("creating bearer authorizer")
+
+		bearerAuth, err := getBearerAuthFromIdentity(id, "https://management.azure.com/")
+		if err != nil {
+			return fmt.Errorf("getting bearer authorizer: %w", err)
+		}
+
+		p.authorizer = bearerAuth
+	case *azid.AuthorizerIdentity:
+		id := userID.(*azid.AuthorizerIdentity) //nolint: gosimple
+		p.authorizer = id.Authorizer()
+	default:
+		return ErrUnsupportedIdentity
+	}
+
+	return nil
+}
+
 func getBearerAuthFromIdentity(id *azid.ActiveDirectoryIdentity, resource string) (autorest.Authorizer, error) {
 	token, err := id.GetOAuthToken(resource)
 	if err != nil {
@@ -167,5 +172,6 @@ func getBearerAuthFromIdentity(id *azid.ActiveDirectoryIdentity, resource string
 	}
 
 	bearerAuth := azid.NewExplicitBearerAuthorizer(token.AccessToken)
+
 	return bearerAuth, nil
 }

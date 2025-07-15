@@ -28,7 +28,6 @@ import (
 
 // Taken from saml2aws
 func LocateConfigFile() (string, error) {
-
 	filename := os.Getenv("AWS_SHARED_CREDENTIALS_FILE")
 
 	if filename != "" {
@@ -36,7 +35,9 @@ func LocateConfigFile() (string, error) {
 	}
 
 	var name string
+
 	var err error
+
 	if runtime.GOOS == "windows" {
 		name = path.Join(os.Getenv("USERPROFILE"), ".aws", "credentials")
 	} else {
@@ -51,6 +52,7 @@ func LocateConfigFile() (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "unable to resolve symlink")
 	}
+
 	return name, nil
 }
 
@@ -61,6 +63,7 @@ func resolveSymlink(filename string) (string, error) {
 	if os.IsNotExist(err) {
 		return filename, nil
 	}
+
 	if err != nil {
 		return "", err
 	}

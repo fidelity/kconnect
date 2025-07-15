@@ -32,6 +32,7 @@ import (
 
 func NewSession(region, profile, accessKey, secretKey, sessionToken, awsSharedCredentialsFile string) (*aws.Config, error) {
 	var opts []func(*config.LoadOptions) error
+
 	opts = append(opts, config.WithRegion(region))
 
 	if profile != "" {
@@ -57,6 +58,7 @@ func NewIAMClient(cfg aws.Config) *iam.Client {
 	iamClient := iam.NewFromConfig(cfg, func(o *iam.Options) {
 		o.APIOptions = append(o.APIOptions, middleware.AddUserAgentKeyValue("kconnect.fidelity.github.com", version.Get().String()))
 	})
+
 	return iamClient
 }
 
@@ -64,5 +66,6 @@ func NewEKSClient(cfg aws.Config) *eks.Client {
 	eksClient := eks.NewFromConfig(cfg, func(o *eks.Options) {
 		o.APIOptions = append(o.APIOptions, middleware.AddUserAgentKeyValue("kconnect.fidelity.github.com", version.Get().String()))
 	})
+
 	return eksClient
 }

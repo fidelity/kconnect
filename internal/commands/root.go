@@ -130,7 +130,7 @@ func RootCmd() (*cobra.Command, error) {
 		Example: examplesTemplate,
 		Run: func(c *cobra.Command, _ []string) {
 			if err := c.Help(); err != nil {
-				zap.S().Debugw("ingoring cobra error",
+				zap.S().Debugw("ignoring cobra error",
 					"error",
 					err.Error())
 			}
@@ -161,7 +161,7 @@ func RootCmd() (*cobra.Command, error) {
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
-				return fmt.Errorf("gettng common config: %w", err)
+				return fmt.Errorf("getting common config: %w", err)
 			}
 			if !commonCfg.DisableVersionCheck {
 				if err := reportNewerVersion(); err != nil {
@@ -181,10 +181,12 @@ func RootCmd() (*cobra.Command, error) {
 	if err := app.AddCommonConfigItems(cfg); err != nil {
 		return nil, fmt.Errorf("adding common configuration: %w", err)
 	}
+
 	rootFlags, err := flags.CreateFlagsFromConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("creating root command flags: %w", err)
 	}
+
 	rootCmd.PersistentFlags().AddFlagSet(rootFlags)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
@@ -208,21 +210,28 @@ func addRootCommands(rootCmd *cobra.Command) error {
 	if err != nil {
 		return fmt.Errorf("creating use command: %w", err)
 	}
+
 	rootCmd.AddCommand(useCmd)
+
 	toCmd, err := to.Command()
 	if err != nil {
 		return fmt.Errorf("creating to command: %w", err)
 	}
+
 	rootCmd.AddCommand(toCmd)
+
 	lsCmd, err := ls.Command()
 	if err != nil {
 		return fmt.Errorf("creating ls command: %w", err)
 	}
+
 	rootCmd.AddCommand(lsCmd)
+
 	cfgCmd, err := configcmd.Command()
 	if err != nil {
 		return fmt.Errorf("creating config command: %w", err)
 	}
+
 	rootCmd.AddCommand(cfgCmd)
 	rootCmd.AddCommand(version.Command())
 
@@ -230,19 +239,23 @@ func addRootCommands(rootCmd *cobra.Command) error {
 	if err != nil {
 		return fmt.Errorf("creating alias command: %w", err)
 	}
+
 	rootCmd.AddCommand(aliasCmd)
 
 	logoutCmd, err := logout.Command()
 	if err != nil {
 		return fmt.Errorf("creating logout command: %w", err)
 	}
+
 	rootCmd.AddCommand(logoutCmd)
 
 	historyCmd, err := history.Command()
 	if err != nil {
 		return fmt.Errorf("creating history command: %w", err)
 	}
+
 	rootCmd.AddCommand(historyCmd)
+
 	return nil
 }
 
@@ -296,7 +309,9 @@ func reportNewerVersion() error {
 	}
 
 	var latestSemver semver.Version
+
 	checkTime := time.Now().UTC()
+
 	checkDiff := checkTime.Sub(cfg.Spec.VersionCheck.LastChecked.Time)
 	if checkDiff > versionCheckInterval { //nolint:nestif
 		latestRelease, err := appver.GetLatestRelease()
@@ -320,6 +335,7 @@ func reportNewerVersion() error {
 		}
 	} else {
 		zap.S().Debugw("latest version not retrieved as check interval not exceeded", "diffMins", checkDiff.Minutes(), "savedVersion", cfg.Spec.VersionCheck.LatestReleaseVersion)
+
 		if cfg.Spec.VersionCheck.LatestReleaseVersion != nil && *cfg.Spec.VersionCheck.LatestReleaseVersion != "" {
 			latestSemver, err = semver.Parse(*cfg.Spec.VersionCheck.LatestReleaseVersion)
 			if err != nil {
@@ -329,9 +345,9 @@ func reportNewerVersion() error {
 	}
 
 	if latestSemver.GT(currentSemver) {
-
 		fmt.Fprintln(os.Stderr, "")
 		fmt.Fprintf(os.Stderr, "%sNew kconnect version available: v%s -> v%s%s", yellowColor, currentSemver.String(), latestSemver.String(), endString)
+
 		if checkOS() == windows {
 			fmt.Fprintf(os.Stderr, "%sThe latest release https://github.com/fidelity/kconnect/releases contains a binary for Windows.%s", yellowColor, endString)
 			fmt.Fprintf(os.Stderr, "%sWe have an open issue to support chocolatey in the future.%s", yellowColor, endString)
@@ -341,6 +357,7 @@ func reportNewerVersion() error {
 			fmt.Fprintf(os.Stderr, "%sAlternatively, the latest release (https://github.com/fidelity/kconnect/releases) contains **.deb**, **.rpm** and binaries for Linux.%s", yellowColor, endString)
 			fmt.Fprintf(os.Stderr, "%sWe are working on publishing as a snap.%s", yellowColor, endString)
 		}
+
 		fmt.Fprintf(os.Stderr, "%sTo install as a kubectl plugin:%s", yellowColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tkubectl krew install fidelity/connect%s", boldGreenColor, endString)
@@ -352,7 +369,6 @@ func reportNewerVersion() error {
 		fmt.Fprintf(os.Stderr, "%s\tchmod 700 install-kconnect.sh%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%sThis works on Linux, Macos and Windows (using GitBash terminal)%s", yellowColor, endString)
 		fmt.Fprintf(os.Stderr, "%sVisit %s for more details%s", yellowColor, *cfg.Spec.VersionCheck.LatestReleaseURL, endString)
-
 	}
 
 	return nil

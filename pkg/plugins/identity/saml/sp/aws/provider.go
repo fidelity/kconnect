@@ -32,7 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 
-	"github.com/versent/saml2aws/v2"
+	saml2aws "github.com/versent/saml2aws/v2"
 	"github.com/versent/saml2aws/v2/pkg/awsconfig"
 	"github.com/versent/saml2aws/v2/pkg/cfg"
 
@@ -73,6 +73,12 @@ type ServiceProvider struct {
 	itemSelector provider.SelectItemFunc
 }
 
+func (p *ServiceProvider) ConfigurationItems() kcfg.ConfigurationSet {
+	cs := kaws.SharedConfig()
+
+	return cs
+}
+
 func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg kcfg.ConfigurationSet) error {
 	account.AmazonWebservicesURN = "urn:amazon:webservices"
 	account.Profile = "kconnect-saml-provider"
@@ -81,6 +87,7 @@ func (p *ServiceProvider) PopulateAccount(account *cfg.IDPAccount, cfg kcfg.Conf
 	if regionCfg == nil || regionCfg.Value.(string) == "" {
 		return ErrNoRegion
 	}
+
 	account.Region = regionCfg.Value.(string)
 
 	roleCfg := cfg.Get("role-arn")
@@ -112,6 +119,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	}
 
 	roleFilter := ""
+
 	if cfg.ExistsWithValue("role-filter") {
 		item := cfg.Get("role-filter")
 		roleFilter = item.Value.(string)
@@ -125,6 +133,7 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	if err := cfg.SetValue("role-arn", role.RoleARN); err != nil {
 		return nil, fmt.Errorf("setting role-arn config value: %w", err)
 	}
+
 	p.logger.Debugw("role selected", "role", role.RoleARN)
 
 	awsCreds, err := p.loginToStsUsingRole(account, role, samlAssertions)
@@ -139,9 +148,11 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 		if err != nil {
 			return nil, fmt.Errorf("assuming role in AWS: %w", err)
 		}
+
 		if err := cfg.SetValue("assume-role-arn", assumeRoleARN.Value.(string)); err != nil {
 			return nil, fmt.Errorf("setting assume-role-arn config value: %w", err)
 		}
+
 		p.logger.Debugw("role assumed", "assume-role", assumeRoleARN.Value.(string))
 	}
 
@@ -150,33 +161,54 @@ func (p *ServiceProvider) ProcessAssertions(account *cfg.IDPAccount, samlAsserti
 	if err != nil {
 		return nil, fmt.Errorf("creating identifier from AWS creds: %w", err)
 	}
+
 	profileName := fmt.Sprintf("kconnect-%s", identifier)
 	if err := p.setProfileName(profileName, cfg); err != nil {
 		return nil, fmt.Errorf("setting profile name: %w", err)
 	}
 
 	awsSharedCredentialsFile := ""
+
 	if cfg.ExistsWithValue("aws-shared-credentials-file") {
 		item := cfg.Get("aws-shared-credentials-file")
 		awsSharedCredentialsFile = item.Value.(string)
 	}
 
 	awsIdentity := kaws.MapCredsToIdentity(awsCreds, profileName, awsSharedCredentialsFile)
+
 	return awsIdentity, nil
+}
+
+func (p *ServiceProvider) Validate(configItems kcfg.ConfigurationSet) error {
+	cfg := &awsProviderConfig{}
+
+	if err := kcfg.Unmarshall(configItems, cfg); err != nil {
+		return fmt.Errorf("unmarshlling config set: %w", err)
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return fmt.Errorf("validating config struct: %w", err)
+	}
+
+	return nil
 }
 
 func (p *ServiceProvider) setProfileName(profileName string, cfg kcfg.ConfigurationSet) error {
 	if cfg.ExistsWithValue("static-profile") {
 		p.logger.Debug("static profile name found")
+
 		item := cfg.Get("static-profile")
 		profileName = item.Value.(string)
 	}
+
 	p.logger.Debugw("setting aws profile name", "profile", profileName)
 
 	item, err := cfg.String("aws-profile", profileName, "AWS profile name to use")
 	if err != nil {
 		return fmt.Errorf("setting aws-profile: %w", err)
 	}
+
 	item.Value = profileName
 
 	return nil
@@ -187,6 +219,7 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 		if account.RoleARN != "" {
 			return saml2aws.LocateRole(awsRoles, account.RoleARN)
 		}
+
 		return awsRoles[0], nil
 	} else if len(awsRoles) == 0 {
 		return nil, ErrNoRolesFound
@@ -210,6 +243,7 @@ func (p *ServiceProvider) resolveRole(awsRoles []*saml2aws.AWSRole, samlAssertio
 		//TODO: handle error better
 		return nil, err
 	}
+
 	if len(awsAccounts) == 0 {
 		return nil, ErrNotAccounts
 	}
@@ -246,6 +280,7 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 				filteredAccount.Roles = append(filteredAccount.Roles, awsRole)
 			}
 		}
+
 		if len(filteredAccount.Roles) > 0 {
 			filtered = append(filtered, filteredAccount)
 		}
@@ -256,7 +291,6 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 
 // Not using saml2aws.PromptForAWSRoleSelection as we want to implement custom logic
 func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, roleFilter string) (*saml2aws.AWSRole, error) {
-
 	roles := map[string]*saml2aws.AWSRole{}
 	roleOptions := map[string]string{}
 
@@ -274,6 +308,7 @@ func (p *ServiceProvider) getRoleFromPrompt(accounts []*saml2aws.AWSAccount, rol
 	if err != nil {
 		return nil, fmt.Errorf("selected aws role: %w", err)
 	}
+
 	p.logger.Debugw("selected aws role", "name", selected, "arn", roles[selected].RoleARN)
 
 	return roles[selected], nil
@@ -302,6 +337,7 @@ func (p *ServiceProvider) loginToStsUsingRole(account *cfg.IDPAccount, role *sam
 	if err != nil {
 		return nil, fmt.Errorf("retrieving STS credentials using SAML: %w", err)
 	}
+
 	return &awsconfig.AWSCredentials{
 		AWSAccessKey:     aws.ToString(resp.Credentials.AccessKeyId),
 		AWSSecretKey:     aws.ToString(resp.Credentials.SecretAccessKey),
@@ -325,11 +361,13 @@ func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsco
 	if err != nil {
 		return nil, fmt.Errorf("creating aws session: %w", err)
 	}
+
 	assumeRoleInput := &sts.AssumeRoleInput{
 		RoleArn:         &assumeRoleARN,
 		RoleSessionName: &account.Username,
 		DurationSeconds: aws.Int32(int32(account.SessionDuration)),
 	}
+
 	out, err := sts.NewFromConfig(cfg).AssumeRole(context.TODO(), assumeRoleInput)
 	if err != nil {
 		return nil, fmt.Errorf("failed to assume role: %w", err)
@@ -346,9 +384,8 @@ func (p *ServiceProvider) assumeRoleARN(account *cfg.IDPAccount, awsCreds *awsco
 	}, nil
 }
 
-// TODO: use the version form saml2aws when modules are fixed
+// TODO: use the version from saml2aws when modules are fixed
 func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
-
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes(data); err != nil {
 		return "", err
@@ -362,7 +399,6 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 	destination := rootElement.SelectAttrValue("Destination", "none")
 	if destination != "none" {
 		return destination, nil
-
 	}
 
 	confirmData := doc.FindElement("//SubjectConfirmationData")
@@ -374,25 +410,4 @@ func (p *ServiceProvider) extractDestinationURL(data []byte) (string, error) {
 	}
 
 	return "", fmt.Errorf("getting response element Destination or SubjectConfirmationData: %w", ErrMissingResponseElement)
-}
-
-func (p *ServiceProvider) Validate(configItems kcfg.ConfigurationSet) error {
-	cfg := &awsProviderConfig{}
-
-	if err := kcfg.Unmarshall(configItems, cfg); err != nil {
-		return fmt.Errorf("unmarshlling config set: %w", err)
-	}
-
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return fmt.Errorf("validating config struct: %w", err)
-	}
-
-	return nil
-}
-
-func (p *ServiceProvider) ConfigurationItems() kcfg.ConfigurationSet {
-	cs := kaws.SharedConfig()
-
-	return cs
 }

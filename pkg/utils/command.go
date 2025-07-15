@@ -22,7 +22,6 @@ import (
 )
 
 func FormatCommand(cmd *cobra.Command) {
-
 	rootCmdName := "kconnect"
 	// If running as a krew plugin, need to change usage output
 	if isKrewPlugin() {
@@ -31,10 +30,12 @@ func FormatCommand(cmd *cobra.Command) {
 		if cmd.Use == "kconnect" {
 			cmd.Use = "connect"
 		}
+
 		cmd.SetUsageTemplate(strings.NewReplacer(
 			"{{.UseLine}}", "kubectl {{.UseLine}}",
 			"{{.CommandPath}}", "kubectl {{.CommandPath}}").Replace(cmd.UsageTemplate()))
 	}
+
 	cmd.Example = formatMessage(cmd.Example, rootCmdName)
 }
 
@@ -42,6 +43,7 @@ func FormatUse(use string) string {
 	if isKrewPlugin() {
 		return "kubectl " + use
 	}
+
 	return use
 }
 

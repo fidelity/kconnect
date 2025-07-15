@@ -150,6 +150,7 @@ func (p *radIdentityProvider) validateConfig(cfg *radConfig) error {
 	if err := validate.Struct(cfg); err != nil {
 		return fmt.Errorf("validating aad config: %w", err)
 	}
+
 	return nil
 }
 
@@ -161,6 +162,7 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	if err := common.AddCommonIdentityConfig(cs); err != nil {
 		return nil, ErrAddingCommonCfg
 	}
+
 	if err := rancher.AddCommonConfig(cs); err != nil {
 		return nil, ErrAddingCommonCfg
 	}
