@@ -30,6 +30,7 @@ func (p *aksClusterProvider) GetCluster(ctx context.Context, input *discovery.Ge
 	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up aks provider: %w", err)
 	}
+
 	p.logger.Infow("getting AKS cluster", "id", input.ClusterID)
 
 	resourceID, err := id.FromClusterID(input.ClusterID)
@@ -38,6 +39,7 @@ func (p *aksClusterProvider) GetCluster(ctx context.Context, input *discovery.Ge
 	}
 
 	client := azclient.NewContainerClient(resourceID.SubscriptionID, p.authorizer)
+
 	result, err := client.Get(ctx, resourceID.ResourceGroupName, resourceID.ResourceName)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster: %w", err)

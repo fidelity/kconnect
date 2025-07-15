@@ -32,6 +32,7 @@ func (p *aksClusterProvider) Discover(ctx context.Context, input *discovery.Disc
 	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up aks provider: %w", err)
 	}
+
 	p.logger.Info("discovering AKS clusters")
 
 	clusters, err := p.listClusters(ctx)
@@ -56,13 +57,17 @@ func (p *aksClusterProvider) listClusters(ctx context.Context) ([]*discovery.Clu
 	client := azclient.NewContainerClient(*p.config.SubscriptionID, p.authorizer)
 
 	clusters := []*discovery.Cluster{}
+
 	var list containerservice.ManagedClusterListResultPage
+
 	var err error
+
 	if p.config.ResourceGroup == nil || *p.config.ResourceGroup == "" {
 		list, err = client.List(ctx)
 	} else {
 		list, err = client.ListByResourceGroup(ctx, *p.config.ResourceGroup)
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("querying for AKS clusters: %w", err)
 	}
@@ -80,14 +85,17 @@ func (p *aksClusterProvider) listClusters(ctx context.Context) ([]*discovery.Clu
 			}
 
 			controlPlaneEndpoint := ""
+
 			if val.Fqdn != nil {
 				url := net.JoinHostPort(*val.Fqdn, "443")
 				controlPlaneEndpoint = fmt.Sprintf("https://%s", url)
 			}
+
 			if val.PrivateFQDN != nil {
 				url := net.JoinHostPort(*val.PrivateFQDN, "443")
 				controlPlaneEndpoint = fmt.Sprintf("https://%s", url)
 			}
+
 			if controlPlaneEndpoint != "" {
 				cluster.ControlPlaneEndpoint = &controlPlaneEndpoint
 			}

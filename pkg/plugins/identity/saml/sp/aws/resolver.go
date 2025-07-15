@@ -35,6 +35,7 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 	if err := p.resolveIdpProvider("idp-provider", cfg); err != nil {
 		return fmt.Errorf("resolving idp-provider: %w", err)
 	}
+
 	if err := p.resolveIdpEndpoint("idp-endpoint", cfg); err != nil {
 		return fmt.Errorf("resolving idp-endpoint: %w", err)
 	}
@@ -42,12 +43,15 @@ func (p *ServiceProvider) ResolveConfiguration(cfg config.ConfigurationSet) erro
 	if err := kaws.ResolvePartition(cfg); err != nil {
 		return fmt.Errorf("resolving partition: %w", err)
 	}
+
 	if err := kaws.ResolveRegion(cfg); err != nil {
 		return fmt.Errorf("resolving region: %w", err)
 	}
+
 	if err := prompt.InputAndSet(cfg, defaults.UsernameConfigItem, "Username:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.UsernameConfigItem, err)
 	}
+
 	if err := prompt.InputSensitiveAndSet(cfg, defaults.PasswordConfigItem, "Password:", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", defaults.PasswordConfigItem, err)
 	}

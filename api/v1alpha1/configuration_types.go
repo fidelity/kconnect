@@ -112,7 +112,6 @@ func (c *Configuration) ToTable() *metav1.Table {
 			Cells: []interface{}{"GLOBAL", convertedArgs},
 		}
 		table.Rows = append(table.Rows, row)
-
 	}
 
 	for providerKey, providerDefaults := range c.Spec.Providers {
@@ -131,5 +130,6 @@ func argsToString(args map[string]string) string {
 	for key, value := range args {
 		fmt.Fprintf(b, "%s=\"%s\"\n", key, value)
 	}
+
 	return b.String()
 }

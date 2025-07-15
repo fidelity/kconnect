@@ -72,7 +72,8 @@ type HistoryEntry struct {
 type HistoryEntryList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []HistoryEntry `json:"items"`
+
+	Items []HistoryEntry `json:"items"`
 }
 
 // +kubebuilder:object:root=true
@@ -143,20 +144,23 @@ func GetHistoryReferenceFromContext(context *api.Context) (*HistoryReference, er
 	if !ok {
 		return nil, ErrNoHistoryExtension
 	}
+
 	b, err := json.Marshal(kconnectExtension)
 	if err != nil {
 		return nil, fmt.Errorf("marshalling json: %w", err)
 	}
+
 	kconnectExtensionObj := HistoryReference{}
+
 	err = json.Unmarshal(b, &kconnectExtensionObj)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshalling json: %w", err)
 	}
+
 	return &kconnectExtensionObj, nil
 }
 
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
-
 	if h == nil || other == nil {
 		return h == other
 	}
@@ -169,17 +173,20 @@ func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
 	if !equals1 {
 		return false
 	}
+
 	return reflect.DeepEqual(filterFlags(h.Spec.Flags), filterFlags(other.Spec.Flags))
 }
 
 // filter will create a new map based on flags, without keys that are specifically ignored, and without blank ("") values
 func filterFlags(m map[string]string) map[string]string {
 	filtered := make(map[string]string)
+
 	for k, v := range m {
 		if _, ignore := ignoreFlags[k]; !ignore && v != "" {
 			filtered[k] = v
 		}
 	}
+
 	return filtered
 }
 
@@ -226,14 +233,15 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 	}
 
 	for i, entry := range l.Items {
-		username := entry.Spec.Flags["username"]
 		var row metav1.TableRow
+
 		currentContextIndicator := ""
 		if entry.Name == currentContextID {
 			currentContextIndicator = ">"
 		}
 
 		timeLeft := getTimeLeft(&l.Items[i])
+		username := entry.Spec.Flags["username"]
 
 		row = metav1.TableRow{
 			Cells: []interface{}{
@@ -254,9 +262,10 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 }
 
 func getTimeLeft(entry *HistoryEntry) string {
-
 	var expiresTime time.Time
+
 	var err error
+
 	if entry.Spec.Provider == "eks" && entry.Spec.Identity == "saml" {
 		expiresTime, err = htime.GetExpireTimeFromAWSCredentials(entry.Spec.Flags["aws-profile"])
 		if err != nil {

@@ -42,10 +42,12 @@ func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 	if err != nil {
 		return nil, fmt.Errorf("getting kubeconfig: %w", err)
 	}
+
 	if !p.config.Admin {
 		if p.config.LoginType == LoginTypeToken {
 			p.config.LoginType = LoginTypeAzureCli
 		}
+
 		p.addKubelogin(cfg)
 		p.printLoginDetails()
 	}
@@ -59,13 +61,13 @@ func (p *aksClusterProvider) GetConfig(ctx context.Context, input *discovery.Get
 		KubeConfig:  cfg,
 		ContextName: &cfg.CurrentContext,
 	}, nil
-
 }
 
 func (p *aksClusterProvider) printLoginDetails() {
 	if p.config.LoginType == LoginTypeResourceOwnerPassword {
 		fmt.Fprintf(os.Stderr, "\033[33mSet the AAD_USER_PRINCIPAL_NAME and AAD_USER_PRINCIPAL_PASSWORD environment variables before running kubectl\033[0m\n")
 	}
+
 	if p.config.LoginType == LoginTypeServicePrincipal {
 		fmt.Fprintf(os.Stderr, "\033[33mSet the AAD_SERVICE_PRINCIPAL_CLIENT_ID and AAD_SERVICE_PRINCIPAL_CLIENT_SECRET environment variables before running kubectl\033[0m\n")
 	}
@@ -119,6 +121,7 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discove
 	} else {
 		credentialList, err = client.ListClusterUserCredentials(ctx, resourceID.ResourceGroupName, resourceID.ResourceName, p.config.ServerFqdnType, "azure")
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("getting user credentials: %w", err)
 	}
@@ -128,6 +131,7 @@ func (p *aksClusterProvider) getKubeconfig(ctx context.Context, cluster *discove
 	}
 
 	config := *(*credentialList.Kubeconfigs)[0].Value
+
 	kubeCfg, err := clientcmd.Load(config)
 	if err != nil {
 		return nil, fmt.Errorf("loading kubeconfig: %w", err)

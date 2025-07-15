@@ -60,7 +60,7 @@ func Command() (*cobra.Command, error) {
 		Example: examples,
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := cmd.Help(); err != nil {
-				zap.S().Debugw("ingoring cobra error",
+				zap.S().Debugw("ignoring cobra error",
 					"error",
 					err.Error())
 			}
@@ -76,34 +76,38 @@ func Command() (*cobra.Command, error) {
 	if err != nil {
 		return nil, fmt.Errorf("creating common command flags: %w", err)
 	}
+
 	aliasCmd.PersistentFlags().AddFlagSet(commonFlags)
 
 	lsCmd, err := lsCommand()
 	if err != nil {
 		return nil, fmt.Errorf("creating alias ls command: %w", err)
 	}
+
 	aliasCmd.AddCommand(lsCmd)
 
 	addCmd, err := addCommand()
 	if err != nil {
 		return nil, fmt.Errorf("creating alias add command: %w", err)
 	}
+
 	aliasCmd.AddCommand(addCmd)
 
 	removeCmd, err := removeCommand()
 	if err != nil {
 		return nil, fmt.Errorf("creating alias remove command: %w", err)
 	}
+
 	aliasCmd.AddCommand(removeCmd)
 
 	return aliasCmd, nil
-
 }
 
 func addConfigRoot(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
+
 	if err := app.AddHistoryLocationItems(cs); err != nil {
 		return fmt.Errorf("adding history config items: %w", err)
 	}

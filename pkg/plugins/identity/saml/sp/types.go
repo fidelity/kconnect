@@ -26,6 +26,7 @@ import (
 
 type ProviderConfig struct {
 	common.IdentityProviderConfig
+
 	IdpEndpoint string `json:"idp-endpoint" validate:"required"`
 	IdpProvider string `json:"idp-provider" validate:"required"`
 }

@@ -34,11 +34,13 @@ func DefaultItemSelection(promptMessage string, items map[string]string) (string
 	for key := range items {
 		options = append(options, key)
 	}
+
 	if len(options) == 1 {
 		return items[options[0]], nil
 	}
 
 	sort.Strings(options)
+
 	selectedItem, err := prompt.Choose("item", promptMessage, true, prompt.OptionsFromMap(items))
 	if err != nil {
 		return "", fmt.Errorf("selecting item: %w", err)

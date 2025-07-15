@@ -76,7 +76,9 @@ func (p *jsonObjectPrinter) Print(in interface{}, writer io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("marshing object as json: %w", err)
 	}
+
 	_, err = writer.Write(data)
+
 	return err
 }
 
@@ -94,7 +96,9 @@ func (p *yamlObjectPrinter) Print(in interface{}, writer io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("marshing object as yaml: %w", err)
 	}
+
 	_, err = writer.Write(data)
+
 	return err
 }
 
@@ -110,6 +114,7 @@ func (p *tableObjectPrinter) Print(in interface{}, writer io.Writer) error {
 	options := cliprint.PrintOptions{}
 	tablePrinter := cliprint.NewTablePrinter(options)
 	scheme, _, _ := historyv1alpha.NewSchemeAndCodecs()
+
 	printer, err := cliprint.NewTypeSetter(scheme).WrapToPrinter(tablePrinter, nil)
 	if err != nil {
 		return err
@@ -120,6 +125,7 @@ func (p *tableObjectPrinter) Print(in interface{}, writer io.Writer) error {
 
 func printObject(resPrinter cliprint.ResourcePrinter, object runtime.Object, writer io.Writer) error {
 	scheme, _, _ := historyv1alpha.NewSchemeAndCodecs()
+
 	printer, err := cliprint.NewTypeSetter(scheme).WrapToPrinter(resPrinter, nil)
 	if err != nil {
 		return err
@@ -133,6 +139,7 @@ func printObject(resPrinter cliprint.ResourcePrinter, object runtime.Object, wri
 	if err != nil {
 		return fmt.Errorf("extracting list: %w", err)
 	}
+
 	for _, item := range items {
 		if err := printer.PrintObj(item, writer); err != nil {
 			return err

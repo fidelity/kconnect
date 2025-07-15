@@ -71,7 +71,7 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 			flags.PopulateConfigFromCommand(cmd, cfg)
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
-				return fmt.Errorf("gettng common config: %w", err)
+				return fmt.Errorf("getting common config: %w", err)
 			}
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
@@ -112,16 +112,17 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 	}
 
 	return rmCmd, nil
-
 }
 
 func addConfigRemove(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
+
 	if err := app.AddHistoryLocationItems(cs); err != nil {
 		return fmt.Errorf("adding history location config: %w", err)
 	}
+
 	if err := app.AddHistoryIdentifierConfig(cs); err != nil {
 		return fmt.Errorf("adding history identifier config: %w", err)
 	}

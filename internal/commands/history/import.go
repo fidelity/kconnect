@@ -74,7 +74,7 @@ func importCommand() (*cobra.Command, error) {
 			flags.PopulateConfigFromCommand(cmd, cfg)
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
-				return fmt.Errorf("gettng common config: %w", err)
+				return fmt.Errorf("getting common config: %w", err)
 			}
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
@@ -115,14 +115,13 @@ func importCommand() (*cobra.Command, error) {
 	}
 
 	return importCmd, nil
-
 }
 
 func addConfigImport(cs config.ConfigurationSet) error {
-
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
+
 	if err := app.AddHistoryLocationItems(cs); err != nil {
 		return fmt.Errorf("adding history location config items: %w", err)
 	}
@@ -130,5 +129,6 @@ func addConfigImport(cs config.ConfigurationSet) error {
 	if err := app.AddHistoryImportConfig(cs); err != nil {
 		return fmt.Errorf("adding history import config items: %w", err)
 	}
+
 	return nil
 }

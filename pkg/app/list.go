@@ -66,12 +66,12 @@ func (a *App) QueryHistory(ctx context.Context, input *HistoryQueryInput) error 
 	}
 
 	if *input.Output == printer.OutputPrinterTable {
-
-		currentContexID, err := a.getCurrentContextID(input.Kubeconfig)
+		currentContextID, err := a.getCurrentContextID(input.Kubeconfig)
 		if err != nil {
 			zap.S().Warnf("Error getting current context ID: %s", err)
 		}
-		return objPrinter.Print(list.ToTable(currentContexID), os.Stdout)
+
+		return objPrinter.Print(list.ToTable(currentContextID), os.Stdout)
 	}
 
 	return objPrinter.Print(list, os.Stdout)
@@ -82,13 +82,17 @@ func (a *App) getCurrentContextID(kubecfg string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	if currentContext == nil || currentContext.Extensions == nil {
 		return "", nil
 	}
+
 	currentContextHistoryReference, err := v1alpha1.GetHistoryReferenceFromContext(currentContext)
 	if err != nil {
 		return "", err
 	}
+
 	currentContexID := currentContextHistoryReference.EntryID
+
 	return currentContexID, nil
 }

@@ -28,9 +28,11 @@ func (p *rancherClusterProvider) GetCluster(ctx context.Context, input *discover
 	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up rancher provider: %w", err)
 	}
+
 	p.logger.Infow("getting cluster via Rancher", "id", input.ClusterID)
 
 	p.logger.Debugw("getting cluster details from Rancher api", "cluster", input.ClusterID)
+
 	clusterDetail, err := p.getClusterDetails(input.ClusterID)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster detail: %w", err)

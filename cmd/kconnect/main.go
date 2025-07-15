@@ -42,10 +42,12 @@ func main() {
 	zap.S().Debugw("build information", "date", v.BuildDate, "commit", v.CommitHash, "gover", v.GoVersion)
 
 	ctx := context.Background()
+
 	rootCmd, err := commands.RootCmd()
 	if err != nil {
 		zap.S().Fatalw("failed getting root command", "error", err.Error())
 	}
+
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		zap.S().Fatalw("failed executing root command", "error", err.Error())
 	}

@@ -37,6 +37,7 @@ func (p *eksClusterProvider) GetCluster(ctx context.Context, input *discovery.Ge
 	}
 
 	p.logger.Infow("getting EKS cluster", "id", input.ClusterID)
+
 	clusterName, err := p.getClusterName(input.ClusterID)
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster name for cluster id %s: %w", input.ClusterID, err)

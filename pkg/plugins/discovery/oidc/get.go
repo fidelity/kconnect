@@ -24,6 +24,7 @@ import (
 
 func (p *oidcClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
 	cluster, _ := p.getCluster(ctx)
+
 	return &discovery.GetClusterOutput{
 		Cluster: cluster,
 	}, nil

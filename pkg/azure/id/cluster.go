@@ -46,6 +46,7 @@ func ToClusterID(clusterResourceID string) (string, error) {
 	if resourceID.Provider != ContainerServiceProvider {
 		return "", ErrNotContainerService
 	}
+
 	if resourceID.ResourceType != ManagedClustersResource {
 		return "", ErrNotManagedCluster
 	}

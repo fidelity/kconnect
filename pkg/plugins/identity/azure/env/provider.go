@@ -80,7 +80,9 @@ func (p *envIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	}
 
 	var authorizer autorest.Authorizer
+
 	var err error
+
 	if cfg.UseFile {
 		authorizer, err = auth.NewAuthorizerFromFile("")
 	} else {

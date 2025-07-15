@@ -87,22 +87,6 @@ func (p *rancherClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
-	cfg := &rancherClusterProviderConfig{}
-	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into rancherClusterProviderConfig: %w", err)
-	}
-	p.config = cfg
-
-	id, ok := userID.(*identity.TokenIdentity)
-	if !ok {
-		return identity.ErrNotTokenIdentity
-	}
-	p.token = id.Token()
-
-	return nil
-}
-
 func (p *rancherClusterProvider) ListPreReqs() []*provider.PreReq {
 	return []*provider.PreReq{}
 }
@@ -115,5 +99,24 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 	rshared.AddCommonConfig(cs) //nolint: errcheck
 	rshared.AddUseConfig(cs)    //nolint: errcheck
+
 	return cs, nil
+}
+
+func (p *rancherClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+	cfg := &rancherClusterProviderConfig{}
+	if err := config.Unmarshall(cs, cfg); err != nil {
+		return fmt.Errorf("unmarshalling config items into rancherClusterProviderConfig: %w", err)
+	}
+
+	p.config = cfg
+
+	id, ok := userID.(*identity.TokenIdentity)
+	if !ok {
+		return identity.ErrNotTokenIdentity
+	}
+
+	p.token = id.Token()
+
+	return nil
 }

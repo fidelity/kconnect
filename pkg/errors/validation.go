@@ -42,6 +42,7 @@ func (e *ValidationFailed) setup() {
 	if e.validationErrors != nil {
 		return
 	}
+
 	e.validationErrors = []string{}
 }
 

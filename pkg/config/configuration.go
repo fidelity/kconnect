@@ -48,17 +48,19 @@ func NewAppConfiguration() (AppConfiguration, error) {
 }
 
 func NewAppConfigurationWithPath(path string) (AppConfiguration, error) {
-
 	configPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, fmt.Errorf("getting config absolute file path for %s: %w", path, err)
 	}
+
 	configDirPath := filepath.Dir(configPath)
+
 	info, err := os.Stat(configDirPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("getting details of config dir %s: %w", configDirPath, err)
 		}
+
 		err = os.MkdirAll(configDirPath, os.ModePerm)
 		if err != nil {
 			return nil, fmt.Errorf("creating config dir %s: %w", configDirPath, err)
@@ -72,12 +74,13 @@ func NewAppConfigurationWithPath(path string) (AppConfiguration, error) {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("getting details of config file %s: %w", configPath, err)
 		}
+
 		emptyConfigFile, err := os.Create(configPath)
 		if err != nil {
 			return nil, fmt.Errorf("creating empty config file %s: %w", configPath, err)
 		}
-		emptyConfigFile.Close()
 
+		emptyConfigFile.Close()
 	} else if info.IsDir() {
 		return nil, fmt.Errorf("supplied path is a directory %s: %w", configPath, err)
 	}
@@ -143,7 +146,6 @@ func (a *appConfiguration) Get() (*kconnectv1alpha.Configuration, error) {
 	}
 
 	return appConfiguration, nil
-
 }
 
 func (a *appConfiguration) Save(configuration *kconnectv1alpha.Configuration) error {

@@ -47,6 +47,7 @@ func (a *App) Configuration(ctx context.Context, input *ConfigureInput) error {
 	if input.SourceLocation == nil || *input.SourceLocation == "" {
 		return a.printConfiguration(input.Output)
 	}
+
 	return a.importConfiguration(input)
 }
 
@@ -76,7 +77,6 @@ func (a *App) printConfiguration(printerType *printer.OutputPrinter) error {
 }
 
 func (a *App) importConfiguration(input *ConfigureInput) error {
-
 	sourceLocation := *input.SourceLocation
 	zap.S().Infow("importing configuration", "file", sourceLocation)
 
@@ -117,19 +117,23 @@ func (a *App) getReader(location, username, password string) (io.Reader, error) 
 		if err != nil {
 			return nil, fmt.Errorf("parsing location as URL %s: %w", location, err)
 		}
+
 		headers := make(map[string]string)
 		if username != "" && password != "" {
 			http.SetBasicAuthHeaders(headers, username, password)
 		}
+
 		resp, err := a.httpClient.Get(url.String(), headers)
 		if err != nil {
 			return nil, fmt.Errorf("error executing request: %w", err)
 		}
-		if resp.ResponseCode() != http.StatusCodeOK {
 
+		if resp.ResponseCode() != http.StatusCodeOK {
 			return nil, fmt.Errorf("received status code %d, %s: %w", resp.ResponseCode(), resp.Body(), ErrNotOKHTTPStatusCode)
 		}
+
 		reader := strings.NewReader(resp.Body())
+
 		return reader, nil
 	default:
 		return os.Open(location)

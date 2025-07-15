@@ -60,6 +60,7 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 	if exists {
 		entry.Name = existingEntry.Name
 		s.updateLastUsed(historyList, existingEntry.Name)
+
 		if (entry.Spec.Alias != nil || *entry.Spec.Alias != "") && (existingEntry.Spec.Alias == nil || *existingEntry.Spec.Alias == "") {
 			s.updateAlias(historyList, existingEntry.Name, entry.Spec.Alias)
 		}
@@ -70,11 +71,11 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 	if len(historyList.Items) > s.maxHistory {
 		s.trimHistory(historyList)
 	}
+
 	return s.loader.Save(historyList)
 }
 
 func (s *storeImpl) SetHistoryList(historyList *historyv1alpha.HistoryEntryList) error {
-
 	return s.loader.Save(historyList)
 }
 
@@ -107,7 +108,9 @@ func (s *storeImpl) GetAllSortedByLastUsed() (*historyv1alpha.HistoryEntryList, 
 	if err != nil {
 		return nil, fmt.Errorf("getting history sorted by last used timestamp: %w", err)
 	}
+
 	s.sortByLastUsed(historyList)
+
 	return historyList, nil
 }
 
@@ -159,6 +162,7 @@ func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, erro
 	if len(entries) > 1 {
 		return nil, ErrDuplicateAlias
 	}
+
 	if len(entries) == 0 {
 		return nil, nil
 	}
@@ -168,7 +172,6 @@ func (s *storeImpl) GetByAlias(alias string) (*historyv1alpha.HistoryEntry, erro
 
 // GetLastModified returns nth last modified item, where 0 is the most recent
 func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error) {
-
 	historyList, err := s.loader.Load()
 	if err != nil {
 		return nil, fmt.Errorf("reading history file: %w", err)
@@ -177,11 +180,14 @@ func (s *storeImpl) GetLastModified(n int) (*historyv1alpha.HistoryEntry, error)
 	if len(historyList.Items) == 0 {
 		return nil, ErrNoEntries
 	}
+
 	if len(historyList.Items) <= n {
 		return nil, ErrEntryNotFound
 	}
+
 	s.sortByLastUsed(historyList)
 	lastModifiedEntry := historyList.Items[n]
+
 	return &lastModifiedEntry, nil
 }
 
@@ -196,6 +202,7 @@ func (s *storeImpl) Update(entry *historyv1alpha.HistoryEntry) error {
 	}
 
 	foundIndex := -1
+
 	for i := range list.Items {
 		existing := list.Items[i]
 		if existing.ObjectMeta.Name == entry.ObjectMeta.Name {
@@ -242,6 +249,7 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 	}
 
 	filteredEntries := []*historyv1alpha.HistoryEntry{}
+
 	for _, entry := range historyList.Items {
 		if filter(&entry) {
 			filteredEntries = append(filteredEntries, &entry)
@@ -258,6 +266,7 @@ func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, history
 			return &existingEntry, true
 		}
 	}
+
 	return nil, false
 }
 
@@ -266,6 +275,7 @@ func (s *storeImpl) updateLastUsed(historyList *historyv1alpha.HistoryEntryList,
 		if historyList.Items[i].ObjectMeta.Name == id {
 			historyList.Items[i].Status.LastUsed = v1.Now()
 			historyList.Items[i].ObjectMeta.Generation++
+
 			return
 		}
 	}

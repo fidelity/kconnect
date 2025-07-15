@@ -54,8 +54,8 @@ func (p *eksClusterProvider) Discover(ctx context.Context, input *discovery.Disc
 		if err != nil {
 			return nil, fmt.Errorf("getting cluster config: %w", err)
 		}
-		discoverOutput.Clusters[clusterDetail.ID] = clusterDetail
 
+		discoverOutput.Clusters[clusterDetail.ID] = clusterDetail
 	}
 
 	return discoverOutput, nil
@@ -72,6 +72,7 @@ func (p *eksClusterProvider) listClusters() ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("listing clusters: %w", err)
 		}
+
 		clusters = append(clusters, page.Clusters...)
 	}
 
@@ -79,7 +80,6 @@ func (p *eksClusterProvider) listClusters() ([]string, error) {
 }
 
 func (p *eksClusterProvider) getClusterConfig(clusterName string) (*discovery.Cluster, error) {
-
 	input := &eks.DescribeClusterInput{
 		Name: aws.String(clusterName),
 	}

@@ -113,9 +113,11 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 	if err != nil {
 		return nil, fmt.Errorf("posting envelope: %w", err)
 	}
+
 	if resp.ResponseCode() != http.StatusOK {
 		return nil, ErrInvalidResponseCode
 	}
+
 	zap.S().Debug(resp.Body())
 
 	wsTrustResp := &WSTrustResponse{}
@@ -127,7 +129,6 @@ func (c *AzureADClient) GetWsTrustResponse(cfg *AuthenticationConfig, cloudAudie
 }
 
 func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfig, assertion string, resource string) (*OauthToken, error) {
-
 	assertionEncoded := base64.StdEncoding.EncodeToString([]byte(assertion))
 	data := url.Values{}
 	data.Set("client_id", cfg.ClientID)
@@ -155,9 +156,7 @@ func (c *AzureADClient) GetOauth2TokenFromSamlAssertion(cfg *AuthenticationConfi
 }
 
 func (c *AzureADClient) GetOauth2TokenFromAzureAccessToken(cfg *AuthenticationConfig, resource string) (*OauthToken, error) {
-
 	output, err := exec.Command("az", "account", "get-access-token", "--resource", resource).Output()
-
 	if err != nil {
 		return nil, fmt.Errorf("error calling `az account get-access-token` from azure-cli: %w", err)
 	}
@@ -177,7 +176,6 @@ func (c *AzureADClient) GetOauth2TokenFromAzureAccessToken(cfg *AuthenticationCo
 }
 
 func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationConfig, resource string) (*OauthToken, error) {
-
 	params := map[string]string{
 		"grant_type":  "password",
 		"username":    cfg.Username,
@@ -190,7 +188,7 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/x-www-form-urlencoded; charset=utf-8"
 
-	body := c.endcodeQueryParams(params)
+	body := c.encodeQueryParams(params)
 
 	resp, err := c.httpClient.Post(cfg.Endpoints.TokenEndpoint, body, headers)
 	if err != nil {
@@ -202,6 +200,7 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 		if err := json.Unmarshal([]byte(resp.Body()), oidcResp); err != nil {
 			return nil, fmt.Errorf("unmarshalling oidc error response: %w", err)
 		}
+
 		return nil, oidcResp
 	}
 
@@ -214,14 +213,16 @@ func (c *AzureADClient) GetOauth2TokenFromUsernamePassword(cfg *AuthenticationCo
 }
 
 func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstrust.Endpoint) (string, error) {
+	var soapAction string
+
+	var requestTrustNamespace string
+
+	var keyType string
+
+	var requestType string
 
 	messageID := uuid.New()
 	schemaLocation := "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-
-	var soapAction string
-	var requestTrustNamespace string
-	var keyType string
-	var requestType string
 
 	switch endpoint.EndpointVersion {
 	case wstrust.Trust2005:
@@ -248,10 +249,12 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstr
 	if err != nil {
 		return "", fmt.Errorf("error formatting url to xml: %w", err)
 	}
+
 	username, err := formatXMLText(cfg.Username)
 	if err != nil {
 		return "", fmt.Errorf("error formatting username to xml: %w", err)
 	}
+
 	password, err := formatXMLText(cfg.Password)
 	if err != nil {
 		return "", fmt.Errorf("error formatting password to xml: %w", err)
@@ -311,29 +314,32 @@ func (c *AzureADClient) createEnvelope(cfg *AuthenticationConfig, endpoint *wstr
 			"</wst:RequestSecurityToken>" +
 			"</s:Body>" +
 			"</s:Envelope>")
-
 	if err != nil {
 		return "", fmt.Errorf("error creating envelope template: %w", err)
 	}
 
 	var buf bytes.Buffer
+
 	err = requestTemplate.Execute(&buf, envelopeParams)
 	if err != nil {
 		return "", fmt.Errorf("error executing envelope template: %w", err)
 	}
+
 	return buf.String(), nil
 }
 
 func formatXMLText(s string) (string, error) {
 	buf := new(strings.Builder)
+
 	err := xml.EscapeText(buf, []byte(s))
 	if err != nil {
 		return "", err
 	}
+
 	return buf.String(), nil
 }
 
-func (c *AzureADClient) endcodeQueryParams(params map[string]string) string {
+func (c *AzureADClient) encodeQueryParams(params map[string]string) string {
 	var buffer bytes.Buffer
 
 	keys := []string{}
@@ -341,12 +347,14 @@ func (c *AzureADClient) endcodeQueryParams(params map[string]string) string {
 	for k := range params {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
 
 	for i, key := range keys {
 		if i > 0 {
 			buffer.WriteString("&")
 		}
+
 		buffer.WriteString(url.QueryEscape(key))
 		buffer.WriteString("=")
 		buffer.WriteString(url.QueryEscape(params[key]))

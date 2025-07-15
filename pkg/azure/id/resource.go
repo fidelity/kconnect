@@ -59,16 +59,19 @@ func Parse(resourceID string) (*ResourceIdentifier, error) {
 	if parts[0] != "subscriptions" {
 		return nil, fmt.Errorf("finding subscription: %w", ErrIDUnrecognizedFormat)
 	}
+
 	subscriptionID := parts[1]
 
 	if parts[2] != "resourcegroups" {
 		return nil, fmt.Errorf("finding resource group: %w", ErrIDUnrecognizedFormat)
 	}
+
 	resourceGroupName := parts[3]
 
 	if parts[4] != "providers" {
 		return nil, fmt.Errorf("finding provider: %w", ErrIDUnrecognizedFormat)
 	}
+
 	providerName := parts[5]
 
 	azureIdentifier := &ResourceIdentifier{

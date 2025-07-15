@@ -140,15 +140,19 @@ func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
+
 	if _, err := cs.Bool("set-current", true, "Sets the current context in the kubeconfig to the selected cluster"); err != nil {
 		return fmt.Errorf("adding set-current config: %w", err)
 	}
+
 	if _, err := cs.String("password", "", "Password to use"); err != nil {
 		return fmt.Errorf("adding password config: %w", err)
 	}
+
 	if err := app.AddHistoryLocationItems(cs); err != nil {
 		return fmt.Errorf("adding history location items: %w", err)
 	}
+
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}

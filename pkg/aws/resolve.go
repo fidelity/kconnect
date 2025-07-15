@@ -36,6 +36,7 @@ func ResolvePartition(cfg config.ConfigurationSet) error {
 
 func ResolvePartitionRegions(partitionID string) []string {
 	var regions []string
+
 	switch partitionID {
 	case "aws-cn":
 		regions = awsChinaRegions
@@ -44,6 +45,7 @@ func ResolvePartitionRegions(partitionID string) []string {
 	default:
 		regions = awsGlobalRegions
 	}
+
 	return regions
 }
 
@@ -56,9 +58,11 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 	if partitionCfg == nil {
 		return ErrNoPartitionSupplied
 	}
+
 	partitionID := partitionCfg.Value.(string)
 
 	regionFilter := ""
+
 	regionFilterCfg := cfg.Get("region-filter")
 	if regionFilterCfg != nil {
 		regionFilter = regionFilterCfg.Value.(string)
@@ -66,10 +70,12 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 
 	options := []string{}
 	options = append(options, ResolvePartitionRegions(partitionID)...)
+
 	options, err := utils.RegexFilter(options, regionFilter)
 	if err != nil {
 		return fmt.Errorf("applying region regex %s : %w", regionFilter, err)
 	}
+
 	slices.Sort(options)
 
 	err = prompt.ChooseAndSet(cfg, RegionConfigItem, "Select an AWS region", true, prompt.OptionsFromStringSlice(options))
@@ -85,5 +91,6 @@ func awsPartitionOptions() (map[string]string, error) {
 	for _, partition := range awsPartitions {
 		options[partition] = partition
 	}
+
 	return options, nil
 }

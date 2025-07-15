@@ -21,6 +21,7 @@ func GetCommonConfig(cmd *cobra.Command, cfg config.ConfigurationSet) (*app.Comm
 	if err := config.ApplyToConfigSetWithProvider(configPath, cfg, ""); err != nil {
 		return nil, fmt.Errorf("applying app config: %w", err)
 	}
+
 	params := &app.CommonConfig{}
 	if err := config.Unmarshall(cfg, params); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into to params: %w", err)

@@ -75,7 +75,7 @@ func Command() (*cobra.Command, error) {
 			flags.PopulateConfigFromCommand(cmd, cfg)
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
-				return fmt.Errorf("gettng common config: %w", err)
+				return fmt.Errorf("getting common config: %w", err)
 			}
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
@@ -105,19 +105,21 @@ func Command() (*cobra.Command, error) {
 	}
 
 	return cfgCmd, nil
-
 }
 
 func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
+
 	if _, err := cs.String("file", "", "File or remote location to use to set the default configuration"); err != nil {
 		return fmt.Errorf("adding file config item: %w", err)
 	}
+
 	if _, err := cs.String("output", "yaml", "Controls the output format for the result."); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}
+
 	if err := cs.SetShort("file", "f"); err != nil {
 		return fmt.Errorf("setting shorthand for file config item: %w", err)
 	}
@@ -125,6 +127,7 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.String("username", "", "The username used for authentication"); err != nil {
 		return fmt.Errorf("adding username config item: %w", err)
 	}
+
 	if _, err := cs.String("password", "", "The password used for authentication"); err != nil {
 		return fmt.Errorf("adding password config item: %w", err)
 	}

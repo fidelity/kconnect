@@ -60,6 +60,8 @@ func NewSchemeAndCodecs() (*runtime.Scheme, *serializer.CodecFactory, error) {
 	if err := AddToScheme(scheme); err != nil {
 		return nil, nil, err
 	}
+
 	codecs := serializer.NewCodecFactory(scheme)
+
 	return scheme, &codecs, nil
 }

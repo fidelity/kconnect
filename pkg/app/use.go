@@ -57,10 +57,12 @@ type UseInput struct {
 
 func (a *App) Use(ctx context.Context, input *UseInput) error {
 	a.logger.Debug("use command")
+
 	identityProvider, err := a.getIdentityProvider(&input.IdentityProvider, &input.DiscoveryProvider)
 	if err != nil {
 		return fmt.Errorf("getting identity provider: %w", err)
 	}
+
 	clusterProvider, err := a.getDiscoveryProvider(&input.DiscoveryProvider, &input.IdentityProvider)
 	if err != nil {
 		return fmt.Errorf("getting discovery provider: %w", err)
@@ -93,9 +95,11 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 	} else {
 		cluster, err = a.getCluster(ctx, clusterProvider, authOutput.Identity, input)
 	}
+
 	if err != nil {
 		return err
 	}
+
 	if cluster == nil {
 		return nil
 	}
@@ -134,6 +138,7 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 
 	kubeConfig := output.KubeConfig
 	contextName := *output.ContextName
+
 	if historyID != "" {
 		historyRef := historyv1alpha.NewHistoryReference(historyID)
 		kubeConfig.Contexts[contextName].Extensions = make(map[string]runtime.Object)
@@ -142,6 +147,7 @@ func (a *App) Use(ctx context.Context, input *UseInput) error {
 
 	if input.Kubeconfig == "" {
 		a.logger.Debug("no kubeconfig supplied, setting default")
+
 		pathOptions := clientcmd.NewDefaultPathOptions()
 		input.Kubeconfig = pathOptions.GetDefaultFilename()
 	}
@@ -188,6 +194,7 @@ func (a *App) getCluster(ctx context.Context, clusterProvider discovery.Provider
 	if err != nil {
 		return nil, fmt.Errorf("getting cluster: %w", err)
 	}
+
 	if output.Cluster == nil {
 		return nil, fmt.Errorf("getting cluster with id %s: %w", *params.ClusterID, ErrClusterNotFound)
 	}
@@ -199,12 +206,12 @@ func (a *App) filterConfig(params *UseInput) map[string]string {
 	filteredConfig := make(map[string]string)
 
 	for _, configItem := range params.ConfigSet.GetAll() {
-
 		if configItem.Sensitive || configItem.HistoryIgnore {
 			continue
 		}
 
 		val := ""
+
 		switch configItem.Type {
 		case config.ItemTypeString:
 			val = configItem.Value.(string)
@@ -242,11 +249,14 @@ func (a *App) resolveAndCheckAlias(params *UseInput) error {
 		if !a.interactive {
 			return nil
 		}
+
 		a.logger.Debug("no alias set, resolving")
+
 		alias, err := a.resolveAlias()
 		if err != nil {
 			return fmt.Errorf("resolving alias: %w", err)
 		}
+
 		params.Alias = &alias
 	}
 
@@ -254,6 +264,7 @@ func (a *App) resolveAndCheckAlias(params *UseInput) error {
 	if err != nil {
 		return err
 	}
+
 	if aliasInUse {
 		return ErrAliasAlreadyUsed
 	}

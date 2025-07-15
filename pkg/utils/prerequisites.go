@@ -35,51 +35,58 @@ type KubectlVersion struct {
 }
 
 func CheckKubectlPrereq() error {
-
 	cmd := exec.Command("kubectl", "version", "--output=json", "--client=true")
+
 	output, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error finding kubectl: %w", err)
 	}
+
 	var kubectlVersion KubectlVersion
+
 	err = json.Unmarshal(output, &kubectlVersion)
 	if err != nil {
 		return err
 	}
+
 	if err != nil {
 		return fmt.Errorf("error checking for kubectl: %w", err)
 	} else if semver.Compare(kubectlVersion.ClientVersion.GitVersion, minKubectlVersion) < 0 {
 		return ErrorTooLowKubectlVersion
 	}
+
 	return nil
 }
 
 func CheckAWSIAMAuthPrereq() error {
-
 	cmd := exec.Command("aws-iam-authenticator")
+
 	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error finding aws-iam-authenticator: %w", err)
 	}
+
 	return nil
 }
 
 func CheckKubeloginPrereq() error {
-
 	cmd := exec.Command("kubelogin")
+
 	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error finding kubelogin: %w", err)
 	}
+
 	return nil
 }
 
 func CheckKubectlOidcLoginPrereq() error {
-
 	cmd := exec.Command("kubectl", "oidc-login", "version")
+
 	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error finding kubectl oidc-login: %w", err)
 	}
+
 	return nil
 }

@@ -59,6 +59,7 @@ func (p *rancherClusterProvider) Discover(ctx context.Context, input *discovery.
 				break
 			}
 		}
+
 		if len(discoverOutput.Clusters) == 0 {
 			return nil, ErrNoMatchingCluster
 		} else if len(discoverOutput.Clusters) > 1 {

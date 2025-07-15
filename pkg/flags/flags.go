@@ -56,6 +56,7 @@ func CreateCommandFlags(cmd *cobra.Command, cs config.ConfigurationSet) error {
 	if err != nil {
 		return fmt.Errorf("creating flags from config set: %w", err)
 	}
+
 	cmd.Flags().AddFlagSet(flags)
 
 	return nil
@@ -97,6 +98,7 @@ func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 				return nil, fmt.Errorf("marking flag deprecated %s: %w", configItem.Name, err)
 			}
 		}
+
 		if configItem.Hidden {
 			if err := fs.MarkHidden(configItem.Name); err != nil {
 				return nil, fmt.Errorf("marking flag hidden %s: %w", configItem.Name, err)
@@ -109,7 +111,6 @@ func CreateFlagsFromConfig(cs config.ConfigurationSet) (*pflag.FlagSet, error) {
 
 func PopulateConfigFromFlags(flags *pflag.FlagSet, cs config.ConfigurationSet) {
 	flags.VisitAll(func(f *pflag.Flag) {
-
 		switch f.Value.Type() {
 		case "bool":
 			val, _ := flags.GetBool(f.Name)
@@ -131,6 +132,7 @@ func PopulateConfigFromCommand(cmd *cobra.Command, cs config.ConfigurationSet) {
 // ConvertToMap will convert a flagset to a map
 func ConvertToMap(fs *pflag.FlagSet) map[string]string {
 	flags := make(map[string]string)
+
 	fs.VisitAll(func(flag *pflag.Flag) {
 		flags[flag.Name] = flag.Value.String()
 	})
@@ -152,11 +154,12 @@ func BindFlags(cmd *cobra.Command) {
 // GetFlagValueDirect will get a flag value directly from args or config.
 // Note: this should only be used in exceptional circumstances
 func GetFlagValueDirect(args []string, longName, shortName string) (string, error) {
-	flagLongName := fmt.Sprintf("--%s", longName)
 	flagShortname := ""
 	if shortName != "" {
 		flagShortname = fmt.Sprintf("-%s", shortName)
 	}
+
+	flagLongName := fmt.Sprintf("--%s", longName)
 	for i, arg := range args {
 		if arg == flagLongName || (flagShortname != "" && arg == flagShortname) {
 			return args[i+1], nil
@@ -172,6 +175,7 @@ func CopyFlagValue(sourceFlagName, destinationFlagName string, fs *pflag.FlagSet
 	if sourceFlag == nil && !ignoreNotFound {
 		return fmt.Errorf("getting source flag %s: %w", sourceFlagName, ErrFlagNotFound)
 	}
+
 	destinationFlag := fs.Lookup(destinationFlagName)
 	if destinationFlag == nil && !ignoreNotFound {
 		return fmt.Errorf("getting destination flag %s: %w", destinationFlagName, ErrFlagNotFound)
@@ -186,6 +190,7 @@ func CopyFlagValue(sourceFlagName, destinationFlagName string, fs *pflag.FlagSet
 
 func ParseFlagMultiValueToMap(flag string) map[string]string {
 	flagsMap := make(map[string]string)
+
 	if flag != "" {
 		setFlagsArray := strings.Split(flag, ",")
 		for _, e := range setFlagsArray {
@@ -193,5 +198,6 @@ func ParseFlagMultiValueToMap(flag string) map[string]string {
 			flagsMap[parts[0]] = parts[1]
 		}
 	}
+
 	return flagsMap
 }

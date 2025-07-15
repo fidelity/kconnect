@@ -42,10 +42,12 @@ func Command() *cobra.Command {
 
 func doVersion(_ *cobra.Command) error {
 	v := version.Get()
+
 	outYaml, err := yaml.Marshal(v)
 	if err != nil {
 		return fmt.Errorf("marshalling version information: %w", err)
 	}
+
 	fmt.Println(string(outYaml)) //nolint:forbidigo
 
 	return nil

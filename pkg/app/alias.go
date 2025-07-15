@@ -33,6 +33,7 @@ import (
 type AliasListInput struct {
 	CommonConfig
 	HistoryLocationConfig
+
 	Output *printer.OutputPrinter `json:"output,omitempty"`
 }
 
@@ -48,6 +49,7 @@ type AliasRemoveInput struct {
 	CommonConfig
 	HistoryLocationConfig
 	HistoryIdentifierConfig
+
 	All bool `json:"all"`
 }
 
@@ -61,6 +63,7 @@ func (a *App) AliasList(ctx context.Context, input *AliasListInput) error {
 	}
 
 	aliases := []string{}
+
 	for _, entry := range list.Items {
 		if entry.Spec.Alias != nil && *entry.Spec.Alias != "" {
 			aliases = append(aliases, *entry.Spec.Alias)
@@ -83,9 +86,11 @@ func (a *App) AliasList(ctx context.Context, input *AliasListInput) error {
 // AliasAdd will add an alias to an existing history entry
 func (a *App) AliasAdd(ctx context.Context, input *AliasAddInput) error {
 	zap.S().Infow("adding alias to history entry", "id", input.ID, "alias", input.Alias)
+
 	if input.Alias == "" {
 		return ErrAliasRequired
 	}
+
 	if input.ID == "" {
 		return ErrHistoryIDRequired
 	}
@@ -94,6 +99,7 @@ func (a *App) AliasAdd(ctx context.Context, input *AliasAddInput) error {
 	if err != nil {
 		return fmt.Errorf("checking if alias in use: %w", err)
 	}
+
 	if aliasInUse {
 		return ErrAliasAlreadyUsed
 	}
@@ -102,16 +108,20 @@ func (a *App) AliasAdd(ctx context.Context, input *AliasAddInput) error {
 	if err != nil {
 		return fmt.Errorf("getting history entry: %w", err)
 	}
+
 	if entry == nil {
 		return history.ErrEntryNotFound
 	}
+
 	entry.Spec.Alias = &input.Alias
 	entry.Status.LastModified = v1.Now()
 
 	zap.S().Debug("updating history entry with new alias")
+
 	if err := a.historyStore.Update(entry); err != nil {
 		return fmt.Errorf("updating history entry with alias: %w", err)
 	}
+
 	zap.S().Info("aliases added to histiry entry")
 
 	return nil
@@ -154,6 +164,7 @@ func (a *App) AliasRemove(ctx context.Context, input *AliasRemoveInput) error {
 		updatedEntry.Status.LastModified = v1.Now()
 
 		zap.S().Debugw("updating history entry to remove alias", "id", updatedEntry.ObjectMeta.Name, "oldalias", oldalias)
+
 		if err := a.historyStore.Update(updatedEntry); err != nil {
 			return fmt.Errorf("updating history entry: %w", err)
 		}
@@ -172,6 +183,7 @@ func (a *App) getAliasEntries(id string, alias string, all bool) ([]*apiv1alpha.
 		if err != nil {
 			return nil, fmt.Errorf("getting history entries: %w", err)
 		}
+
 		for _, entry := range list.Items {
 			if entry.Spec.Alias != nil && *entry.Spec.Alias != "" {
 				entryToUpdate := entry.DeepCopy()
@@ -184,15 +196,18 @@ func (a *App) getAliasEntries(id string, alias string, all bool) ([]*apiv1alpha.
 			if err != nil {
 				return nil, fmt.Errorf("getting history entry by alias: %w", err)
 			}
+
 			if entry != nil {
 				found = append(found, entry)
 			}
 		}
+
 		if id != "" {
 			entry, err := a.historyStore.GetByID(id)
 			if err != nil {
 				return nil, fmt.Errorf("getting history entry by id: %w", err)
 			}
+
 			if entry != nil {
 				found = append(found, entry)
 			}

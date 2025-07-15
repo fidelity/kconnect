@@ -119,13 +119,16 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	}
 
 	endpointResolver := identity.NewOAuthEndpointsResolver(p.httpClient)
+
 	endpoints, err := endpointResolver.Resolve(authCfg.Authority)
 	if err != nil {
 		return nil, fmt.Errorf("getting endpoints: %w", err)
 	}
+
 	authCfg.Endpoints = endpoints
 
 	identityClient := identity.NewClient(p.httpClient)
+
 	userRealm, err := identityClient.GetUserRealm(authCfg)
 	if err != nil {
 		return nil, fmt.Errorf("getting user realm: %w", err)
@@ -136,14 +139,15 @@ func (p *aadIdentityProvider) Authenticate(ctx context.Context, input *provid.Au
 	cmd := exec.Command("az", "login", "--username", cfg.Username, "--password", cfg.Password)
 	stderr := &bytes.Buffer{}
 	cmd.Stderr = stderr
-	err = cmd.Run()
 
+	err = cmd.Run()
 	if err != nil {
 		interactiveLoginRequired = true
 		cmd = exec.Command("az", "login", "--tenant", cfg.TenantID)
 		cmd.Stdout = nil
 		cmd.Stdin = os.Stdin
 		cmd.Stderr = os.Stderr
+
 		err = cmd.Run()
 		if err != nil {
 			return nil, fmt.Errorf("azure cli: %w", err)
@@ -162,6 +166,7 @@ func (p *aadIdentityProvider) validateConfig(cfg *aadConfig) error {
 	if err := validate.Struct(cfg); err != nil {
 		return fmt.Errorf("validating aad config: %w", err)
 	}
+
 	return nil
 }
 

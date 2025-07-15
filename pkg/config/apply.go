@@ -56,6 +56,7 @@ func applyConfiguration(configPath string, cs ConfigurationSet, provider string)
 				if err := setItemValue(item, providerVal); err != nil {
 					return fmt.Errorf("setting item value for %s from provider config: %w", item.Name, err)
 				}
+
 				continue
 			}
 		}
@@ -66,6 +67,7 @@ func applyConfiguration(configPath string, cs ConfigurationSet, provider string)
 			if err := setItemValue(item, globalVal); err != nil {
 				return fmt.Errorf("setting item value for %s from global config: %w", item.Name, err)
 			}
+
 			continue
 		}
 	}
@@ -83,14 +85,18 @@ func setItemValue(item *Item, value string) error {
 		if err != nil {
 			return fmt.Errorf("parsing config as int: %w", err)
 		}
+
 		item.Value = intVal
+
 		return nil
 	case ItemTypeBool:
 		boolVal, err := strconv.ParseBool(value)
 		if err != nil {
 			return fmt.Errorf("parsing config as bool: %w", err)
 		}
+
 		item.Value = boolVal
+
 		return nil
 	default:
 		return ErrUnknownItemType

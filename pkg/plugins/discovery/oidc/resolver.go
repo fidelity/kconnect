@@ -33,5 +33,6 @@ func (p *oidcClusterProvider) Resolve(config config.ConfigurationSet, userID ide
 	if err := p.setup(config, userID); err != nil {
 		return fmt.Errorf("setting up oidc provider: %w", err)
 	}
+
 	return nil
 }

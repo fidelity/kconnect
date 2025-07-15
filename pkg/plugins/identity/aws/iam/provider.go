@@ -99,6 +99,7 @@ func (p *iamIdentityProvider) Authenticate(ctx context.Context, input *identity.
 	if err != nil {
 		return nil, fmt.Errorf("getting credentials: %w", err)
 	}
+
 	p.logger.Debugw("found aws iam credentials", "provider", creds.Source)
 
 	id := &kaws.Identity{
@@ -118,12 +119,15 @@ func (p *iamIdentityProvider) validateConfig(cfg *providerConfig) error {
 	if cfg.Profile != "" && cfg.AccessKey != "" {
 		return ErrProfileWithAccessKey
 	}
+
 	if cfg.Profile != "" && cfg.SecretKey != "" {
 		return ErrProfileWithSecretKey
 	}
+
 	if cfg.AccessKey != "" && cfg.SecretKey == "" {
 		return ErrAccessAndSecretRequired
 	}
+
 	if cfg.AccessKey == "" && cfg.SecretKey != "" {
 		return ErrAccessAndSecretRequired
 	}

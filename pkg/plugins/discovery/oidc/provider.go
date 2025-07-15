@@ -68,6 +68,7 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 
 type oidcClusterProviderConfig struct {
 	common.ClusterProviderConfig
+
 	ClusterUrl  string `json:"cluster-url"`
 	ClusterAuth string `json:"cluster-auth"`
 	ConfigUrl   string `json:"config-url"`
@@ -86,71 +87,6 @@ func (p *oidcClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *oidcClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
-	cfg := &oidcClusterProviderConfig{}
-	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into oidcClusterProviderConfig: %w", err)
-	}
-	p.config = cfg
-
-	oidcID, ok := userID.(*oidc.Identity)
-	if !ok {
-		return fmt.Errorf("unmarshalling config items into oidcClusterProviderConfig")
-	}
-	p.identity = oidcID
-
-	if err := p.readRequiredFields(); err != nil {
-		return err
-	}
-	p.logParameters()
-
-	return nil
-}
-
-func (p *oidcClusterProvider) logParameters() {
-
-	p.logger.Infof("Using oidc-server-url: %s.", p.identity.OidcServer)
-	p.logger.Infof("Using oidc-client-id: %s.", p.identity.OidcId)
-	if p.identity.UsePkce == True {
-		p.logger.Infof("using pkce.")
-	}
-	p.logger.Infof("Using cluster-id: %s.", *p.config.ClusterID)
-	p.logger.Infof("Using cluster-url: %s.", p.config.ClusterUrl)
-	p.logger.Infof("Using cluster-auth: %s.", p.config.ClusterAuth)
-
-}
-
-// For required parameter, if not exists in default config file or config url, read user input.
-func (p *oidcClusterProvider) readRequiredFields() error {
-
-	if p.config.ClusterUrl == "" {
-		value, err := oidc.ReadUserInput(oidc.ClusterUrlConfigItem, oidc.ClusterUrlConfigDescription)
-		if err != nil {
-			return err
-		}
-		p.config.ClusterUrl = value
-	}
-
-	if p.config.ClusterAuth == "" {
-		value, err := oidc.ReadUserInput(oidc.ClusterAuthConfigItem, oidc.ClusterAuthConfigDescription)
-		if err != nil {
-			return err
-		}
-		p.config.ClusterAuth = value
-	}
-
-	if *p.config.ClusterID == "" {
-		value, err := oidc.ReadUserInput(oidc.ClusterIdConfigItem, oidc.ClusterIdConfigDescription)
-		if err != nil {
-			return err
-		}
-		p.config.ClusterID = &value
-	}
-
-	return nil
-
-}
-
 func (p *oidcClusterProvider) ListPreReqs() []*provider.PreReq {
 	return []*provider.PreReq{}
 }
@@ -164,6 +100,75 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	return oidc.SharedConfig(), nil
 }
 
+func (p *oidcClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+	cfg := &oidcClusterProviderConfig{}
+	if err := config.Unmarshall(cs, cfg); err != nil {
+		return fmt.Errorf("unmarshalling config items into oidcClusterProviderConfig: %w", err)
+	}
+
+	p.config = cfg
+
+	oidcID, ok := userID.(*oidc.Identity)
+	if !ok {
+		return fmt.Errorf("unmarshalling config items into oidcClusterProviderConfig")
+	}
+
+	p.identity = oidcID
+
+	if err := p.readRequiredFields(); err != nil {
+		return err
+	}
+
+	p.logParameters()
+
+	return nil
+}
+
+func (p *oidcClusterProvider) logParameters() {
+	p.logger.Infof("Using oidc-server-url: %s.", p.identity.OidcServer)
+	p.logger.Infof("Using oidc-client-id: %s.", p.identity.OidcId)
+
+	if p.identity.UsePkce == True {
+		p.logger.Infof("using pkce.")
+	}
+
+	p.logger.Infof("Using cluster-id: %s.", *p.config.ClusterID)
+	p.logger.Infof("Using cluster-url: %s.", p.config.ClusterUrl)
+	p.logger.Infof("Using cluster-auth: %s.", p.config.ClusterAuth)
+}
+
+// For required parameter, if not exists in default config file or config url, read user input.
+func (p *oidcClusterProvider) readRequiredFields() error {
+	if p.config.ClusterUrl == "" {
+		value, err := oidc.ReadUserInput(oidc.ClusterUrlConfigItem, oidc.ClusterUrlConfigDescription)
+		if err != nil {
+			return err
+		}
+
+		p.config.ClusterUrl = value
+	}
+
+	if p.config.ClusterAuth == "" {
+		value, err := oidc.ReadUserInput(oidc.ClusterAuthConfigItem, oidc.ClusterAuthConfigDescription)
+		if err != nil {
+			return err
+		}
+
+		p.config.ClusterAuth = value
+	}
+
+	if *p.config.ClusterID == "" {
+		value, err := oidc.ReadUserInput(oidc.ClusterIdConfigItem, oidc.ClusterIdConfigDescription)
+		if err != nil {
+			return err
+		}
+
+		p.config.ClusterID = &value
+	}
+
+	return nil
+}
+
 func (p *oidcClusterProvider) getCluster(ctx context.Context) (*discovery.Cluster, error) {
 	cluster := discovery.Cluster{
 		ID:                       *p.config.ClusterID,
@@ -171,5 +176,6 @@ func (p *oidcClusterProvider) getCluster(ctx context.Context) (*discovery.Cluste
 		ControlPlaneEndpoint:     &p.config.ClusterUrl,
 		CertificateAuthorityData: &p.config.ClusterAuth,
 	}
+
 	return &cluster, nil
 }

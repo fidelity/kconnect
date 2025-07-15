@@ -45,6 +45,7 @@ func (ba *ExplicitBearerAuthorizer) WithAuthorization() autorest.PrepareDecorato
 			if err == nil {
 				return autorest.Prepare(r, autorest.WithHeader("Authorization", fmt.Sprintf("Bearer %s", ba.token)))
 			}
+
 			return r, err
 		})
 	}
