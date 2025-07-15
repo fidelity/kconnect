@@ -51,7 +51,7 @@ func Command() (*cobra.Command, error) {
 			flags.PopulateConfigFromCommand(cmd, cfg)
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
-				return fmt.Errorf("gettng common config: %w", err)
+				return fmt.Errorf("getting common config: %w", err)
 			}
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
@@ -92,7 +92,6 @@ func Command() (*cobra.Command, error) {
 	}
 
 	return logoutCmd, nil
-
 }
 
 func addConfig(cs config.ConfigurationSet) error {
@@ -103,12 +102,15 @@ func addConfig(cs config.ConfigurationSet) error {
 	if _, err := cs.Bool("all", false, "Logs out of all clusters"); err != nil {
 		return fmt.Errorf("adding all config: %w", err)
 	}
+
 	if err := cs.SetShort("all", "a"); err != nil {
 		return fmt.Errorf("adding all short flag: %w", err)
 	}
+
 	if _, err := cs.String("alias", "", "comma delimited list of aliass"); err != nil {
 		return fmt.Errorf("adding alias config: %w", err)
 	}
+
 	if _, err := cs.String("ids", "", "comma delimited list of ids"); err != nil {
 		return fmt.Errorf("adding ids config: %w", err)
 	}
@@ -116,6 +118,7 @@ func addConfig(cs config.ConfigurationSet) error {
 	if err := app.AddHistoryLocationItems(cs); err != nil {
 		return fmt.Errorf("adding history location items: %w", err)
 	}
+
 	if err := app.AddKubeconfigConfigItems(cs); err != nil {
 		return fmt.Errorf("adding kubeconfig config items: %w", err)
 	}

@@ -70,7 +70,7 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 			flags.PopulateConfigFromCommand(cmd, cfg)
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
-				return fmt.Errorf("gettng common config: %w", err)
+				return fmt.Errorf("getting common config: %w", err)
 			}
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
@@ -111,13 +111,13 @@ func lsCommand() (*cobra.Command, error) { //nolint: dupl
 	}
 
 	return lsCmd, nil
-
 }
 
 func addConfigLs(cs config.ConfigurationSet) error {
 	if err := app.AddCommonConfigItems(cs); err != nil {
 		return fmt.Errorf("adding common config: %w", err)
 	}
+
 	if _, err := cs.String("output", "table", "Output format for the results"); err != nil {
 		return fmt.Errorf("adding output config item: %w", err)
 	}

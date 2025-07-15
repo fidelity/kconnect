@@ -44,12 +44,14 @@ type PluginRegistration struct {
 }
 type DiscoveryPluginRegistration struct {
 	PluginRegistration
+
 	SupportedIdentityProviders []string
 	CreateFunc                 discovery.ProviderCreatorFun
 }
 
 type IdentityPluginRegistration struct {
 	PluginRegistration
+
 	CreateFunc identity.ProviderCreatorFun
 }
 
@@ -60,6 +62,7 @@ func RegisterIdentityPlugin(registration *IdentityPluginRegistration) error {
 	if _, found := identityPlugins[registration.Name]; found {
 		return ErrDuplicatePlugin
 	}
+
 	identityPlugins[registration.Name] = registration
 
 	return nil
@@ -72,6 +75,7 @@ func RegisterDiscoveryPlugin(registration *DiscoveryPluginRegistration) error {
 	if _, found := discoveryPlugins[registration.Name]; found {
 		return ErrDuplicatePlugin
 	}
+
 	discoveryPlugins[registration.Name] = registration
 
 	return nil

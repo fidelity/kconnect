@@ -70,5 +70,6 @@ func ReadUserInput(key string, msg string) (string, error) {
 	if userInput == "" || err != nil {
 		return userInput, fmt.Errorf("error reading input for %s", key)
 	}
+
 	return userInput, nil
 }

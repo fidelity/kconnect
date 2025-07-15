@@ -37,7 +37,6 @@ var (
 
 // Configure will configure the logging for kconnect and the dependent saml2aws package
 func Configure(verbosity int) error {
-
 	configureLogrus(verbosity)
 
 	if err := configureZap(verbosity); err != nil {
@@ -79,6 +78,7 @@ func configureZap(verbosity int) error {
 	if err != nil {
 		return fmt.Errorf("building zap logger: %w", err)
 	}
+
 	zap.ReplaceGlobals(loggerMgr)
 
 	return nil

@@ -115,7 +115,6 @@ func (p *oidcIdentityProvider) Authenticate(ctx context.Context, input *identity
 }
 
 func executeOidcLogin(id oidc.Identity) error {
-
 	args := []string{
 		"oidc-login",
 		"get-token",
@@ -128,25 +127,28 @@ func executeOidcLogin(id oidc.Identity) error {
 	} else {
 		args = append(args, "--oidc-client-secret="+id.OidcSecret)
 	}
+
 	if id.SkipOidcTlsVerify == True {
 		args = append(args, "--insecure-skip-tls-verify")
 	}
 
 	cmd := exec.Command("kubectl", args...)
+
 	_, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error executing kubectl oidc-login: %w", err)
 	}
+
 	return nil
 }
 
 func (p *oidcIdentityProvider) readRequiredFields(id oidc.Identity) (oidc.Identity, error) {
-
 	if id.OidcId == "" {
 		value, err := oidc.ReadUserInput(oidc.OidcIdConfigItem, oidc.OidcIdConfigDescription)
 		if err != nil {
 			return id, err
 		}
+
 		id.OidcId = value
 	}
 
@@ -155,6 +157,7 @@ func (p *oidcIdentityProvider) readRequiredFields(id oidc.Identity) (oidc.Identi
 		if err != nil {
 			return id, err
 		}
+
 		id.OidcServer = value
 	}
 
@@ -163,11 +166,11 @@ func (p *oidcIdentityProvider) readRequiredFields(id oidc.Identity) (oidc.Identi
 		if err != nil {
 			return id, err
 		}
+
 		id.OidcSecret = value
 	}
 
 	return id, nil
-
 }
 
 func (p *oidcIdentityProvider) getConfigFromUrl(configSet config.ConfigurationSet) {
@@ -192,10 +195,13 @@ func readConfigs(p *oidcIdentityProvider, configSet config.ConfigurationSet, con
 		} else {
 			p.logger.Warnf("CA cert is required to call the config url.")
 			p.logger.Info(FailCallConfigUrl)
+
 			return
 		}
 	}
+
 	kclient := khttp.NewHTTPClient()
+
 	res, err := kclient.Get(configValue, nil)
 	if err == nil {
 		addItems(p, configSet, res.Body())
@@ -229,8 +235,8 @@ func addItem(configSet config.ConfigurationSet, key string, value string) {
 }
 
 func SetTransport(file string) {
-
 	var config *tls.Config
+
 	skipReadCert := false
 	if file == "" {
 		skipReadCert = true
@@ -241,6 +247,7 @@ func SetTransport(file string) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
 		config = &tls.Config{
@@ -249,6 +256,7 @@ func SetTransport(file string) {
 	} else {
 		config = &tls.Config{InsecureSkipVerify: skipReadCert}
 	}
+
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = config
 }
 
@@ -259,6 +267,7 @@ func getValue(configSet config.ConfigurationSet, key string) (value string) {
 			value = val.(string)
 		}
 	}
+
 	return
 }
 

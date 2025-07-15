@@ -43,6 +43,7 @@ type HistoryRemoveInput struct {
 	CommonConfig
 	HistoryLocationConfig
 	HistoryRemoveConfig
+
 	RemoveList []string
 }
 
@@ -57,6 +58,7 @@ func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) erro
 	if err != nil {
 		return fmt.Errorf("reading history import file: %w", err)
 	}
+
 	err = history.FilterHistory(importList, filterSpec)
 	if err != nil {
 		return fmt.Errorf("filtering history list: %w", err)
@@ -73,8 +75,10 @@ func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) erro
 	}
 
 	importCount := 0
+
 	for i := range importList.Items {
 		newEntry := processEntry(&importList.Items[i], setFlags)
+
 		inUse, index := checkAliasInUse(historyList, newEntry)
 		if inUse {
 			if input.Overwrite {
@@ -89,12 +93,14 @@ func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) erro
 			importCount++
 		}
 	}
+
 	zap.S().Infof("Importing %d entries", importCount)
 
 	err = a.historyStore.SetHistoryList(historyList)
 	if err != nil {
 		return fmt.Errorf("storing history entries: %w", err)
 	}
+
 	return nil
 }
 
@@ -109,23 +115,29 @@ func (a *App) HistoryExport(ctx context.Context, input *HistoryExportInput) erro
 	if err != nil {
 		return fmt.Errorf("getting history list: %w", err)
 	}
+
 	err = history.FilterHistory(historyList, filterSpec)
 	if err != nil {
 		return fmt.Errorf("filtering history list: %w", err)
 	}
+
 	var historyExportList = &v1alpha1.HistoryEntryList{}
 
 	exportCount := 0
+
 	for i := range historyList.Items {
 		newEntry := processEntry(&historyList.Items[i], setFlags)
 		historyExportList.Items = append(historyExportList.Items, *newEntry)
 		exportCount++
 	}
+
 	zap.S().Infof("exporting %d entries", exportCount)
+
 	err = writeExportFile(input.File, historyExportList)
 	if err != nil {
 		return fmt.Errorf("writing export file: %w", err)
 	}
+
 	return nil
 }
 
@@ -136,6 +148,7 @@ func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) erro
 	if err != nil {
 		return fmt.Errorf("getting history list: %w", err)
 	}
+
 	var entriesToRemove []*v1alpha1.HistoryEntry
 
 	switch {
@@ -145,10 +158,12 @@ func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) erro
 		}
 	case input.Filter != "":
 		filterSpec := createFilter(input.Filter)
+
 		err = history.FilterHistory(historyList, filterSpec)
 		if err != nil {
 			return fmt.Errorf("filtering history list: %w", err)
 		}
+
 		for i := range historyList.Items {
 			entriesToRemove = append(entriesToRemove, &historyList.Items[i])
 		}
@@ -158,6 +173,7 @@ func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) erro
 			if err != nil {
 				return fmt.Errorf("getting history entry: %w", err)
 			}
+
 			entriesToRemove = append(entriesToRemove, entry)
 		}
 	}
@@ -168,22 +184,23 @@ func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) erro
 	if err != nil {
 		return fmt.Errorf("removing history entries: %w", err)
 	}
+
 	return nil
 }
 
 func createFilter(filterString string) *history.FilterSpec {
-
 	filterParts := flags.ParseFlagMultiValueToMap(filterString)
 	return history.CreateFilterFromMap(filterParts)
 }
 
 func processEntry(entry *v1alpha1.HistoryEntry, overwriteFlags map[string]string) *v1alpha1.HistoryEntry {
-
 	newEntry := v1alpha1.NewHistoryEntry()
+
 	newEntry.Spec = entry.Spec
 	for k, v := range overwriteFlags {
 		newEntry.Spec.Flags[k] = v
 	}
+
 	return newEntry
 }
 
@@ -192,6 +209,7 @@ func readImportFile(location string) (*v1alpha1.HistoryEntryList, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return fileLoader.Load()
 }
 
@@ -200,6 +218,7 @@ func writeExportFile(location string, historyList *v1alpha1.HistoryEntryList) er
 	if err != nil {
 		return err
 	}
+
 	return fileLoader.Save(historyList)
 }
 
@@ -209,5 +228,6 @@ func checkAliasInUse(historyList *v1alpha1.HistoryEntryList, entryToCheck *v1alp
 			return true, i
 		}
 	}
+
 	return false, -1
 }

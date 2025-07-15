@@ -29,7 +29,6 @@ import (
 const True = "true"
 
 func (p *oidcClusterProvider) GetConfig(ctx context.Context, input *discovery.GetConfigInput) (*discovery.GetConfigOutput, error) {
-
 	clusterName := input.Cluster.Name
 	userName := p.identity.OidcId
 	contextName := fmt.Sprintf("%s@%s", userName, clusterName)
@@ -68,6 +67,7 @@ func (p *oidcClusterProvider) GetConfig(ctx context.Context, input *discovery.Ge
 	} else {
 		args = append(args, "--oidc-client-secret="+oidcID.OidcSecret)
 	}
+
 	if oidcID.SkipOidcTlsVerify == True {
 		args = append(args, "--insecure-skip-tls-verify")
 	}

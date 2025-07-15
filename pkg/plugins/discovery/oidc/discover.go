@@ -23,7 +23,6 @@ import (
 )
 
 func (p *oidcClusterProvider) Discover(ctx context.Context, input *discovery.DiscoverInput) (*discovery.DiscoverOutput, error) {
-
 	cluster, _ := p.getCluster(ctx)
 	clusters := make(map[string]*discovery.Cluster)
 	clusters[cluster.ID] = cluster

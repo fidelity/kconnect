@@ -71,6 +71,7 @@ func New(input *provider.PluginCreationInput) (discovery.Provider, error) {
 
 type eksClusterProviderConfig struct {
 	common.ClusterProviderConfig
+
 	AssumeRoleARN *string `json:"assume-role-arn"`
 	Region        *string `json:"region"`
 	RegionFilter  *string `json:"region-filter"`
@@ -93,29 +94,6 @@ func (p *eksClusterProvider) Name() string {
 	return ProviderName
 }
 
-func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
-	cfg := &eksClusterProviderConfig{}
-	if err := config.Unmarshall(cs, cfg); err != nil {
-		return fmt.Errorf("unmarshalling config items into eksClusterProviderConfig: %w", err)
-	}
-	p.config = cfg
-
-	awsID, ok := userID.(*aws.Identity)
-	if !ok {
-		return ErrNotAWSIdentity
-	}
-	p.identity = awsID
-
-	p.logger.Debugw("creating AWS session", "region", *p.config.Region)
-	sess, err := aws.NewSession(p.identity.Region, p.identity.ProfileName, p.identity.AWSAccessKey, p.identity.AWSSecretKey, p.identity.AWSSessionToken, p.identity.AWSSharedCredentialsFile)
-	if err != nil {
-		return fmt.Errorf("creating aws session: %w", err)
-	}
-	p.eksClient = aws.NewEKSClient(*sess)
-
-	return nil
-}
-
 func (p *eksClusterProvider) ListPreReqs() []*provider.PreReq {
 	return []*provider.PreReq{}
 }
@@ -135,4 +113,31 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs.String("role-filter", "", "A filter to apply to the roles list, e.g. 'EKS' will only show roles that contain EKS in the name")    //nolint: errcheck
 
 	return cs, nil
+}
+
+func (p *eksClusterProvider) setup(cs config.ConfigurationSet, userID identity.Identity) error {
+	cfg := &eksClusterProviderConfig{}
+	if err := config.Unmarshall(cs, cfg); err != nil {
+		return fmt.Errorf("unmarshalling config items into eksClusterProviderConfig: %w", err)
+	}
+
+	p.config = cfg
+
+	awsID, ok := userID.(*aws.Identity)
+	if !ok {
+		return ErrNotAWSIdentity
+	}
+
+	p.identity = awsID
+
+	p.logger.Debugw("creating AWS session", "region", *p.config.Region)
+
+	sess, err := aws.NewSession(p.identity.Region, p.identity.ProfileName, p.identity.AWSAccessKey, p.identity.AWSSecretKey, p.identity.AWSSessionToken, p.identity.AWSSharedCredentialsFile)
+	if err != nil {
+		return fmt.Errorf("creating aws session: %w", err)
+	}
+
+	p.eksClient = aws.NewEKSClient(*sess)
+
+	return nil
 }

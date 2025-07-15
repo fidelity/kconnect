@@ -21,27 +21,31 @@ import (
 // SurveyFilter a function for passing to AlecAivazis/survey, which will allow wildcards(*) and whitespace to be used for subfilter values
 func SurveyFilter(filter string, value string, index int) bool {
 	parsedFilter := regexp.MustCompile(`[\s]+`).ReplaceAllString(filter, "*")
+
 	subFilters := strings.Split(parsedFilter, "*")
 	for _, s := range subFilters {
 		if !strings.Contains(strings.ToLower(value), strings.ToLower(s)) && s != "" {
 			return false
 		}
 	}
+
 	return true
 }
 
 // RegexFilter to filter a slice or strings based on a regex filter passed to it. Returns an error if regex is invalid
 func RegexFilter(options []string, regexString string) ([]string, error) {
-
 	var filteredOptions []string
+
 	reg, err := regexp.Compile(regexString)
 	if err != nil {
 		return filteredOptions, err
 	}
+
 	for _, opt := range options {
 		if reg.MatchString(opt) {
 			filteredOptions = append(filteredOptions, opt)
 		}
 	}
+
 	return filteredOptions, nil
 }

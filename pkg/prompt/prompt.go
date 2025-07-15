@@ -48,6 +48,7 @@ func Input(name, message string, required bool) (string, error) {
 			zap.S().Info("Received interrupt, exiting..")
 			os.Exit(0)
 		}
+
 		return "", fmt.Errorf("asking for %s name: %w", name, err)
 	}
 
@@ -61,6 +62,7 @@ func InputAndSet(cfg config.ConfigurationSet, name, message string, required boo
 	}
 
 	var enteredValue string
+
 	var err error
 
 	if cfg.ValueIsList(name) {
@@ -68,6 +70,7 @@ func InputAndSet(cfg config.ConfigurationSet, name, message string, required boo
 	} else {
 		enteredValue, err = Input(name, message, required)
 	}
+
 	if err != nil {
 		return fmt.Errorf("asking for %s name: %w", name, err)
 	}
@@ -75,6 +78,7 @@ func InputAndSet(cfg config.ConfigurationSet, name, message string, required boo
 	if err := cfg.SetValue(name, enteredValue); err != nil {
 		return fmt.Errorf("setting %s config: %w", name, err)
 	}
+
 	zap.S().Debugw("resolved config item", "name", name, "value", enteredValue)
 
 	return nil
@@ -102,12 +106,14 @@ func InputSensitiveAndSet(cfg config.ConfigurationSet, name, message string, req
 			zap.S().Info("Received interrupt, exiting..")
 			os.Exit(0)
 		}
+
 		return fmt.Errorf("asking for %s name: %w", name, err)
 	}
 
 	if err := cfg.SetValue(name, enteredValue); err != nil {
 		return fmt.Errorf("setting %s config: %w", name, err)
 	}
+
 	zap.S().Debugw("resolved sensitive config item", "name", name)
 
 	return nil
@@ -141,19 +147,23 @@ func OptionsFromConfigList(listName string) OptionsFunc {
 	if strings.HasPrefix(listName, config.ListPrefix) {
 		listName = strings.ReplaceAll(listName, config.ListPrefix, "")
 	}
+
 	return func() (map[string]string, error) {
 		appConfig, err := config.NewAppConfiguration()
 		if err != nil {
 			return nil, fmt.Errorf("getting app configuration: %w", err)
 		}
+
 		appCfg, err := appConfig.Get()
 		if err != nil {
 			return nil, fmt.Errorf("reading app configuration: %w", err)
 		}
+
 		list, ok := appCfg.Spec.Lists[listName]
 		if !ok {
 			return nil, fmt.Errorf("getting list %s: %w", listName, err)
 		}
+
 		items := map[string]string{}
 		for _, listItem := range list {
 			items[listItem.Name] = listItem.Value
@@ -177,6 +187,7 @@ func ChooseAndSet(cfg config.ConfigurationSet, name, message string, required bo
 	if err := cfg.SetValue(name, selected); err != nil {
 		return fmt.Errorf("setting %s config: %w", name, err)
 	}
+
 	zap.S().Debugw("resolved config item", "name", name, "value", selected)
 
 	return nil
@@ -193,6 +204,7 @@ func Choose(name, message string, required bool, optionsFn OptionsFunc) (string,
 	for k := range options {
 		displayOptions = append(displayOptions, k)
 	}
+
 	sort.Strings(displayOptions)
 
 	selectedOptionDisplay := ""
@@ -217,9 +229,11 @@ func Choose(name, message string, required bool, optionsFn OptionsFunc) (string,
 				zap.S().Info("Received interrupt, exiting..")
 				os.Exit(0)
 			}
+
 			return "", fmt.Errorf("asking for %s: %w", name, err)
 		}
 	}
+
 	selectedValue := options[selectedOptionDisplay]
 
 	return selectedValue, nil

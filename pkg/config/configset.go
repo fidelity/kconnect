@@ -116,6 +116,7 @@ func (s *configSet) ExistsWithValue(name string) bool {
 	}
 
 	val := item.Value.(string)
+
 	return !strings.HasPrefix(val, ListPrefix)
 }
 
@@ -130,6 +131,7 @@ func (s *configSet) ValueIsList(name string) bool {
 	}
 
 	val := s.ValueString(name)
+
 	return strings.HasPrefix(val, ListPrefix)
 }
 
@@ -171,6 +173,7 @@ func (s *configSet) Add(item *Item) error {
 	if exists {
 		return ErrConfigExistsAlready
 	}
+
 	s.config[item.Name] = item
 
 	return nil

@@ -89,7 +89,6 @@ func (p *staticTokenIdentityProvider) Authenticate(ctx context.Context, input *i
 	return &identity.AuthenticateOutput{
 		Identity: identity.NewTokenIdentity("static-token", cfg.Token, ProviderName),
 	}, nil
-
 }
 
 func (p *staticTokenIdentityProvider) validateConfig(cfg *providerConfig) error {
@@ -97,6 +96,7 @@ func (p *staticTokenIdentityProvider) validateConfig(cfg *providerConfig) error 
 	if err := validate.Struct(cfg); err != nil {
 		return fmt.Errorf("validating aad config: %w", err)
 	}
+
 	return nil
 }
 

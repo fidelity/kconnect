@@ -34,6 +34,7 @@ func CreateIDFromCreds(creds *awsconfig.AWSCredentials) (string, error) {
 	if creds.PrincipalARN == "" {
 		return "", ErrPrincipleARNRequired
 	}
+
 	h := fnv.New32a()
 	if _, err := h.Write([]byte(creds.PrincipalARN)); err != nil {
 		return "", fmt.Errorf("write to has function: %w", err)

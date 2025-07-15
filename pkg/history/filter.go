@@ -57,19 +57,23 @@ func FilterHistoryWithFuncs(list *historyv1alpha.HistoryEntryList, filterSpec *F
 	if list == nil {
 		return ErrListNil
 	}
+
 	if filterSpec == nil {
 		return ErrFilterSpecNil
 	}
+
 	if len(list.Items) == 0 {
 		return nil
 	}
 
 	entries := []historyv1alpha.HistoryEntry{}
+
 	for _, entry := range list.Items {
 		if FilterEntry(&entry, filterSpec, filterFucs) {
 			entries = append(entries, entry)
 		}
 	}
+
 	list.Items = entries
 
 	return nil
@@ -81,6 +85,7 @@ func FilterEntry(entry *historyv1alpha.HistoryEntry, filterSpec *FilterSpec, fil
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -88,6 +93,7 @@ func ByHistoryID(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.HistoryID == nil || *spec.HistoryID == "" {
 		return true
 	}
+
 	return equalsWithWildcard(*spec.HistoryID, entry.ObjectMeta.Name)
 }
 
@@ -95,6 +101,7 @@ func ByProviderID(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.ProviderID == nil || *spec.ProviderID == "" {
 		return true
 	}
+
 	return equalsWithWildcard(*spec.ProviderID, entry.Spec.ProviderID)
 }
 
@@ -102,6 +109,7 @@ func ByAlias(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 	if spec.Alias == nil || *spec.Alias == "" {
 		return true
 	}
+
 	return equalsWithWildcard(*spec.Alias, *entry.Spec.Alias)
 }
 
@@ -109,6 +117,7 @@ func ByClusterProvider(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) boo
 	if spec.ClusterProvider == nil || *spec.ClusterProvider == "" {
 		return true
 	}
+
 	return equalsWithWildcard(*spec.ClusterProvider, entry.Spec.Provider)
 }
 
@@ -116,6 +125,7 @@ func ByIdentityProvider(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bo
 	if spec.IdentityProvider == nil || *spec.IdentityProvider == "" {
 		return true
 	}
+
 	return equalsWithWildcard(*spec.IdentityProvider, entry.Spec.Identity)
 }
 
@@ -133,8 +143,10 @@ func entryHasFlags(entry *historyv1alpha.HistoryEntry, flags map[string]string) 
 		if !ok {
 			return false
 		}
+
 		return equalsWithWildcard(flagValue, entryValue)
 	}
+
 	return true
 }
 
@@ -142,28 +154,40 @@ func CreateFilterFromMap(filterMap map[string]string) *FilterSpec {
 	var alias, clusterProvider, historyID, identityProvider, kubeconfig, providerID string
 	if val, ok := filterMap["alias"]; ok {
 		alias = val
+
 		delete(filterMap, "alias")
 	}
+
 	if val, ok := filterMap["cluster-provider"]; ok {
 		clusterProvider = val
+
 		delete(filterMap, "cluster-provider")
 	}
+
 	if val, ok := filterMap["id"]; ok {
 		historyID = val
+
 		delete(filterMap, "id")
 	}
+
 	if val, ok := filterMap["identity-provider"]; ok {
 		identityProvider = val
+
 		delete(filterMap, "identity-provider")
 	}
+
 	if val, ok := filterMap["kubeconfig"]; ok {
 		kubeconfig = val
+
 		delete(filterMap, "kubeconfig")
 	}
+
 	if val, ok := filterMap["providerID"]; ok {
-		identityProvider = val
+		providerID = val
+
 		delete(filterMap, "providerID")
 	}
+
 	filterSpec := &FilterSpec{
 		Alias:            &alias,
 		ClusterProvider:  &clusterProvider,
@@ -178,8 +202,8 @@ func CreateFilterFromMap(filterMap map[string]string) *FilterSpec {
 }
 
 func equalsWithWildcard(s1, s2 string) bool {
-
 	regexString := "^" + strings.ReplaceAll(s1, "*", ".*") + "$"
 	regex := regexp.MustCompile(regexString)
+
 	return regex.MatchString(s2)
 }
