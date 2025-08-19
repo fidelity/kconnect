@@ -4,8 +4,8 @@ go 1.24.0
 
 require (
 	github.com/golang/mock v1.6.0
-	k8s.io/code-generator v0.33.3
 	github.com/golangci/golangci-lint/v2 v2.2.2
+	k8s.io/code-generator v0.33.4
 	sigs.k8s.io/controller-tools v0.18.0
 )
 
@@ -226,7 +226,7 @@ require (
 	honnef.co/go/tools v0.6.1 // indirect
 	k8s.io/api v0.33.0 // indirect
 	k8s.io/apiextensions-apiserver v0.33.0 // indirect
-	k8s.io/apimachinery v0.33.3 // indirect
+	k8s.io/apimachinery v0.33.4 // indirect
 	k8s.io/gengo/v2 v2.0.0-20250207200755-1244d31929d7 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
