@@ -10,7 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.30
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/aws/aws-sdk-go-v2 v1.38.0
-	github.com/aws/aws-sdk-go-v2/config v1.29.17
+	github.com/aws/aws-sdk-go-v2/config v1.31.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.4
 	github.com/aws/aws-sdk-go-v2/service/eks v1.70.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.46.0
