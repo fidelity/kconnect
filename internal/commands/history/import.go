@@ -72,10 +72,12 @@ func importCommand() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
 				return fmt.Errorf("getting common config: %w", err)
 			}
+
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -84,6 +86,7 @@ func importCommand() (*cobra.Command, error) {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zap.S().Debug("running `history import` command")
+
 			params := &app.HistoryImportInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
@@ -94,6 +97,7 @@ func importCommand() (*cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
+
 			store, err := history.NewStore(maxHistoryEntries, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)

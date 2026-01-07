@@ -239,7 +239,7 @@ func Choose(name, message string, required bool, optionsFn OptionsFunc) (string,
 	return selectedValue, nil
 }
 
-// Input will ask the user to enter a value
+// Confirm will ask the user to enter a value
 func Confirm(name, message string, required bool) (bool, error) {
 	confirmedValue := false
 	prompt := &survey.Confirm{

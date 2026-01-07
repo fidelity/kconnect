@@ -46,7 +46,7 @@ var (
 )
 
 type ObjectPrinter interface {
-	Print(in interface{}, writer io.Writer) error
+	Print(in any, writer io.Writer) error
 }
 
 func New(outputPrinter OutputPrinter) (ObjectPrinter, error) {
@@ -65,7 +65,7 @@ func New(outputPrinter OutputPrinter) (ObjectPrinter, error) {
 type jsonObjectPrinter struct {
 }
 
-func (p *jsonObjectPrinter) Print(in interface{}, writer io.Writer) error {
+func (p *jsonObjectPrinter) Print(in any, writer io.Writer) error {
 	inObj, ok := in.(runtime.Object)
 	if ok {
 		jsonprinter := &cliprint.JSONPrinter{}
@@ -85,7 +85,7 @@ func (p *jsonObjectPrinter) Print(in interface{}, writer io.Writer) error {
 type yamlObjectPrinter struct {
 }
 
-func (p *yamlObjectPrinter) Print(in interface{}, writer io.Writer) error {
+func (p *yamlObjectPrinter) Print(in any, writer io.Writer) error {
 	inObj, ok := in.(runtime.Object)
 	if ok {
 		yamlPrinter := &cliprint.YAMLPrinter{}
@@ -105,7 +105,7 @@ func (p *yamlObjectPrinter) Print(in interface{}, writer io.Writer) error {
 type tableObjectPrinter struct {
 }
 
-func (p *tableObjectPrinter) Print(in interface{}, writer io.Writer) error {
+func (p *tableObjectPrinter) Print(in any, writer io.Writer) error {
 	inObj, ok := in.(*metav1.Table)
 	if !ok {
 		return ErrTableRequired
@@ -166,7 +166,7 @@ func ConvertSliceToTable(columnName string, items []string) *metav1.Table {
 
 	for _, item := range items {
 		row := metav1.TableRow{
-			Cells: []interface{}{item},
+			Cells: []any{item},
 		}
 		table.Rows = append(table.Rows, row)
 	}

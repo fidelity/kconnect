@@ -60,10 +60,10 @@ type HistoryEntryStatus struct {
 // HistoryEntry represents a history entry
 type HistoryEntry struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata"`
 
-	Spec   HistoryEntrySpec   `json:"spec,omitempty"`
-	Status HistoryEntryStatus `json:"status,omitempty"`
+	Spec   HistoryEntrySpec   `json:"spec"`
+	Status HistoryEntryStatus `json:"status"`
 }
 
 // +kubebuilder:object:root=true
@@ -71,7 +71,7 @@ type HistoryEntry struct {
 // HistoryEntryList is a list of history entries
 type HistoryEntryList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
+	metav1.ListMeta `json:"metadata"`
 
 	Items []HistoryEntry `json:"items"`
 }
@@ -244,7 +244,7 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 		username := entry.Spec.Flags["username"]
 
 		row = metav1.TableRow{
-			Cells: []interface{}{
+			Cells: []any{
 				currentContextIndicator,
 				entry.ObjectMeta.Name,
 				*entry.Spec.Alias,

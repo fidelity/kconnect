@@ -69,10 +69,12 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
 				return fmt.Errorf("getting common config: %w", err)
 			}
+
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -81,6 +83,7 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zap.S().Debug("running `alias remove` command")
+
 			params := &app.AliasRemoveInput{}
 
 			if err := config.Unmarshall(cfg, params); err != nil {
@@ -91,6 +94,7 @@ func removeCommand() (*cobra.Command, error) { //nolint: dupl
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
+
 			store, err := history.NewStore(maxHistoryEntries, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)

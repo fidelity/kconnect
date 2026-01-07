@@ -49,10 +49,12 @@ func Command() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
 				return fmt.Errorf("getting common config: %w", err)
 			}
+
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -60,7 +62,8 @@ func Command() (*cobra.Command, error) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			zap.S().Debug("running `ls` command")
+			zap.S().Debug("running `logout` command")
+
 			input := &app.LogoutInput{}
 
 			if err := config.Unmarshall(cfg, input); err != nil {
@@ -71,6 +74,7 @@ func Command() (*cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", input.Location, err)
 			}
+
 			store, err := history.NewStore(input.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)

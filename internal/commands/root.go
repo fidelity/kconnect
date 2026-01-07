@@ -140,11 +140,13 @@ func RootCmd() (*cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("getting '--%s' flag: %w", app.ConfigPathConfigItem, err)
 			}
+
 			if configPath == "" {
 				if err := cmd.Flags().Set(app.ConfigPathConfigItem, defaults.ConfigPath()); err != nil {
 					return fmt.Errorf("setting '--%s' value: %w", app.ConfigPathConfigItem, err)
 				}
 			}
+
 			if err := flags.CopyFlagValue(app.NonInteractiveConfigItem, app.NoInputConfigItem, cmd.Flags(), true); err != nil {
 				return fmt.Errorf("copying flag value from %s to %s: %w", app.NonInteractiveConfigItem, app.NoInputConfigItem, err)
 			}
@@ -156,6 +158,7 @@ func RootCmd() (*cobra.Command, error) {
 			}
 
 			checkPrereqs()
+
 			return nil
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
@@ -163,6 +166,7 @@ func RootCmd() (*cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("getting common config: %w", err)
 			}
+
 			if !commonCfg.DisableVersionCheck {
 				if err := reportNewerVersion(); err != nil {
 					zap.S().Warnf("problem reporting newer version: %s", err.Error())

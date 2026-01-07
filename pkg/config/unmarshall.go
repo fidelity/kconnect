@@ -21,8 +21,8 @@ import (
 )
 
 // Unmarshall will unmarshall the ConfigurationSet into a struct
-func Unmarshall(cs ConfigurationSet, out interface{}) error {
-	items := make(map[string]interface{})
+func Unmarshall(cs ConfigurationSet, out any) error {
+	items := make(map[string]any)
 	for _, item := range cs.GetAll() {
 		items[item.Name] = item.Value
 	}

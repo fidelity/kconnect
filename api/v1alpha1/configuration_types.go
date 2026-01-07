@@ -72,7 +72,7 @@ type ListItem struct {
 type Configuration struct {
 	metav1.TypeMeta `json:",inline"`
 
-	Spec ConfigurationSpec `json:"spec,omitempty"`
+	Spec ConfigurationSpec `json:"spec"`
 }
 
 // NewConfiguration will create a new configuration
@@ -109,7 +109,7 @@ func (c *Configuration) ToTable() *metav1.Table {
 	if c.Spec.Global != nil {
 		convertedArgs := argsToString(c.Spec.Global)
 		row := metav1.TableRow{
-			Cells: []interface{}{"GLOBAL", convertedArgs},
+			Cells: []any{"GLOBAL", convertedArgs},
 		}
 		table.Rows = append(table.Rows, row)
 	}
@@ -117,7 +117,7 @@ func (c *Configuration) ToTable() *metav1.Table {
 	for providerKey, providerDefaults := range c.Spec.Providers {
 		convertedArgs := argsToString(providerDefaults)
 		row := metav1.TableRow{
-			Cells: []interface{}{providerKey, convertedArgs},
+			Cells: []any{providerKey, convertedArgs},
 		}
 		table.Rows = append(table.Rows, row)
 	}

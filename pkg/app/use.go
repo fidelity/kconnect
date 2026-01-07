@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -334,11 +335,5 @@ func isIdpSupported(idProviderName string, clusterProvider discovery.Provider) b
 	registration, _ := registry.GetDiscoveryProviderRegistration(clusterProvider.Name())
 	supportedIDProviders := registration.SupportedIdentityProviders
 
-	for _, supportedIDProvider := range supportedIDProviders {
-		if supportedIDProvider == idProviderName {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(supportedIDProviders, idProviderName)
 }

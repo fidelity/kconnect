@@ -25,7 +25,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
-// Get will get the details of a AKS cluster.
+// GetCluster will get the details of a AKS cluster.
 func (p *aksClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
 	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up aks provider: %w", err)

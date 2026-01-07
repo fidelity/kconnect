@@ -23,7 +23,7 @@ import (
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
 
-// Get will get the details of a Rancher cluster.
+// GetCluster will get the details of a Rancher cluster.
 func (p *rancherClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
 	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up rancher provider: %w", err)

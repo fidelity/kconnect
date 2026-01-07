@@ -30,7 +30,7 @@ const (
 	expectedNameParts = 2
 )
 
-// Get will get the details of a EKS cluster. The clusterID maps to a ARN
+// GetCluster will get the details of a EKS cluster. The clusterID maps to a ARN
 func (p *eksClusterProvider) GetCluster(ctx context.Context, input *discovery.GetClusterInput) (*discovery.GetClusterOutput, error) {
 	if err := p.setup(input.ConfigSet, input.Identity); err != nil {
 		return nil, fmt.Errorf("setting up eks provider: %w", err)

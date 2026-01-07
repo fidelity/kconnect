@@ -19,6 +19,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"maps"
 
 	"github.com/fidelity/kconnect/api/v1alpha1"
 	"github.com/fidelity/kconnect/pkg/flags"
@@ -47,7 +48,7 @@ type HistoryRemoveInput struct {
 	RemoveList []string
 }
 
-// AliasList implements the alias listing functionality
+// HistoryImport implements the history import functionality
 func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) error {
 	zap.S().Infow("importing history")
 
@@ -104,7 +105,7 @@ func (a *App) HistoryImport(ctx context.Context, input *HistoryImportInput) erro
 	return nil
 }
 
-// AliasList implements the alias listing functionality
+// HistoryExport implements the history export functionality
 func (a *App) HistoryExport(ctx context.Context, input *HistoryExportInput) error {
 	zap.S().Infow("exporting history")
 
@@ -197,9 +198,7 @@ func processEntry(entry *v1alpha1.HistoryEntry, overwriteFlags map[string]string
 	newEntry := v1alpha1.NewHistoryEntry()
 
 	newEntry.Spec = entry.Spec
-	for k, v := range overwriteFlags {
-		newEntry.Spec.Flags[k] = v
-	}
+	maps.Copy(newEntry.Spec.Flags, overwriteFlags)
 
 	return newEntry
 }

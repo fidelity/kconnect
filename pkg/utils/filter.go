@@ -22,8 +22,8 @@ import (
 func SurveyFilter(filter string, value string, index int) bool {
 	parsedFilter := regexp.MustCompile(`[\s]+`).ReplaceAllString(filter, "*")
 
-	subFilters := strings.Split(parsedFilter, "*")
-	for _, s := range subFilters {
+	subFilters := strings.SplitSeq(parsedFilter, "*")
+	for s := range subFilters {
 		if !strings.Contains(strings.ToLower(value), strings.ToLower(s)) && s != "" {
 			return false
 		}
