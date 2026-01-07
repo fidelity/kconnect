@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Taken from saml2aws
+// LocateConfigFile - Taken from saml2aws
 func LocateConfigFile() (string, error) {
 	filename := os.Getenv("AWS_SHARED_CREDENTIALS_FILE")
 

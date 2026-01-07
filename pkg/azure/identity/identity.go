@@ -195,7 +195,7 @@ func (a *ActiveDirectoryIdentity) Clone(opts ...CloneOption) *ActiveDirectoryIde
 	return copyID
 }
 
-// Clone represents an option to use when cloning a ActiveDirectoryIdentity
+// CloneOption represents an option to use when cloning a ActiveDirectoryIdentity
 type CloneOption func(*ActiveDirectoryIdentity)
 
 func WithClientID(clientID string) CloneOption {

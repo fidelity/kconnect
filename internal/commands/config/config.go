@@ -73,10 +73,12 @@ func Command() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
 			commonCfg, err := helpers.GetCommonConfig(cmd, cfg)
 			if err != nil {
 				return fmt.Errorf("getting common config: %w", err)
 			}
+
 			if err := config.ApplyToConfigSet(commonCfg.ConfigFile, cfg); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -91,6 +93,7 @@ func Command() (*cobra.Command, error) {
 			}
 
 			a := app.New()
+
 			return a.Configuration(cmd.Context(), input)
 		},
 	}

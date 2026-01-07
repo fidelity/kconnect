@@ -17,8 +17,8 @@ type historyListMatcher struct {
 	expected *historyv1alpha.HistoryEntryList
 }
 
-func (m historyListMatcher) Matches(x interface{}) bool {
-	if !reflect.TypeOf(x).AssignableTo(reflect.TypeOf(m.expected)) {
+func (m historyListMatcher) Matches(x any) bool {
+	if !reflect.TypeOf(x).AssignableTo(reflect.TypeFor[*historyv1alpha.HistoryEntryList]()) {
 		return false
 	}
 

@@ -192,8 +192,8 @@ func ParseFlagMultiValueToMap(flag string) map[string]string {
 	flagsMap := make(map[string]string)
 
 	if flag != "" {
-		setFlagsArray := strings.Split(flag, ",")
-		for _, e := range setFlagsArray {
+		setFlagsArray := strings.SplitSeq(flag, ",")
+		for e := range setFlagsArray {
 			parts := strings.Split(e, "=")
 			flagsMap[parts[0]] = parts[1]
 		}

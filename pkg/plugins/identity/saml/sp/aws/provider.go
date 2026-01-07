@@ -270,6 +270,7 @@ func (p *ServiceProvider) filterAccounts(accounts []*saml2aws.AWSAccount, roleFi
 	}
 
 	filtered := []*saml2aws.AWSAccount{}
+
 	for _, account := range accounts {
 		filteredAccount := &saml2aws.AWSAccount{
 			Name:  account.Name,

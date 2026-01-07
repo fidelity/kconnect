@@ -90,6 +90,7 @@ func Command() (*cobra.Command, error) {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, cfg)
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -99,6 +100,7 @@ func Command() (*cobra.Command, error) {
 			if len(args) > 0 {
 				aliasOrIDORPosition = args[0]
 			}
+
 			input := &app.ConnectToInput{
 				AliasOrIDORPosition: aliasOrIDORPosition,
 			}
@@ -113,6 +115,7 @@ func Command() (*cobra.Command, error) {
 			}
 			// using to command should never increase number of history items, so set to arbitrary large number
 			input.MaxItems = 10000
+
 			store, err := history.NewStore(input.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)

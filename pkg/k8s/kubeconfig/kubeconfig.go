@@ -18,6 +18,7 @@ package kubeconfig
 
 import (
 	"fmt"
+	"maps"
 
 	"go.uber.org/zap"
 
@@ -45,17 +46,11 @@ func Write(path string, clusterConfig *api.Config, merge, setCurrent bool) error
 
 		zap.S().Debug("merging kubeconfig files")
 
-		for k, v := range clusterConfig.Clusters {
-			existingConfig.Clusters[k] = v
-		}
+		maps.Copy(existingConfig.Clusters, clusterConfig.Clusters)
 
-		for k, v := range clusterConfig.AuthInfos {
-			existingConfig.AuthInfos[k] = v
-		}
+		maps.Copy(existingConfig.AuthInfos, clusterConfig.AuthInfos)
 
-		for k, v := range clusterConfig.Contexts {
-			existingConfig.Contexts[k] = v
-		}
+		maps.Copy(existingConfig.Contexts, clusterConfig.Contexts)
 
 		newConfig = existingConfig
 	} else {

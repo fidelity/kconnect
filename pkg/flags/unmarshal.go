@@ -41,7 +41,7 @@ var (
 )
 
 // Unmarshal will decode the flagset into the out interface
-func Unmarshal(flagset *pflag.FlagSet, out interface{}, opts ...BinderOption) error {
+func Unmarshal(flagset *pflag.FlagSet, out any, opts ...BinderOption) error {
 	b := newFlagBinder(opts...)
 	return b.Unmarshal(flagset, out)
 }
@@ -74,7 +74,7 @@ type flagBinder struct {
 }
 
 // Unmarshal will decode the flagset into the out structure
-func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out interface{}) error {
+func (b *flagBinder) Unmarshal(flagset *pflag.FlagSet, out any) error {
 	rv := reflect.ValueOf(out)
 
 	if rv.Kind() != reflect.Ptr {

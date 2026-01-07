@@ -36,8 +36,8 @@ type Item struct {
 	Description       string
 	Sensitive         bool
 	ResolutionPrompt  string
-	Value             interface{}
-	DefaultValue      interface{}
+	Value             any
+	DefaultValue      any
 	Required          bool
 	Hidden            bool
 	Deprecated        bool
@@ -83,7 +83,7 @@ type ConfigurationSet interface {
 	SetRequired(name string) error
 	SetHidden(name string) error
 	SetDeprecated(name string, message string) error
-	SetValue(name string, value interface{}) error
+	SetValue(name string, value any) error
 	SetShort(name string, shorthand string) error
 
 	String(name string, defaultValue string, description string) (*Item, error)
@@ -251,7 +251,7 @@ func (s *configSet) SetDeprecated(name string, message string) error {
 	return nil
 }
 
-func (s *configSet) SetValue(name string, value interface{}) error {
+func (s *configSet) SetValue(name string, value any) error {
 	item := s.Get(name)
 	if item == nil {
 		return ErrConfigNotFound

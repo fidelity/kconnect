@@ -174,10 +174,12 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			flags.BindFlags(cmd)
 			flags.PopulateConfigFromCommand(cmd, params.ConfigSet)
+
 			commonCfg, err := helpers.GetCommonConfig(cmd, params.ConfigSet)
 			if err != nil {
 				return fmt.Errorf("getting common config: %w", err)
 			}
+
 			if err := config.ApplyToConfigSetWithProvider(commonCfg.ConfigFile, params.ConfigSet, registration.Name); err != nil {
 				return fmt.Errorf("applying app config: %w", err)
 			}
@@ -185,6 +187,7 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 			if err := config.Unmarshall(params.ConfigSet, params); err != nil {
 				return fmt.Errorf("unmarshalling config into use params: %w", err)
 			}
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -198,6 +201,7 @@ func createProviderCmd(registration *registry.DiscoveryPluginRegistration) (*cob
 			if err != nil {
 				return fmt.Errorf("getting history loader with path %s: %w", params.Location, err)
 			}
+
 			store, err := history.NewStore(params.MaxItems, historyLoader)
 			if err != nil {
 				return fmt.Errorf("creating history store: %w", err)

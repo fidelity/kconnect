@@ -39,19 +39,17 @@ func CheckKubectlPrereq() error {
 
 	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("error finding kubectl: %w", err)
+		return fmt.Errorf("error running kubectl version: %w", err)
 	}
 
 	var kubectlVersion KubectlVersion
 
 	err = json.Unmarshal(output, &kubectlVersion)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking for kubectl version: %w", err)
 	}
 
-	if err != nil {
-		return fmt.Errorf("error checking for kubectl: %w", err)
-	} else if semver.Compare(kubectlVersion.ClientVersion.GitVersion, minKubectlVersion) < 0 {
+	if semver.Compare(kubectlVersion.ClientVersion.GitVersion, minKubectlVersion) < 0 {
 		return ErrorTooLowKubectlVersion
 	}
 
