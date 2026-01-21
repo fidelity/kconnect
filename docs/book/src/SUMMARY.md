@@ -19,3 +19,4 @@
   - [version](./commands/version.md)
 - [Releasing kconnect](./release.md)
 - [Contributing](./contributing.md)
+- [Architecture](./architecture.md)
