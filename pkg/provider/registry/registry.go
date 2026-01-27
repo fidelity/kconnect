@@ -131,7 +131,7 @@ func ListDiscoveryPluginRegistrations() []*DiscoveryPluginRegistration {
 	pluginsLock.Lock()
 	defer pluginsLock.Unlock()
 
-	plugins := []*DiscoveryPluginRegistration{}
+	plugins := make([]*DiscoveryPluginRegistration, 0, len(discoveryPlugins))
 	for _, registration := range discoveryPlugins {
 		plugins = append(plugins, registration)
 	}
@@ -143,7 +143,7 @@ func ListIdentityPluginRegistrations() []*IdentityPluginRegistration {
 	pluginsLock.Lock()
 	defer pluginsLock.Unlock()
 
-	plugins := []*IdentityPluginRegistration{}
+	plugins := make([]*IdentityPluginRegistration, 0, len(identityPlugins))
 	for _, registration := range identityPlugins {
 		plugins = append(plugins, registration)
 	}

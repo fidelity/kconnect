@@ -160,7 +160,7 @@ func (s *configSet) Get(name string) *Item {
 }
 
 func (s *configSet) GetAll() []*Item {
-	items := []*Item{}
+	items := make([]*Item, 0, len(s.config))
 	for _, item := range s.config {
 		items = append(items, item)
 	}

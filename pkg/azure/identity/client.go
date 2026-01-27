@@ -342,7 +342,7 @@ func formatXMLText(s string) (string, error) {
 func (c *AzureADClient) encodeQueryParams(params map[string]string) string {
 	var buffer bytes.Buffer
 
-	keys := []string{}
+	keys := make([]string, 0, len(params))
 
 	for k := range params {
 		keys = append(keys, k)
