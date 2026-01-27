@@ -124,7 +124,7 @@ func WithInteractive(interactive bool) Option {
 // a selection is displayed and the user must choose one
 func DefaultSelectCluster(discoverOutput *discovery.DiscoverOutput) (*discovery.Cluster, error) {
 	clusterNameToID := make(map[string]string)
-	options := []string{}
+	options := make([]string, 0, len(discoverOutput.Clusters))
 
 	for _, cluster := range discoverOutput.Clusters {
 		clusterNameToID[cluster.Name] = cluster.ID

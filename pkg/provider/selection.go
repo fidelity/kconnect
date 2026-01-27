@@ -29,7 +29,7 @@ import (
 type SelectItemFunc func(prompt string, items map[string]string) (string, error)
 
 func DefaultItemSelection(promptMessage string, items map[string]string) (string, error) {
-	options := []string{}
+	options := make([]string, 0, len(items))
 
 	for key := range items {
 		options = append(options, key)

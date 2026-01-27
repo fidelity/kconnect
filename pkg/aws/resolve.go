@@ -68,8 +68,9 @@ func ResolveRegion(cfg config.ConfigurationSet) error {
 		regionFilter = regionFilterCfg.Value.(string)
 	}
 
-	options := []string{}
-	options = append(options, ResolvePartitionRegions(partitionID)...)
+	partitionList := ResolvePartitionRegions(partitionID)
+	options := make([]string, 0, len(partitionList))
+	options = append(options, partitionList...)
 
 	options, err := utils.RegexFilter(options, regionFilter)
 	if err != nil {
