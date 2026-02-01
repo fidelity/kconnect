@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eks v1.77.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.53.2
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.6
-	github.com/beevik/etree v1.5.1
+	github.com/beevik/etree v1.6.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/brianvoe/gofakeit/v5 v5.11.2
 	github.com/go-playground/validator/v10 v10.27.0
