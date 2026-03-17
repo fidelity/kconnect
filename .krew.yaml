@@ -7,13 +7,13 @@ spec:
   homepage: https://github.com/fidelity/kconnect
   shortDescription: "Discover and access clusters"
   description: |
-    kconnect is a tool that can be used to discover and securely access Kubernetes 
+    kconnect is a tool that can be used to discover and securely access Kubernetes
     clusters across multiple operating environments.
-    Based on the authentication mechanism chosen the CLI will discover Kubernetes 
-    clusters you are allowed to access in a target hosting environment (i.e. EKS, AKS, Rancher) 
+    Based on the authentication mechanism chosen the CLI will discover Kubernetes
+    clusters you are allowed to access in a target hosting environment (i.e. EKS, AKS, Rancher)
     and generate a kubeconfig for a chosen cluster.
     Features:
-    - Authenticate using SAML or Azure Active Directory 
+    - Authenticate using SAML or Azure Active Directory
     - Discover EKS, AKS & Rancher clusters
     - Generate a kubeconfig for a cluster
     - Query history of connected servers
@@ -59,7 +59,7 @@ spec:
       matchLabels:
         os: darwin
         arch: arm64
-    {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_macos_amd64.tar.gz" .TagName }}
+    {{addURIAndSha "https://github.com/fidelity/kconnect/releases/download/{{ .TagName }}/kconnect_macos_arm64.tar.gz" .TagName }}
     files:
     - from: "kconnect"
       to: "kubectl-connect"
