@@ -31,6 +31,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
+const (
+	StringType = "string"
+)
+
 // HistoryEntrySpec represents a history item
 type HistoryEntrySpec struct {
 	// Provider is the name of the discovery provider
@@ -199,35 +203,35 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{
 				Name: "Cur",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "Id",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "Alias",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "Provider",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "ProviderID",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "Identity",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "User",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "Time left",
-				Type: "String",
+				Type: StringType,
 			},
 		},
 	}

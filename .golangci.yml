@@ -31,6 +31,7 @@ linters:
     - gocritic
     - godot
     - godox
+    - gomodguard
     - gosec
     - gosmopolitan
     - govet

@@ -97,11 +97,11 @@ func (c *Configuration) ToTable() *metav1.Table {
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{
 				Name: "Provider",
-				Type: "string",
+				Type: StringType,
 			},
 			{
 				Name: "App Defaults",
-				Type: "string",
+				Type: StringType,
 			},
 		},
 	}
