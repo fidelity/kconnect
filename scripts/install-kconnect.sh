@@ -143,7 +143,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     chmod +x kubelogin
     chmod +x kubectl-oidc_login
 
-elif [[ "$OSTYPE" == "msys" ]]; then
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     # Win git bash
 
     kconnect_url=$(echo "https://github.com/fidelity/kconnect/releases/download/TAG/kconnect_windows_amd64.zip" | sed "s/TAG/$latest_kconnect_release_tag/" )
