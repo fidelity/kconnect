@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.34
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.33
 	github.com/aws/aws-sdk-go-v2/service/eks v1.77.0
-	github.com/aws/aws-sdk-go-v2/service/iam v1.53.2
+	github.com/aws/aws-sdk-go-v2/service/iam v1.57.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.45.3
 	github.com/beevik/etree v1.6.0
 	github.com/blang/semver v3.5.1+incompatible
