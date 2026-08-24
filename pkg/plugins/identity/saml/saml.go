@@ -37,10 +37,10 @@ import (
 )
 
 var (
-	ErrNoClusterProvider  = errors.New("no cluster provider on the context")
-	ErrUnsuportedProvider = errors.New("cluster provider not supported")
-	ErrNoSAMLAssertions   = errors.New("no SAML assertions")
-	ErrCreatingAccount    = errors.New("creating account")
+	ErrNoClusterProvider   = errors.New("no cluster provider on the context")
+	ErrUnsupportedProvider = errors.New("cluster provider not supported")
+	ErrNoSAMLAssertions    = errors.New("no SAML assertions")
+	ErrCreatingAccount     = errors.New("creating account")
 )
 
 const (
@@ -232,7 +232,7 @@ func (p *samlIdentityProvider) createIdentityStore(cfg config.ConfigurationSet) 
 		awsCredsFile := awsCredsFileCfg.Value.(string)
 		store, err = kaws.NewIdentityStore(profile, ProviderName, awsCredsFile)
 	default:
-		return nil, ErrUnsuportedProvider
+		return nil, ErrUnsupportedProvider
 	}
 
 	if err != nil {
@@ -247,7 +247,7 @@ func createServiceProvider(clusterProviderName string, itemSelector provider.Sel
 	case "eks":
 		return aws.NewServiceProvider(itemSelector), nil
 	default:
-		return nil, ErrUnsuportedProvider
+		return nil, ErrUnsupportedProvider
 	}
 }
 

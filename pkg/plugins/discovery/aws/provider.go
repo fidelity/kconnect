@@ -55,7 +55,7 @@ func init() {
 			ConfigurationItemsFunc: ConfigurationItems,
 		},
 		CreateFunc:                 New,
-		SupportedIdentityProviders: []string{"aws-iam", "saml"},
+		SupportedIdentityProviders: []string{"aws-iam", "saml", "entraid-oauth"},
 	}); err != nil {
 		zap.S().Fatalw("Failed to register EKS discovery plugin", "error", err)
 	}
