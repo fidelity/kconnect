@@ -39,7 +39,7 @@ kconnect use eks [flags]
 
   # Discover an EKS cluster and add an alias to its connection history entry
   kconnect use eks --alias mycluster
-
+  
   # Reconnect to a cluster by its connection history entry alias.
   kconnect to mycluster
 
@@ -105,6 +105,25 @@ Use `--idp-protocol=saml`
       --idp-provider string   the name of the idp provider
       --partition string      AWS partition to use (default "aws")
       --region string         AWS region to connect to
+```
+
+#### ENTRAID-OAUTH Options
+
+Use `--idp-protocol=entraid-oauth`
+
+```bash
+      --client-id string           The client id of the Entra ID app registration
+      --client-secret string       The client secret of the Entra ID app registration (client_credentials only)
+      --grant-type string          The OAuth2 grant type to use: password or client_credentials (default "password")
+      --partition string           AWS partition to use (default "aws")
+      --password string            The password to authenticate with (password grant only)
+      --region string              AWS region to connect to
+      --role-arn string            The ARN of the AWS IAM role to assume via AssumeRoleWithWebIdentity
+      --role-session-name string   The role session name to use when assuming the AWS IAM role (default "kconnect")
+      --scope string               The OAuth2 scope to request from Entra ID (e.g. api://<app-id>/AssumeRoleWithWebIdentity)
+      --session-duration int       The duration, in seconds, of the requested AWS STS session (default 3600)
+      --tenant-id string           The Entra ID (Azure AD) tenant id
+      --username string            The username to authenticate with (password grant only)
 ```
 
 ### SEE ALSO

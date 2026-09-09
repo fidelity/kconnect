@@ -257,6 +257,7 @@ func (p *oauthIdentityProvider) Authenticate(ctx context.Context, input *identit
 	if input.ConfigSet.ExistsWithValue(awsCredentialsFileConfigKey) {
 		awsSharedCredentialsFile = input.ConfigSet.Get(awsCredentialsFileConfigKey).Value.(string)
 	}
+
 	p.logger.Debugw("using aws shared credentials file", "file", awsSharedCredentialsFile)
 
 	awsIdentity := kaws.MapCredsToIdentity(awsCreds, profileName, awsSharedCredentialsFile)
@@ -482,7 +483,7 @@ func rolesFromAWSRolesClaim(rawRoles any) ([]awsRole, error) {
 			continue
 		}
 
-		roleARN := strings.SplitN(entry, ",", 2)[0]
+		roleARN, _, _ := strings.Cut(entry, ",")
 
 		matches := arnRoleRegex.FindStringSubmatch(roleARN)
 		if len(matches) != arnRoleRegexMatchCount {
