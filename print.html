@@ -945,6 +945,21 @@ token.</p>
       --partition string      AWS partition to use (default &quot;aws&quot;)
       --region string         AWS region to connect to
 </code></pre>
+<h4><a class="header" href="#entraid-oauth-options" id="entraid-oauth-options">ENTRAID-OAUTH Options</a></h4>
+<p>Use <code>--idp-protocol=entraid-oauth</code></p>
+<pre><code class="language-bash">      --client-id string           The client id of the Entra ID app registration
+      --client-secret string       The client secret of the Entra ID app registration (client_credentials only)
+      --grant-type string          The OAuth2 grant type to use: password or client_credentials (default &quot;password&quot;)
+      --partition string           AWS partition to use (default &quot;aws&quot;)
+      --password string            The password to authenticate with (password grant only)
+      --region string              AWS region to connect to
+      --role-arn string            The ARN of the AWS IAM role to assume via AssumeRoleWithWebIdentity
+      --role-session-name string   The role session name to use when assuming the AWS IAM role (default &quot;kconnect&quot;)
+      --scope string               The OAuth2 scope to request from Entra ID (e.g. api://&lt;app-id&gt;/AssumeRoleWithWebIdentity)
+      --session-duration int       The duration, in seconds, of the requested AWS STS session (default 3600)
+      --tenant-id string           The Entra ID (Azure AD) tenant id
+      --username string            The username to authenticate with (password grant only)
+</code></pre>
 <h3><a class="header" href="#see-also-10" id="see-also-10">SEE ALSO</a></h3>
 <ul>
 <li><a href="commands/use.html">kconnect use</a>	 - Connect to a Kubernetes cluster provider and cluster.</li>
