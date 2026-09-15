@@ -46,6 +46,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	ststypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 
@@ -68,10 +69,11 @@ const (
 
 	defaultSessionDuration = 3600
 
-	tenantIDConfigKey     = "tenant-id"
-	clientIDConfigKey     = "client-id"
-	clientSecretConfigKey = "client-secret"
-	roleARNConfigKey      = "role-arn"
+	tenantIDConfigKey      = "tenant-id"
+	clientIDConfigKey      = "client-id"
+	clientSecretConfigKey  = "client-secret"
+	roleARNConfigKey       = "role-arn"
+	assumeRoleARNConfigKey = "assume-role-arn"
 
 	grantTypeConfigKey         = "grant-type"
 	grantTypePassword          = "password"
@@ -182,6 +184,7 @@ type oauthConfig struct {
 	GrantType       string `json:"grant-type"        validate:"required,oneof=password client_credentials"`
 	Scope           string `json:"scope"             validate:"required"`
 	RoleARN         string `json:"role-arn"`
+	AssumeRoleARN   string `json:"assume-role-arn"`
 	RoleSessionName string `json:"role-session-name" validate:"required"`
 	Region          string `json:"region"`
 	SessionDuration int    `json:"session-duration"`
@@ -240,6 +243,19 @@ func (p *oauthIdentityProvider) Authenticate(ctx context.Context, input *identit
 	awsCreds, err := p.assumeRoleWithWebIdentity(ctx, cfg, token)
 	if err != nil {
 		return nil, fmt.Errorf("assuming role with web identity: %w", err)
+	}
+
+	// Optional second STS hop: mirrors the "saml" identity provider's
+	// --assume-role-arn behavior, allowing a user to log in via one IAM role
+	// (e.g. a shared hub role) and then assume a second, distinct IAM role
+	// (e.g. into a spoke account).
+	if cfg.AssumeRoleARN != "" {
+		awsCreds, err = p.assumeRole(ctx, cfg, awsCreds)
+		if err != nil {
+			return nil, fmt.Errorf("assuming role in AWS: %w", err)
+		}
+
+		p.logger.Debugw("role assumed", "assume-role", cfg.AssumeRoleARN)
 	}
 
 	identifier, err := kaws.CreateIDFromCreds(awsCreds)
@@ -598,6 +614,48 @@ func (p *oauthIdentityProvider) assumeRoleWithWebIdentity(ctx context.Context, c
 	}, nil
 }
 
+// assumeRole performs a second STS hop, assuming cfg.AssumeRoleARN using the
+// temporary credentials obtained from AssumeRoleWithWebIdentity. This mirrors
+// the "saml" identity provider's --assume-role-arn behavior, allowing users
+// to log in via one IAM role (e.g. a shared hub role) and then assume a
+// second, distinct IAM role (e.g. into a spoke account).
+func (p *oauthIdentityProvider) assumeRole(ctx context.Context, cfg *oauthConfig, awsCreds *saml2awsconfig.AWSCredentials) (*saml2awsconfig.AWSCredentials, error) {
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion(cfg.Region),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			awsCreds.AWSAccessKey,
+			awsCreds.AWSSecretKey,
+			awsCreds.AWSSessionToken,
+		)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("creating aws session: %w", err)
+	}
+
+	params := &sts.AssumeRoleInput{
+		RoleArn:         aws.String(cfg.AssumeRoleARN),
+		RoleSessionName: aws.String(cfg.RoleSessionName),
+		DurationSeconds: aws.Int32(int32(cfg.SessionDuration)),
+	}
+
+	p.logger.Info("requesting AWS credentials using assume role")
+
+	resp, err := sts.NewFromConfig(awsCfg).AssumeRole(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("retrieving STS credentials using assume role: %w", err)
+	}
+
+	return &saml2awsconfig.AWSCredentials{
+		AWSAccessKey:     aws.ToString(resp.Credentials.AccessKeyId),
+		AWSSecretKey:     aws.ToString(resp.Credentials.SecretAccessKey),
+		AWSSessionToken:  aws.ToString(resp.Credentials.SessionToken),
+		AWSSecurityToken: aws.ToString(resp.Credentials.SessionToken),
+		PrincipalARN:     aws.ToString(resp.AssumedRoleUser.Arn),
+		Expires:          resp.Credentials.Expiration.Local(),
+		Region:           cfg.Region,
+	}, nil
+}
+
 // ConfigurationItems will return the configuration items for the identity plugin
 func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
@@ -610,6 +668,7 @@ func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs.String(grantTypeConfigKey, grantTypePassword, "The OAuth2 grant type to use: password or client_credentials")     //nolint: errcheck
 	cs.String("scope", "", "The OAuth2 scope to request from Entra ID (e.g. api://<app-id>/AssumeRoleWithWebIdentity)")  //nolint: errcheck
 	cs.String(roleARNConfigKey, "", "The ARN of the AWS IAM role to assume via AssumeRoleWithWebIdentity")               //nolint: errcheck
+	cs.String(assumeRoleARNConfigKey, "", "The ARN of a second AWS IAM role to assume after role-arn (optional)")        //nolint: errcheck
 	cs.String("role-session-name", "kconnect", "The role session name to use when assuming the AWS IAM role")            //nolint: errcheck
 	cs.Int("session-duration", defaultSessionDuration, "The duration, in seconds, of the requested AWS STS session")     //nolint: errcheck
 

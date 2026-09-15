@@ -270,7 +270,7 @@ func getTimeLeft(entry *HistoryEntry) string {
 
 	var err error
 
-	if entry.Spec.Provider == "eks" && entry.Spec.Identity == "saml" {
+	if entry.Spec.Provider == "eks" && (entry.Spec.Identity == "saml" || entry.Spec.Identity == "entraid-oauth") {
 		expiresTime, err = htime.GetExpireTimeFromAWSCredentials(entry.Spec.Flags["aws-profile"])
 		if err != nil {
 			return ""
