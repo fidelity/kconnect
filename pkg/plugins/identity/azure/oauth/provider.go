@@ -238,6 +238,13 @@ func (p *oauthIdentityProvider) Authenticate(ctx context.Context, input *identit
 		return nil, fmt.Errorf("resolving role-arn: %w", err)
 	}
 
+	// Check for groups overage even when role-arn was supplied directly:
+	// the token still needs a groups/roles claim for STS
+	// sts:RoleAuthorizedByIdp to evaluate to true.
+	if hasGroupsOverage(token) {
+		return nil, fmt.Errorf("assuming role with web identity: %w", ErrGroupsOverage)
+	}
+
 	cfg.RoleARN = roleARN
 
 	awsCreds, err := p.assumeRoleWithWebIdentity(ctx, cfg, token)
@@ -292,6 +299,17 @@ func (p *oauthIdentityProvider) Authenticate(ctx context.Context, input *identit
 	return &identity.AuthenticateOutput{
 		Identity: awsIdentity,
 	}, nil
+}
+
+func hasGroupsOverage(token string) bool {
+	claims := jwt.MapClaims{}
+	if _, _, err := jwt.NewParser().ParseUnverified(token, claims); err != nil {
+		return false
+	}
+
+	_, overage := claims["_claim_names"]
+
+	return overage
 }
 
 func (p *oauthIdentityProvider) validateConfig(cfg *oauthConfig) error {
