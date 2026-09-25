@@ -503,9 +503,19 @@ func (p *oauthIdentityProvider) rolesFromToken(token string) ([]awsRole, error) 
 // "<role-arn>,<provider-arn>" string (the SAML convention) only the role
 // ARN portion is used, since AssumeRoleWithWebIdentity has no use for a SAML
 // provider ARN.
+//
+// Note: Entra ID emits this claim as a JSON array when a user has multiple
+// assumable roles, but as a bare string when they only have a single role.
+// Both shapes are normalised to a slice of entries here.
 func rolesFromAWSRolesClaim(rawRoles any) ([]awsRole, error) {
-	entries, ok := rawRoles.([]any)
-	if !ok {
+	var entries []any
+
+	switch v := rawRoles.(type) {
+	case []any:
+		entries = v
+	case string:
+		entries = []any{v}
+	default:
 		return nil, fmt.Errorf("unexpected type for %s claim: %T", awsRolesClaim, rawRoles)
 	}
 
