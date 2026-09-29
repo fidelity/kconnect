@@ -1,9 +1,11 @@
 name: labeler
 
-on: [pull_request]
+on: [pull_request_target]
 
 jobs:
   labeler:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     name: Label the PR size
     steps:
