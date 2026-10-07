@@ -2,9 +2,47 @@
 
 set -e
 
-echo "creating directory kconnect"
-mkdir -p kconnect
-cd kconnect
+# resolve_install_dir echoes a directory that is already on the default PATH
+# for the current OS whenever possible, so the user doesn't have to edit
+# their PATH environment variable manually after this script finishes.
+resolve_install_dir() {
+    case "$OSTYPE" in
+        linux-gnu*|darwin*)
+            if [ -d "/usr/local/bin" ] && [ -w "/usr/local/bin" ]; then
+                echo "/usr/local/bin"
+            else
+                # Fall back to a user-writable directory. This is on PATH by
+                # default on most modern Linux distros, but not on macOS, so
+                # we check for that below and warn the user if needed.
+                echo "$HOME/.local/bin"
+            fi
+            ;;
+        msys*|cygwin*)
+            # Already on PATH by default on Windows 10/11 and user-writable
+            # without admin rights.
+            echo "${LOCALAPPDATA}/Microsoft/WindowsApps"
+            ;;
+        *)
+            echo "$HOME/.local/bin"
+            ;;
+    esac
+}
+
+install_dir=$(resolve_install_dir)
+mkdir -p "$install_dir"
+
+case ":$PATH:" in
+    *":$install_dir:"*)
+        ;;
+    *)
+        echo "NOTE: $install_dir is not currently in your PATH."
+        echo "Add it by appending this line to your shell profile (e.g. ~/.bashrc, ~/.zshrc, or \$PROFILE for PowerShell) and opening a new terminal:"
+        echo "  export PATH=\"\$PATH:$install_dir\""
+        ;;
+esac
+
+echo "installing binaries to: $install_dir"
+cd "$install_dir"
 
 latest_kconnect_release_tag=$(curl -fsSLI -o /dev/null -w %{url_effective} https://github.com/fidelity/kconnect/releases/latest | sed 's#.*/##')
 latest_kubectl_release_tag=$(curl -k -L --silent https://dl.k8s.io/release/stable.txt)
@@ -189,3 +227,6 @@ elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     rm -rf bin
 
 fi
+
+echo ""
+echo "kconnect and its dependencies have been installed to: $install_dir"
