@@ -71,6 +71,34 @@ brews:
       - kubernetes-cli
     directory: Formula
 
+krews:
+  -
+    name: connect
+    ids:
+      - default
+    homepage: "https://github.com/fidelity/kconnect"
+    short_description: "Discover and access clusters"
+    description: |
+      kconnect is a tool that can be used to discover and securely access Kubernetes
+      clusters across multiple operating environments.
+      Based on the authentication mechanism chosen the CLI will discover Kubernetes
+      clusters you are allowed to access in a target hosting environment (i.e. EKS, AKS, Rancher)
+      and generate a kubeconfig for a chosen cluster.
+      Features:
+      - Authenticate using SAML or Azure Active Directory
+      - Discover EKS, AKS & Rancher clusters
+      - Generate a kubeconfig for a cluster
+      - Query history of connected servers
+      - Regenerate the kubeconfig from your history by using an id or an alias
+      - Import defaults values for your company
+    caveats: "This plugin currently only supports EKS, AKS and Rancher"
+    commit_msg_template: "Krew plugin update for {{ .ProjectName }} version {{ .Tag }}"
+    repository:
+      owner: fidelity
+      name: krew-index
+      pull_request:
+        enabled: true
+
 dockers:
   -
     image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"]
