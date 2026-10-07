@@ -60,7 +60,7 @@ const (
 The kconnect tool uses a pre-configured Identity Provider to log in to one or
 more managed Kubernetes cluster providers, discovers the list of clusters
 visible to your authenticated user and options, and generates a kubectl
-configutation context for the selected cluster.
+configuration context for the selected cluster.
 
 Most kubectl contexts include an authentication token which kubectl sends to
 Kubernetes with each request rather than a username and password to establish
@@ -89,7 +89,7 @@ for that cluster.
   #
   {{.CommandPath}} config -f FILE_OR_URL
 
-  # Create a kubectl confirguration context for an AWS EKS cluster.
+  # Create a kubectl configuration context for an AWS EKS cluster.
   #
   # Use this command the first time you connect to a new cluster or a new context.
   #
@@ -365,9 +365,9 @@ func reportNewerVersion() error {
 		fmt.Fprintf(os.Stderr, "%sTo install as a kubectl plugin:%s", yellowColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tkubectl krew index add fidelity https://github.com/fidelity/krew-index.git%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tkubectl krew install fidelity/connect%s", boldGreenColor, endString)
-		fmt.Fprintf(os.Stderr, "%sYou can also use kconnect via Docker by using the images we publish to Docker Hub:%s", yellowColor, endString)
-		fmt.Fprintf(os.Stderr, "%s\tdocker pull docker.io/kconnectcli/kconnect:latest%s", boldGreenColor, endString)
-		fmt.Fprintf(os.Stderr, "%s\tdocker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%sYou can also use kconnect via Docker by using the images we publish to the GitHub Container Registry:%s", yellowColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tdocker pull ghcr.io/fidelity/kconnect:latest%s", boldGreenColor, endString)
+		fmt.Fprintf(os.Stderr, "%s\tdocker run -it --rm -v ~/.kconnect:/.kconnect ghcr.io/fidelity/kconnect:latest use eks --idp-protocol saml%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%sYou can install kconnect, along with kubectl, helm and aws-iam-authenticator by running:%s", yellowColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tcurl -fsSL -o install-kconnect.sh https://raw.githubusercontent.com/fidelity/kconnect/main/scripts/install-kconnect.sh%s", boldGreenColor, endString)
 		fmt.Fprintf(os.Stderr, "%s\tchmod 700 install-kconnect.sh%s", boldGreenColor, endString)

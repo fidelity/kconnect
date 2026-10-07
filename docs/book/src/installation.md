@@ -59,11 +59,11 @@ We have an open issue to support chocolatey in the future.
 
 ## Docker
 
-You can also use kconnect via Docker by using the images we publish to Docker Hub:
+You can also use kconnect via Docker by using the images we publish to the GitHub Container Registry:
 
 ```bash
-docker pull docker.io/kconnectcli/kconnect:latest
-docker run -it --rm -v ~/.kconnect:/.kconnect kconnect:latest use eks --idp-protocol saml
+docker pull ghcr.io/fidelity/kconnect:latest
+docker run -it --rm -v ~/.kconnect:/.kconnect ghcr.io/fidelity/kconnect:latest use eks --idp-protocol saml
 ```
 ## Install script
 
