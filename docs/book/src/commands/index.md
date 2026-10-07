@@ -8,7 +8,7 @@ The Kubernetes Connection Manager CLI
 The kconnect tool uses a pre-configured Identity Provider to log in to one or
 more managed Kubernetes cluster providers, discovers the list of clusters
 visible to your authenticated user and options, and generates a kubectl
-configutation context for the selected cluster.
+configuration context for the selected cluster.
 
 Most kubectl contexts include an authentication token which kubectl sends to
 Kubernetes with each request rather than a username and password to establish
@@ -45,7 +45,7 @@ kconnect [flags]
   #
   kconnect config -f FILE_OR_URL
 
-  # Create a kubectl confirguration context for an AWS EKS cluster.
+  # Create a kubectl configuration context for an AWS EKS cluster.
   #
   # Use this command the first time you connect to a new cluster or a new context.
   #

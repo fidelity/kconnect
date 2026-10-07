@@ -101,7 +101,7 @@ krews:
 
 dockers:
   -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"]
+    image_templates: ["ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-amd64"]
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -111,7 +111,7 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"]
+    image_templates: ["ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-arm64"]
     dockerfile: Dockerfile
     goarch: arm64
     use: buildx
@@ -122,7 +122,7 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"]
+    image_templates: ["ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"]
     dockerfile: Dockerfile.alpine
     use: buildx
     build_flag_templates:
@@ -132,7 +132,7 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"]
+    image_templates: ["ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"]
     dockerfile: Dockerfile.alpine
     goarch: arm64
     use: buildx
@@ -143,7 +143,7 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"]
+    image_templates: ["ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"]
     dockerfile: Dockerfile.deps
     use: buildx
     build_flag_templates:
@@ -153,7 +153,7 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
   -
-    image_templates: ["docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"]
+    image_templates: ["ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"]
     dockerfile: Dockerfile.deps
     goarch: arm64
     use: buildx
@@ -166,50 +166,50 @@ dockers:
 
 docker_manifests:
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:latest"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:latest"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:latest-alpine"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:latest-alpine"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:latest-alpine-with-deps"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:latest-alpine-with-deps"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
   -
-    name_template: "docker.io/kconnectcli/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine-with-deps"
+    name_template: "ghcr.io/fidelity/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}-alpine-with-deps"
     image_templates:
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
-    - "docker.io/kconnectcli/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-amd64"
+    - "ghcr.io/fidelity/{{ .ProjectName }}:{{ .Tag }}-alpine-with-deps-arm64"
 
 nfpms:
   -
