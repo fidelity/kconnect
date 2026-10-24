@@ -79,6 +79,15 @@ const (
 	grantTypePassword          = "password"
 	grantTypeClientCredentials = "client_credentials"
 
+	// emailDomainConfigKey holds the email domain to append to the
+	// username (password grant only) when the entered username doesn't
+	// already contain "@", e.g. "jdoe" + "contoso.com" => "jdoe@contoso.com".
+	// Unset by default (no behavior change for existing deployments).
+	// Deployments can set a static value, or use the "$<list-name>"
+	// config-list convention (config.ListPrefix / prompt.OptionsFromConfigList)
+	// to present an interactive picker backed by their own app config lists.
+	emailDomainConfigKey = "email-domain"
+
 	// arnRoleRegexMatchCount is the expected number of matches from
 	// arnRoleRegex: the full match plus the accountID and roleName
 	// capture groups.
@@ -181,6 +190,7 @@ type oauthConfig struct {
 	ClientSecret    string `json:"client-secret"     validate:"required_if=GrantType client_credentials"`
 	Username        string `json:"username"          validate:"required_if=GrantType password"`
 	Password        string `json:"password"          validate:"required_if=GrantType password"`
+	EmailDomain     string `json:"email-domain"`
 	GrantType       string `json:"grant-type"        validate:"required,oneof=password client_credentials"`
 	Scope           string `json:"scope"             validate:"required"`
 	RoleARN         string `json:"role-arn"`
@@ -223,6 +233,11 @@ func (p *oauthIdentityProvider) Authenticate(ctx context.Context, input *identit
 	if err := config.Unmarshall(input.ConfigSet, cfg); err != nil {
 		return nil, fmt.Errorf("unmarshalling config into oauthConfig: %w", err)
 	}
+
+	// Append the configured email domain to the username if one was
+	// supplied and the username doesn't already look like an email/UPN.
+	// No-op when email-domain is unset, preserving existing behavior.
+	applyEmailDomain(cfg)
 
 	if err := p.validateConfig(cfg); err != nil {
 		return nil, err
@@ -403,6 +418,20 @@ func (p *oauthIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error
 			return fmt.Errorf("resolving username: %w", err)
 		}
 
+		// Skip prompting for email-domain if the entered username already
+		// looks like a full UPN (contains "@"), since applyEmailDomain()
+		// only appends a domain when one isn't already present and a
+		// prompt would be redundant. Otherwise, only prompts if
+		// email-domain has no value yet: a deployment's config can set
+		// email-domain to a static string (resolves silently, no prompt),
+		// or to a "$<list-name>" value (shows a picker built from that
+		// list in their own app config).
+		if !strings.Contains(cfg.ValueString("username"), "@") {
+			if err := prompt.InputAndSet(cfg, emailDomainConfigKey, "Email domain:", false); err != nil {
+				return fmt.Errorf("resolving email-domain: %w", err)
+			}
+		}
+
 		if err := prompt.InputSensitiveAndSet(cfg, "password", "Password:", true); err != nil {
 			return fmt.Errorf("resolving password: %w", err)
 		}
@@ -544,6 +573,16 @@ func rolesFromAWSRolesClaim(rawRoles any) ([]awsRole, error) {
 	}
 
 	return roles, nil
+}
+
+// applyEmailDomain appends cfg.EmailDomain to cfg.Username (password grant
+// only) when a domain is configured and the username doesn't already
+// contain "@". It's a no-op otherwise, so existing deployments that don't
+// set email-domain see no change in behavior.
+func applyEmailDomain(cfg *oauthConfig) {
+	if cfg.GrantType == grantTypePassword && cfg.EmailDomain != "" && cfg.Username != "" && !strings.Contains(cfg.Username, "@") {
+		cfg.Username = cfg.Username + "@" + cfg.EmailDomain
+	}
 }
 
 func (p *oauthIdentityProvider) getOAuthToken(cfg *oauthConfig) (string, error) {
@@ -688,17 +727,18 @@ func (p *oauthIdentityProvider) assumeRole(ctx context.Context, cfg *oauthConfig
 func ConfigurationItems(scopeTo string) (config.ConfigurationSet, error) {
 	cs := config.NewConfigurationSet()
 
-	cs.String(tenantIDConfigKey, "", "The Entra ID (Azure AD) tenant id")                                                //nolint: errcheck
-	cs.String(clientIDConfigKey, "", "The client id of the Entra ID app registration")                                   //nolint: errcheck
-	cs.String(clientSecretConfigKey, "", "The client secret of the Entra ID app registration (client_credentials only)") //nolint: errcheck
-	cs.String("username", "", "The username to authenticate with (password grant only)")                                 //nolint: errcheck
-	cs.String("password", "", "The password to authenticate with (password grant only)")                                 //nolint: errcheck
-	cs.String(grantTypeConfigKey, grantTypePassword, "The OAuth2 grant type to use: password or client_credentials")     //nolint: errcheck
-	cs.String("scope", "", "The OAuth2 scope to request from Entra ID (e.g. api://<app-id>/AssumeRoleWithWebIdentity)")  //nolint: errcheck
-	cs.String(roleARNConfigKey, "", "The ARN of the AWS IAM role to assume via AssumeRoleWithWebIdentity")               //nolint: errcheck
-	cs.String(assumeRoleARNConfigKey, "", "The ARN of a second AWS IAM role to assume after role-arn (optional)")        //nolint: errcheck
-	cs.String("role-session-name", "kconnect", "The role session name to use when assuming the AWS IAM role")            //nolint: errcheck
-	cs.Int("session-duration", defaultSessionDuration, "The duration, in seconds, of the requested AWS STS session")     //nolint: errcheck
+	cs.String(tenantIDConfigKey, "", "The Entra ID (Azure AD) tenant id")                                                 //nolint: errcheck
+	cs.String(clientIDConfigKey, "", "The client id of the Entra ID app registration")                                    //nolint: errcheck
+	cs.String(clientSecretConfigKey, "", "The client secret of the Entra ID app registration (client_credentials only)")  //nolint: errcheck
+	cs.String("username", "", "The username to authenticate with (password grant only)")                                  //nolint: errcheck
+	cs.String("password", "", "The password to authenticate with (password grant only)")                                  //nolint: errcheck
+	cs.String(emailDomainConfigKey, "", "Email domain appended to username if not already present (password grant only)") //nolint: errcheck
+	cs.String(grantTypeConfigKey, grantTypePassword, "The OAuth2 grant type to use: password or client_credentials")      //nolint: errcheck
+	cs.String("scope", "", "The OAuth2 scope to request from Entra ID (e.g. api://<app-id>/AssumeRoleWithWebIdentity)")   //nolint: errcheck
+	cs.String(roleARNConfigKey, "", "The ARN of the AWS IAM role to assume via AssumeRoleWithWebIdentity")                //nolint: errcheck
+	cs.String(assumeRoleARNConfigKey, "", "The ARN of a second AWS IAM role to assume after role-arn (optional)")         //nolint: errcheck
+	cs.String("role-session-name", "kconnect", "The role session name to use when assuming the AWS IAM role")             //nolint: errcheck
+	cs.Int("session-duration", defaultSessionDuration, "The duration, in seconds, of the requested AWS STS session")      //nolint: errcheck
 
 	// partition/region are registered via the shared AWS config helpers so that
 	// resolveConfig can use kaws. ResolvePartition/ResolveRegion, giving the same

@@ -115,6 +115,7 @@ Use `--idp-protocol=entraid-oauth`
       --assume-role-arn string     The ARN of a second AWS IAM role to assume after role-arn (optional)
       --client-id string           The client id of the Entra ID app registration
       --client-secret string       The client secret of the Entra ID app registration (client_credentials only)
+      --email-domain string        Email domain appended to username if not already present (password grant only)
       --grant-type string          The OAuth2 grant type to use: password or client_credentials (default "password")
       --partition string           AWS partition to use (default "aws")
       --password string            The password to authenticate with (password grant only)
