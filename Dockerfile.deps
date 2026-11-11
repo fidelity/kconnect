@@ -1,14 +1,14 @@
-FROM alpine:3.22 AS builder
+FROM alpine:3.24 AS builder
 # https://github.com/kubernetes-sigs/aws-iam-authenticator
-ARG AWS_IAM_AUTH_VERSION=0.7.16
+ARG AWS_IAM_AUTH_VERSION=0.7.24
 # https://github.com/int128/kubelogin
-ARG ODIC_LOGIN_VERSION=1.36.1
+ARG ODIC_LOGIN_VERSION=1.36.4
 # https://github.com/Azure/kubelogin
-ARG KUBELOGIN_VERSION=0.2.17
+ARG KUBELOGIN_VERSION=0.2.22
 # https://github.com/kubernetes/kubectl
-ARG KUBECTL_VERSION=1.35.5
+ARG KUBECTL_VERSION=1.36.6
 # https://github.com/helm/helm
-ARG HELM_VERSION=3.21.0
+ARG HELM_VERSION=3.22.1
 
 ARG TARGETOS
 ARG TARGETARCH
