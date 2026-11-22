@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/blang/semver"
@@ -206,6 +207,9 @@ func RootCmd() (*cobra.Command, error) {
 
 func initConfig() {
 	viper.SetEnvPrefix("KCONNECT")
+	// Flag names contain hyphens, which cannot be used in the name of an
+	// environment variable, so --idp-protocol is KCONNECT_IDP_PROTOCOL.
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 }
 

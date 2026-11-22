@@ -45,6 +45,7 @@ var (
 
 const (
 	configFilePermission = 0755
+	idpProtocolEnvVar    = "KCONNECT_IDP_PROTOCOL"
 	shortDesc            = "Connect to a Kubernetes cluster provider and cluster."
 	shortDescProvider    = "Connect to the %s cluster provider and choose a cluster."
 	longDescHead         = `
@@ -316,10 +317,13 @@ func setupIdpProtocol(cmd *cobra.Command, args []string, params *app.UseInput) e
 
 func getIdpProtocol(args []string, params *app.UseInput) (string, bool, error) {
 	// look for a flag first
-	for i, arg := range args {
-		if arg == "--idp-protocol" {
-			return args[i+1], true, nil
-		}
+	if value, found := flags.GetFlagValueFromArgs(args, "idp-protocol", ""); found {
+		return value, true, nil
+	}
+
+	// then the environment, which is how every other flag can be supplied
+	if value := os.Getenv(idpProtocolEnvVar); value != "" {
+		return value, false, nil
 	}
 
 	// look in app config
