@@ -38,9 +38,8 @@ func NewStaticEndpointsResolver(apiEndpoint string) (EndpointsResolver, error) {
 		return nil, ErrNoAPIEndpoint
 	}
 
-	if !strings.HasSuffix(apiEndpoint, "/") {
-		apiEndpoint = strings.TrimSuffix(apiEndpoint, "/")
-	}
+	// The paths that are appended start with a slash
+	apiEndpoint = strings.TrimSuffix(apiEndpoint, "/")
 
 	return &StaticEndpointsResolver{
 		apiEndpoint: apiEndpoint,
