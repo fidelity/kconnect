@@ -103,9 +103,11 @@ func (p *staticTokenIdentityProvider) validateConfig(cfg *providerConfig) error 
 func (p *staticTokenIdentityProvider) resolveConfig(cfg config.ConfigurationSet) error {
 	if !p.interactive {
 		p.logger.Debug("skipping configuration resolution as runnning non-interactive")
+		return nil
 	}
 
-	if err := prompt.InputAndSet(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
+	// The token is a credential so it isn't displayed as it is typed, or logged
+	if err := prompt.InputSensitiveAndSet(cfg, tokenConfigItem, "Enter authentication token", true); err != nil {
 		return fmt.Errorf("resolving %s: %w", tokenConfigItem, err)
 	}
 
