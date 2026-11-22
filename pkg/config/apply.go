@@ -86,7 +86,8 @@ func setItemValue(item *Item, value string) error {
 			return fmt.Errorf("parsing config as int: %w", err)
 		}
 
-		item.Value = intVal
+		// The value is read back as an int, the same type as when it comes from a flag
+		item.Value = int(intVal)
 
 		return nil
 	case ItemTypeBool:
