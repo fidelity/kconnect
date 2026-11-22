@@ -24,4 +24,5 @@ var (
 	ErrFlagMissing             = errors.New("flag missing")
 	ErrNotAWSIdentity          = errors.New("unsupported identity, AWSIdentity required")
 	ErrUnexpectedClusterFormat = errors.New("cluster name from ARN has unexpected format")
+	ErrClusterNotReady         = errors.New("cluster is not ready to be connected to")
 )

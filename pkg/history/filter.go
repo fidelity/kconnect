@@ -110,7 +110,7 @@ func ByAlias(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
 		return true
 	}
 
-	return equalsWithWildcard(*spec.Alias, *entry.Spec.Alias)
+	return equalsWithWildcard(*spec.Alias, entry.GetAlias())
 }
 
 func ByClusterProvider(spec *FilterSpec, entry *historyv1alpha.HistoryEntry) bool {
@@ -144,7 +144,10 @@ func entryHasFlags(entry *historyv1alpha.HistoryEntry, flags map[string]string) 
 			return false
 		}
 
-		return equalsWithWildcard(flagValue, entryValue)
+		// All of the flags must match, so only stop early on one that doesn't
+		if !equalsWithWildcard(flagValue, entryValue) {
+			return false
+		}
 	}
 
 	return true
@@ -202,8 +205,18 @@ func CreateFilterFromMap(filterMap map[string]string) *FilterSpec {
 }
 
 func equalsWithWildcard(s1, s2 string) bool {
-	regexString := "^" + strings.ReplaceAll(s1, "*", ".*") + "$"
-	regex := regexp.MustCompile(regexString)
+	// Only "*" is a wildcard. Everything else is matched literally, so the rest of the
+	// filter is escaped as it could otherwise be an invalid regular expression (which
+	// would cause a panic) or match more than was intended.
+	parts := strings.Split(s1, "*")
+	for i := range parts {
+		parts[i] = regexp.QuoteMeta(parts[i])
+	}
+
+	regex, err := regexp.Compile("^" + strings.Join(parts, ".*") + "$")
+	if err != nil {
+		return false
+	}
 
 	return regex.MatchString(s2)
 }

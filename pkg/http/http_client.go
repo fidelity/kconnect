@@ -61,7 +61,7 @@ func (n *netHTTPClient) Do(req *ClientRequest) (ClientResponse, error) {
 		r.Header.Add(k, v)
 	}
 
-	zap.S().Debugw("http request", "url", req.URL, "method", req.Method, "headers", req.Headers)
+	zap.S().Debugw("http request", "url", req.URL, "method", req.Method, "headers", RedactHeaders(req.Headers))
 
 	resp, err := n.client.Do(r)
 	if err != nil {
@@ -92,6 +92,32 @@ func (n *netHTTPClient) Post(url string, body string, headers map[string]string)
 	return n.Do(req)
 }
 
+// sensitiveHeaders are the headers whose values are credentials
+var sensitiveHeaders = map[string]bool{
+	"authorization":       true,
+	"proxy-authorization": true,
+	"cookie":              true,
+	"set-cookie":          true,
+	"x-api-key":           true,
+	"x-auth-token":        true,
+}
+
+// RedactHeaders returns a copy of the headers that is safe to log, with the values of
+// the headers that carry credentials masked.
+func RedactHeaders(headers map[string]string) map[string]string {
+	redacted := make(map[string]string, len(headers))
+
+	for name, value := range headers {
+		if sensitiveHeaders[strings.ToLower(name)] {
+			value = "********"
+		}
+
+		redacted[name] = value
+	}
+
+	return redacted
+}
+
 func SetBasicAuthHeaders(headers map[string]string, username, password string) {
 	authStr := fmt.Sprintf("%s:%s", username, password)
 	encodedAuth := base64.StdEncoding.EncodeToString([]byte(authStr))
@@ -111,8 +137,8 @@ func createResponse(resp *http.Response) (ClientResponse, error) {
 		headers[k] = v[0]
 	}
 
-	zap.S().Debugw("http response", "status", resp.Status, "headers", headers)
-	zap.S().Debug(string(body))
+	// The body isn't logged as responses contain tokens, kubeconfigs and SAML assertions
+	zap.S().Debugw("http response", "status", resp.Status, "headers", RedactHeaders(headers), "bodyBytes", len(body))
 
 	return &netHTTPResponse{
 		code:    resp.StatusCode,

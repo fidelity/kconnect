@@ -31,6 +31,26 @@ const (
 	PasswordConfigItem = "password"
 )
 
+const (
+	// PrivateFilePermission is the permission for the files that kconnect writes. The
+	// history can contain credentials that were supplied as flags, and the configuration
+	// decides where credentials are sent, so only the user should be able to read or
+	// change them.
+	PrivateFilePermission os.FileMode = 0o600
+	// PrivateDirPermission is the permission for the directories that kconnect creates
+	PrivateDirPermission os.FileMode = 0o700
+)
+
+// WritePrivateFile writes data to a file that only the current user can access. The
+// permissions of a file that already exists are tightened as well.
+func WritePrivateFile(path string, data []byte) error {
+	if err := os.WriteFile(path, data, PrivateFilePermission); err != nil {
+		return err
+	}
+
+	return os.Chmod(path, PrivateFilePermission)
+}
+
 func AppDirectory() string {
 	dir, err := os.UserHomeDir()
 	if err != nil {

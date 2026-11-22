@@ -17,10 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"strings"
 	"time"
@@ -108,8 +108,10 @@ func NewHistoryEntryList() *HistoryEntryList {
 
 func NewHistoryEntry() *HistoryEntry {
 	t := time.Now()
-	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0) //nolint: gosec
-	id := ulid.MustNew(ulid.Timestamp(t), entropy)
+	// The random part of the id comes from the system, and not from a generator seeded
+	// with the time, as two entries created in the same clock tick would otherwise be
+	// given the same id.
+	id := ulid.MustNew(ulid.Timestamp(t), rand.Reader)
 
 	created := metav1.Now()
 
@@ -162,6 +164,17 @@ func GetHistoryReferenceFromContext(context *api.Context) (*HistoryReference, er
 	}
 
 	return &kconnectExtensionObj, nil
+}
+
+// GetAlias returns the alias of the entry, or an empty string if it doesn't have one. The
+// alias is optional, so entries in a history file that was imported or edited by hand
+// might not have one at all.
+func (h *HistoryEntry) GetAlias() string {
+	if h == nil || h.Spec.Alias == nil {
+		return ""
+	}
+
+	return *h.Spec.Alias
 }
 
 func (h *HistoryEntry) Equals(other *HistoryEntry) bool {
@@ -251,7 +264,7 @@ func (l *HistoryEntryList) ToTable(currentContextID string) *metav1.Table {
 			Cells: []any{
 				currentContextIndicator,
 				entry.ObjectMeta.Name,
-				*entry.Spec.Alias,
+				entry.GetAlias(),
 				entry.Spec.Provider,
 				entry.Spec.ProviderID,
 				entry.Spec.Identity,

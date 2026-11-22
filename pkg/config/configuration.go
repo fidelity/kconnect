@@ -61,7 +61,7 @@ func NewAppConfigurationWithPath(path string) (AppConfiguration, error) {
 			return nil, fmt.Errorf("getting details of config dir %s: %w", configDirPath, err)
 		}
 
-		err = os.MkdirAll(configDirPath, os.ModePerm)
+		err = os.MkdirAll(configDirPath, defaults.PrivateDirPermission)
 		if err != nil {
 			return nil, fmt.Errorf("creating config dir %s: %w", configDirPath, err)
 		}
@@ -75,7 +75,7 @@ func NewAppConfigurationWithPath(path string) (AppConfiguration, error) {
 			return nil, fmt.Errorf("getting details of config file %s: %w", configPath, err)
 		}
 
-		emptyConfigFile, err := os.Create(configPath)
+		emptyConfigFile, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, defaults.PrivateFilePermission)
 		if err != nil {
 			return nil, fmt.Errorf("creating empty config file %s: %w", configPath, err)
 		}
@@ -154,7 +154,7 @@ func (a *appConfiguration) Save(configuration *kconnectv1alpha.Configuration) er
 		return fmt.Errorf("marshalling configuration: %w", err)
 	}
 
-	if err := ioutil.WriteFile(a.path, data, os.ModePerm); err != nil {
+	if err := defaults.WritePrivateFile(a.path, data); err != nil {
 		return fmt.Errorf("saving configuration file to %s: %w", a.path, err)
 	}
 

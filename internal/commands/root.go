@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/blang/semver"
@@ -206,6 +207,9 @@ func RootCmd() (*cobra.Command, error) {
 
 func initConfig() {
 	viper.SetEnvPrefix("KCONNECT")
+	// Flag names contain hyphens, which cannot be used in the name of an
+	// environment variable, so --idp-protocol is KCONNECT_IDP_PROTOCOL.
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 }
 
@@ -275,7 +279,7 @@ func ensureAppDirectory() error {
 		return fmt.Errorf("getting details of app directory %s: %w", appDir, err)
 	}
 
-	if err := os.Mkdir(appDir, os.ModePerm); err != nil {
+	if err := os.Mkdir(appDir, defaults.PrivateDirPermission); err != nil {
 		return fmt.Errorf("making app folder directory %s: %w", appDir, err)
 	}
 

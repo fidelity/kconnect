@@ -123,23 +123,38 @@ func WithInteractive(interactive bool) Option {
 // 1 cluster then it automatically selects it. If there are more than 1 cluster then
 // a selection is displayed and the user must choose one
 func DefaultSelectCluster(discoverOutput *discovery.DiscoverOutput) (*discovery.Cluster, error) {
-	clusterNameToID := make(map[string]string)
-	options := make([]string, 0, len(discoverOutput.Clusters))
-
-	for _, cluster := range discoverOutput.Clusters {
-		clusterNameToID[cluster.Name] = cluster.ID
-		options = append(options, cluster.Name)
-	}
-
-	clusterName, err := prompt.Choose("cluster", "Select a cluster", true, prompt.OptionsFromStringSlice(options))
+	clusterID, err := prompt.Choose("cluster", "Select a cluster", true, prompt.OptionsFromMap(ClusterOptions(discoverOutput)))
 	if err != nil {
 		return nil, fmt.Errorf("choosing cluster: %w", err)
 	}
 
-	clusterID := clusterNameToID[clusterName]
 	zap.S().Debugw("selected cluster", "id", clusterID)
 
 	return discoverOutput.Clusters[clusterID], nil
+}
+
+// ClusterOptions returns the options to display when selecting a cluster, as a map of the
+// text to display to the id of the cluster. A cluster is displayed by its name, unless
+// another cluster has the same name (for example in a different resource group) in which
+// case the id is included as well so that each of them can be selected.
+func ClusterOptions(discoverOutput *discovery.DiscoverOutput) map[string]string {
+	nameCount := make(map[string]int, len(discoverOutput.Clusters))
+	for _, cluster := range discoverOutput.Clusters {
+		nameCount[cluster.Name]++
+	}
+
+	options := make(map[string]string, len(discoverOutput.Clusters))
+
+	for id, cluster := range discoverOutput.Clusters {
+		display := cluster.Name
+		if nameCount[cluster.Name] > 1 {
+			display = fmt.Sprintf("%s (%s)", cluster.Name, id)
+		}
+
+		options[display] = id
+	}
+
+	return options
 }
 
 func (a *App) SetNonInteractive() {

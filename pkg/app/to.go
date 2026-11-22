@@ -160,7 +160,8 @@ func (a *App) getInteractive(params *ConnectToInput) (*historyv1alpha.HistoryEnt
 		return nil, fmt.Errorf("getting history entrie options: %w", err)
 	}
 
-	selectedEntryString, err := prompt.Choose("history-entry", "Select a history entry", true, prompt.OptionsFromStringSlice(options))
+	// The entries are sorted by when they were last used, so the most recent is first
+	selectedEntryString, err := prompt.ChooseInOrder("history-entry", "Select a history entry", true, options)
 	if err != nil {
 		return nil, fmt.Errorf("asking for entry: %w", err)
 	}

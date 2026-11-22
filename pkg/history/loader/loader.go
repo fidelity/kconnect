@@ -51,7 +51,7 @@ func NewFileLoader(path string) (Loader, error) {
 			return nil, fmt.Errorf("getting details of file %s: %w", historyFile, err)
 		}
 
-		emptyHistoryFile, err := os.Create(historyFile)
+		emptyHistoryFile, err := os.OpenFile(historyFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, defaults.PrivateFilePermission)
 		if err != nil {
 			return nil, fmt.Errorf("creating empty history file %s: %w", historyFile, err)
 		}
@@ -99,7 +99,7 @@ func (f *fileLoader) Save(historyList *historyv1alpha.HistoryEntryList) error {
 		return fmt.Errorf("marshalling history list: %w", err)
 	}
 
-	if err := ioutil.WriteFile(f.path, data, os.ModePerm); err != nil {
+	if err := defaults.WritePrivateFile(f.path, data); err != nil {
 		return fmt.Errorf("saving history file to %s: %w", f.path, err)
 	}
 

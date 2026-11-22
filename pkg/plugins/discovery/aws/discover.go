@@ -18,10 +18,12 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 
 	"github.com/fidelity/kconnect/pkg/provider/discovery"
 )
@@ -52,6 +54,13 @@ func (p *eksClusterProvider) Discover(ctx context.Context, input *discovery.Disc
 	for _, clusterName := range clusters {
 		clusterDetail, err := p.getClusterConfig(clusterName)
 		if err != nil {
+			// A cluster that can't be connected to yet (e.g. it is still being
+			// created) shouldn't stop the other clusters from being offered.
+			if errors.Is(err, ErrClusterNotReady) {
+				p.logger.Infow("ignoring cluster that isn't ready", "cluster", clusterName)
+				continue
+			}
+
 			return nil, fmt.Errorf("getting cluster config: %w", err)
 		}
 
@@ -89,10 +98,25 @@ func (p *eksClusterProvider) getClusterConfig(clusterName string) (*discovery.Cl
 		return nil, fmt.Errorf("describing cluster %s: %w", clusterName, err)
 	}
 
+	return clusterFromDescription(clusterName, output.Cluster)
+}
+
+// clusterFromDescription converts the description of an EKS cluster. The endpoint and the
+// certificate authority aren't available until the cluster has been created, in which case
+// ErrClusterNotReady is returned.
+func clusterFromDescription(clusterName string, cluster *ekstypes.Cluster) (*discovery.Cluster, error) {
+	if cluster == nil || cluster.Arn == nil || cluster.Name == nil {
+		return nil, fmt.Errorf("%w: %s has no details", ErrClusterNotReady, clusterName)
+	}
+
+	if cluster.Endpoint == nil || cluster.CertificateAuthority == nil || cluster.CertificateAuthority.Data == nil {
+		return nil, fmt.Errorf("%w: %s (status %s)", ErrClusterNotReady, clusterName, cluster.Status)
+	}
+
 	return &discovery.Cluster{
-		ID:                       *output.Cluster.Arn,
-		Name:                     *output.Cluster.Name,
-		ControlPlaneEndpoint:     output.Cluster.Endpoint,
-		CertificateAuthorityData: output.Cluster.CertificateAuthority.Data,
+		ID:                       *cluster.Arn,
+		Name:                     *cluster.Name,
+		ControlPlaneEndpoint:     cluster.Endpoint,
+		CertificateAuthorityData: cluster.CertificateAuthority.Data,
 	}, nil
 }
