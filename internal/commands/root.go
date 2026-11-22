@@ -279,7 +279,7 @@ func ensureAppDirectory() error {
 		return fmt.Errorf("getting details of app directory %s: %w", appDir, err)
 	}
 
-	if err := os.Mkdir(appDir, os.ModePerm); err != nil {
+	if err := os.Mkdir(appDir, defaults.PrivateDirPermission); err != nil {
 		return fmt.Errorf("making app folder directory %s: %w", appDir, err)
 	}
 

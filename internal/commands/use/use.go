@@ -44,7 +44,7 @@ var (
 )
 
 const (
-	configFilePermission = 0755
+	configFilePermission = defaults.PrivateDirPermission
 	idpProtocolEnvVar    = "KCONNECT_IDP_PROTOCOL"
 	shortDesc            = "Connect to a Kubernetes cluster provider and cluster."
 	shortDescProvider    = "Connect to the %s cluster provider and choose a cluster."
@@ -352,7 +352,7 @@ func ensureConfigFolder(path string) error {
 	} else if err != nil && os.IsNotExist(err) {
 		errDir := os.MkdirAll(path, configFilePermission)
 		if errDir != nil {
-			return fmt.Errorf("creating config directory %s: %w", path, err)
+			return fmt.Errorf("creating config directory %s: %w", path, errDir)
 		}
 
 		return nil
