@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 var (
@@ -154,20 +155,46 @@ func BindFlags(cmd *cobra.Command) {
 // GetFlagValueDirect will get a flag value directly from args or config.
 // Note: this should only be used in exceptional circumstances
 func GetFlagValueDirect(args []string, longName, shortName string) (string, error) {
-	flagShortname := ""
-	if shortName != "" {
-		flagShortname = fmt.Sprintf("-%s", shortName)
-	}
-
-	flagLongName := fmt.Sprintf("--%s", longName)
-	for i, arg := range args {
-		if arg == flagLongName || (flagShortname != "" && arg == flagShortname) {
-			return args[i+1], nil
-		}
+	if value, found := GetFlagValueFromArgs(args, longName, shortName); found {
+		return value, nil
 	}
 
 	// look in app config
 	return config.GetValue(longName, "")
+}
+
+// GetFlagValueFromArgs looks for a flag in the raw command line arguments,
+// before they have been parsed, and returns its value. The forms "--name value",
+// "--name=value", "-n value" and "-n=value" are supported. The second return
+// value is false if the flag isn't present or if it has no value.
+func GetFlagValueFromArgs(args []string, longName, shortName string) (string, bool) {
+	names := []string{"--" + longName}
+	if shortName != "" {
+		names = append(names, "-"+shortName)
+	}
+
+	for i, arg := range args {
+		// Everything after a "--" is a positional argument and not a flag
+		if arg == "--" {
+			break
+		}
+
+		for _, name := range names {
+			if arg == name {
+				if i+1 < len(args) {
+					return args[i+1], true
+				}
+
+				return "", false
+			}
+
+			if value, ok := strings.CutPrefix(arg, name+"="); ok {
+				return value, true
+			}
+		}
+	}
+
+	return "", false
 }
 
 func CopyFlagValue(sourceFlagName, destinationFlagName string, fs *pflag.FlagSet, ignoreNotFound bool) error {
@@ -194,8 +221,15 @@ func ParseFlagMultiValueToMap(flag string) map[string]string {
 	if flag != "" {
 		setFlagsArray := strings.SplitSeq(flag, ",")
 		for e := range setFlagsArray {
-			parts := strings.Split(e, "=")
-			flagsMap[parts[0]] = parts[1]
+			// Only split on the first "=" as a value can contain one, for
+			// example a URL with a query string.
+			key, value, found := strings.Cut(e, "=")
+			if !found || key == "" {
+				zap.S().Warnf("ignoring %q as it is not in the form key=value", e)
+				continue
+			}
+
+			flagsMap[key] = value
 		}
 	}
 
