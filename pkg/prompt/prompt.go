@@ -26,9 +26,19 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"go.uber.org/zap"
+	"golang.org/x/term"
 
 	"github.com/fidelity/kconnect/pkg/config"
+	"github.com/fidelity/kconnect/pkg/defaults"
 	"github.com/fidelity/kconnect/pkg/utils"
+)
+
+const (
+	// reservedLines is the number of lines of the terminal that are not used for options
+	// when selecting from a list (the question, the filter and some context above it).
+	reservedLines = 6
+	// maxPageSize is the most options that will be displayed at once
+	maxPageSize = 30
 )
 
 // Input will ask the user to enter a value
@@ -207,6 +217,50 @@ func Choose(name, message string, required bool, optionsFn OptionsFunc) (string,
 
 	sort.Strings(displayOptions)
 
+	return chooseFrom(name, message, required, options, displayOptions)
+}
+
+// ChooseInOrder will ask the user to select a value from a list. Unlike Choose, the options
+// are displayed in the order they are supplied and not sorted, so the caller decides which
+// option is listed first.
+func ChooseInOrder(name, message string, required bool, displayOptions []string) (string, error) {
+	options := make(map[string]string, len(displayOptions))
+	for _, option := range displayOptions {
+		options[option] = option
+	}
+
+	return chooseFrom(name, message, required, options, displayOptions)
+}
+
+// PageSize returns the number of options to display at once given the number of options
+// and the height of the terminal in lines (0 if it isn't known). At least
+// defaults.DefaultUIPageSize options are displayed, and more if the terminal has the room
+// for them, as the fewer options that are visible the more the user has to scroll.
+func PageSize(numOptions, terminalHeight int) int {
+	size := defaults.DefaultUIPageSize
+
+	if available := terminalHeight - reservedLines; available > size {
+		size = min(available, maxPageSize)
+	}
+
+	if numOptions > 0 && numOptions < size {
+		size = numOptions
+	}
+
+	return size
+}
+
+// terminalHeight returns the height of the terminal in lines, or 0 if it can't be determined
+func terminalHeight() int {
+	_, height, err := term.GetSize(int(os.Stdout.Fd())) //nolint: gosec
+	if err != nil {
+		return 0
+	}
+
+	return height
+}
+
+func chooseFrom(name, message string, required bool, options map[string]string, displayOptions []string) (string, error) {
 	selectedOptionDisplay := ""
 
 	if len(displayOptions) == 1 { //nolint: nestif
@@ -214,9 +268,10 @@ func Choose(name, message string, required bool, optionsFn OptionsFunc) (string,
 		selectedOptionDisplay = displayOptions[0]
 	} else {
 		prompt := &survey.Select{
-			Message: message,
-			Options: displayOptions,
-			Filter:  utils.SurveyFilter,
+			Message:  message,
+			Options:  displayOptions,
+			Filter:   utils.SurveyFilter,
+			PageSize: PageSize(len(displayOptions), terminalHeight()),
 		}
 
 		opts := []survey.AskOpt{}

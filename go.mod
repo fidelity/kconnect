@@ -32,6 +32,7 @@ require (
 	github.com/versent/saml2aws/v2 v2.36.19
 	go.uber.org/zap v1.28.0
 	golang.org/x/mod v0.42.0
+	golang.org/x/term v0.45.0
 	gopkg.in/ini.v1 v1.67.3
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.37.1
@@ -112,7 +113,6 @@ require (
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
