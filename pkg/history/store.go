@@ -61,7 +61,7 @@ func (s *storeImpl) Add(entry *historyv1alpha.HistoryEntry) error {
 		entry.Name = existingEntry.Name
 		s.updateLastUsed(historyList, existingEntry.Name)
 
-		if (entry.Spec.Alias != nil || *entry.Spec.Alias != "") && (existingEntry.Spec.Alias == nil || *existingEntry.Spec.Alias == "") {
+		if entry.GetAlias() != "" && existingEntry.GetAlias() == "" {
 			s.updateAlias(historyList, existingEntry.Name, entry.Spec.Alias)
 		}
 	} else {
@@ -261,8 +261,14 @@ func (s *storeImpl) filterHistory(filter func(entry *historyv1alpha.HistoryEntry
 
 func (s *storeImpl) connectionExists(entry *historyv1alpha.HistoryEntry, historyList *historyv1alpha.HistoryEntryList) (*historyv1alpha.HistoryEntry, bool) {
 	for _, existingEntry := range historyList.Items {
-		entry.Spec.ConfigFile = existingEntry.Spec.ConfigFile // Ignore this field to prevent a duplicated alias from being created if the user passed -k
-		if existingEntry.Equals(entry) {
+		// Ignore the kubeconfig field to prevent a duplicated alias from being created if
+		// the user passed -k. A copy is compared so the entry being added keeps its own
+		// kubeconfig when it doesn't match any of the existing entries.
+		candidate := entry.DeepCopy()
+		candidate.Spec.ConfigFile = existingEntry.Spec.ConfigFile
+
+		if existingEntry.Equals(candidate) {
+			entry.Spec.ConfigFile = existingEntry.Spec.ConfigFile
 			return &existingEntry, true
 		}
 	}

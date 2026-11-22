@@ -156,11 +156,12 @@ func (a *App) AliasRemove(ctx context.Context, input *AliasRemoveInput) error {
 	}
 
 	for i := range found {
-		oldalias := *found[i].Spec.Alias
+		oldalias := found[i].GetAlias()
 
 		updatedEntry := found[i].DeepCopy()
 
-		*updatedEntry.Spec.Alias = ""
+		noAlias := ""
+		updatedEntry.Spec.Alias = &noAlias
 		updatedEntry.Status.LastModified = v1.Now()
 
 		zap.S().Debugw("updating history entry to remove alias", "id", updatedEntry.ObjectMeta.Name, "oldalias", oldalias)

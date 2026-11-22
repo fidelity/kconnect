@@ -175,6 +175,10 @@ func (a *App) HistoryRemove(ctx context.Context, input *HistoryRemoveInput) erro
 				return fmt.Errorf("getting history entry: %w", err)
 			}
 
+			if entry == nil {
+				return fmt.Errorf("%w: %s", history.ErrEntryNotFound, entryID)
+			}
+
 			entriesToRemove = append(entriesToRemove, entry)
 		}
 	}
@@ -222,8 +226,14 @@ func writeExportFile(location string, historyList *v1alpha1.HistoryEntryList) er
 }
 
 func checkAliasInUse(historyList *v1alpha1.HistoryEntryList, entryToCheck *v1alpha1.HistoryEntry) (bool, int) {
-	for i, entry := range historyList.Items {
-		if *entry.Spec.Alias == *entryToCheck.Spec.Alias {
+	// An entry without an alias can't clash with another entry
+	alias := entryToCheck.GetAlias()
+	if alias == "" {
+		return false, -1
+	}
+
+	for i := range historyList.Items {
+		if historyList.Items[i].GetAlias() == alias {
 			return true, i
 		}
 	}
