@@ -128,7 +128,7 @@ func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryE
 func splitCommaList(list string) []string {
 	items := []string{}
 
-	for _, item := range strings.Split(list, ",") {
+	for item := range strings.SplitSeq(list, ",") {
 		if item = strings.TrimSpace(item); item != "" {
 			items = append(items, item)
 		}
