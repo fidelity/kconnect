@@ -19,6 +19,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	historyv1alpha "github.com/fidelity/kconnect/api/v1alpha1"
@@ -27,12 +28,14 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/fidelity/kconnect/pkg/aws/awsconfig"
+	"github.com/fidelity/kconnect/pkg/history"
 )
 
 const (
 	EKSProviderName     = "eks"
 	AKSProviderName     = "aks"
 	RancherProviderName = "rancher"
+	OIDCProviderName    = "oidc"
 )
 
 type LogoutInput struct {
@@ -78,32 +81,30 @@ func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryE
 		if err != nil {
 			return nil, err
 		}
-	case params.Alias != "":
-		aliasList := strings.Split(params.Alias, ",")
-		for _, alias := range aliasList {
+	case params.Alias != "" || params.IDs != "":
+		// Aliases and ids can both be supplied, in which case all of the
+		// entries they refer to are logged out of.
+		for _, alias := range splitCommaList(params.Alias) {
 			entry, err := a.historyStore.GetByAlias(alias)
 			if err != nil {
 				return nil, err
 			}
 
 			if entry == nil {
-				return nil, ErrAliasNotFound
+				return nil, fmt.Errorf("%w: %s", ErrAliasNotFound, alias)
 			}
 
 			entries.Items = append(entries.Items, *entry)
 		}
 
-		fallthrough
-	case params.IDs != "":
-		idsList := strings.Split(params.IDs, ",")
-		for _, id := range idsList {
+		for _, id := range splitCommaList(params.IDs) {
 			entry, err := a.historyStore.GetByID(id)
 			if err != nil {
 				return nil, err
 			}
 
 			if entry == nil {
-				return nil, ErrAliasNotFound
+				return nil, fmt.Errorf("%w: %s", history.ErrEntryNotFound, id)
 			}
 
 			entries.Items = append(entries.Items, *entry)
@@ -122,33 +123,50 @@ func (a *App) getClustersToLogout(params *LogoutInput) (*historyv1alpha.HistoryE
 	return entries, nil
 }
 
+// splitCommaList splits a comma separated list, ignoring surrounding whitespace
+// and any empty items.
+func splitCommaList(list string) []string {
+	items := []string{}
+
+	for _, item := range strings.Split(list, ",") {
+		if item = strings.TrimSpace(item); item != "" {
+			items = append(items, item)
+		}
+	}
+
+	return items
+}
+
+// entryAlias returns the alias of a history entry, which is optional.
+func entryAlias(entry *historyv1alpha.HistoryEntry) string {
+	if entry.Spec.Alias == nil {
+		return ""
+	}
+
+	return *entry.Spec.Alias
+}
+
 func (a *App) doLogout(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
-	// TODO use const for provider
 	switch entry.Spec.Provider {
 	case EKSProviderName:
 		err := a.doLogoutEKS(entry)
 		if err != nil {
 			return err
 		}
-	case AKSProviderName:
-		err := a.doLogoutAKS(params, entry)
-		if err != nil {
-			return err
-		}
-	case RancherProviderName:
-		err := a.doLogoutRancher(params, entry)
+	case AKSProviderName, RancherProviderName, OIDCProviderName:
+		err := a.doLogoutKubeconfigUser(params, entry)
 		if err != nil {
 			return err
 		}
 	default:
-		return ErrUnknownProvider
+		return fmt.Errorf("%w: %s", ErrUnknownProvider, entry.Spec.Provider)
 	}
 
 	return nil
 }
 
 func (a *App) doLogoutEKS(entry *historyv1alpha.HistoryEntry) error {
-	zap.S().Infof("logging out of entry (eks): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
+	zap.S().Infof("logging out of entry (eks): name: %s, alias: %s", entry.Name, entryAlias(entry))
 
 	profileName, ok := entry.Spec.Flags["aws-profile"]
 	if !ok {
@@ -171,13 +189,10 @@ func (a *App) doLogoutEKS(entry *historyv1alpha.HistoryEntry) error {
 	return cfg.SaveTo(path)
 }
 
-func (a *App) doLogoutAKS(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
-	zap.S().Infof("logging out of entry (aks): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
-	return a.deleteUserFromKubeconfigByEntryID(params.Kubeconfig, entry.Name)
-}
-
-func (a *App) doLogoutRancher(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
-	zap.S().Infof("logging out of entry (rancher): name: %s, alias: %s", entry.Name, *entry.Spec.Alias)
+// doLogoutKubeconfigUser logs out of the providers whose credentials are held
+// by the user in the kubeconfig, which is removed.
+func (a *App) doLogoutKubeconfigUser(params *LogoutInput, entry *historyv1alpha.HistoryEntry) error {
+	zap.S().Infof("logging out of entry (%s): name: %s, alias: %s", entry.Spec.Provider, entry.Name, entryAlias(entry))
 	return a.deleteUserFromKubeconfigByEntryID(params.Kubeconfig, entry.Name)
 }
 
@@ -191,7 +206,13 @@ func (a *App) deleteUserFromKubeconfigByEntryID(kubeconfigPath, entryID string) 
 
 	for context := range config.Contexts {
 		historyRef, err := historyv1alpha.GetHistoryReferenceFromContext(config.Contexts[context])
-		if err != nil && errors.Is(err, historyv1alpha.ErrNoHistoryExtension) {
+		if err != nil {
+			// A kubeconfig will usually contain contexts that were not
+			// created by kconnect, which are of no interest here.
+			if errors.Is(err, historyv1alpha.ErrNoHistoryExtension) {
+				continue
+			}
+
 			return err
 		}
 
@@ -202,7 +223,7 @@ func (a *App) deleteUserFromKubeconfigByEntryID(kubeconfigPath, entryID string) 
 	}
 
 	if kubeconfigUser == "" {
-		zap.S().Infof("no user found in kubeconfig for entry: %S", entryID)
+		zap.S().Infof("no user found in kubeconfig for entry: %s", entryID)
 		return nil
 	}
 
